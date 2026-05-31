@@ -189,7 +189,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Verified configuration credentials for test-website-22778
+        // Matching your 'Test website' configuration parameters exactly
         const firebaseConfig = {
             apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
             authDomain: "test-website-22778.firebaseapp.com",
@@ -200,24 +200,23 @@
             measurementId: "G-9E5RYBBKJS"
         };
 
-        // Initialize Firebase using compat syntax
+        // Initialize App Configuration
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let activeMedicines = [];
 
         // =========================================================================
-        // FIXED AUTOMATIC MEDICINE GENERATOR ENGINE
+        // AUTOMATIC MEDICINE GENERATOR AND LOADER ENGINE
         // =========================================================================
         async function loadMedicineTags() {
             const container = document.getElementById("firebaseTagsContainer");
             if (!container) return;
 
             try {
-                // Fixed: pure Version 8 Compat call
                 const snapshot = await db.collection("medicines").get();
                 
-                // If database is blank, generate initial entries automatically
+                // If data stream is blank, trigger automatic collection setup
                 if (snapshot.empty) {
                     container.innerHTML = "<span style='color:#777; font-size:12px;'>Generating starter tags...</span>";
                     
@@ -295,7 +294,7 @@
         }
 
         // =========================================================================
-        // FIXED SAVE TO HISTORY ACTION
+        // SAVE ACTION TO HISTORY
         // =========================================================================
         document.getElementById("savePrescriptionBtn").addEventListener("click", async () => {
             const patientName = document.getElementById("patientName").value.trim();
@@ -306,7 +305,7 @@
                 return;
             }
             if (activeMedicines.length === 0) {
-                alert("Please add at least one medicine tag from the directory.");
+                alert("Please add at least one medicine tag from the left panel.");
                 return;
             }
 
@@ -318,7 +317,6 @@
             };
 
             try {
-                // Correct syntax matching your script imports
                 await db.collection("history").add(payload);
                 alert("Prescription saved successfully!");
                 
@@ -344,7 +342,7 @@
                 const snapshot = await db.collection("history").get();
 
                 if (snapshot.empty) {
-                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No history records found.</p>";
+                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No prescription records found.</p>";
                     return;
                 }
 
