@@ -189,7 +189,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Verified configuration credentials for test-website-22778
+        // TARGETING YOUR ACTIVATED 'test-website-22778' DEPLOYMENT
         const firebaseConfig = {
             apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
             authDomain: "test-website-22778.firebaseapp.com",
@@ -200,7 +200,7 @@
             measurementId: "G-9E5RYBBKJS"
         };
 
-        // Initialize Firebase
+        // Initialize Firebase cleanly
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -216,9 +216,9 @@
             try {
                 const snapshot = await db.collection("medicines").get();
                 
-                // If database collection is empty or missing, auto-create initial entries
+                // Automatic safe injection if your target collection is entirely empty
                 if (snapshot.empty) {
-                    container.innerHTML = "<span style='color:#777; font-size:12px;'>Database empty! Generating starter tags...</span>";
+                    container.innerHTML = "<span style='color:#777; font-size:12px;'>Populating tags database stream...</span>";
                     
                     await db.collection("medicines").add({ name: "Paracetamol 500mg" });
                     await db.collection("medicines").add({ name: "Amoxicillin 500mg" });
@@ -244,12 +244,12 @@
                 });
             } catch (err) {
                 console.error(err);
-                container.innerHTML = `<span style='color:red;'>Database Error: ${err.message}</span>`;
+                container.innerHTML = `<span style='color:red;'>Database Setup Error: ${err.message}</span>`;
             }
         }
 
         // =========================================================================
-        // FORM MANIPULATION LOGIC
+        // FORM STRUCTURE INTERACTION LOGIC
         // =========================================================================
         function addMedicineToForm(medicineName) {
             if (activeMedicines.some(m => m.name === medicineName)) return;
@@ -294,18 +294,18 @@
         }
 
         // =========================================================================
-        // SAVE ACTION TO HISTORY
+        // STANDARD COMPAT FIREBASE WRITE
         // =========================================================================
         document.getElementById("savePrescriptionBtn").addEventListener("click", async () => {
             const patientName = document.getElementById("patientName").value.trim();
             const adviceText = document.getElementById("advice").value.trim();
 
             if (!patientName) {
-                alert("Please enter a Patient Name.");
+                alert("Please write down a Patient Name.");
                 return;
             }
             if (activeMedicines.length === 0) {
-                alert("Please add at least one medicine tag from the left sidebar.");
+                alert("Please select at least one medicine tag.");
                 return;
             }
 
@@ -317,8 +317,9 @@
             };
 
             try {
+                // Using .add() instead of undefined addDoc functions
                 await db.collection("history").add(payload);
-                alert("Prescription saved successfully!");
+                alert("Prescription saved to cloud dashboard successfully!");
                 
                 document.getElementById("patientName").value = "";
                 document.getElementById("advice").value = "";
@@ -332,7 +333,7 @@
         });
 
         // =========================================================================
-        // FETCH HISTORY LOG FEED
+        // HISTORICAL LOG FEED RENDERING
         // =========================================================================
         async function loadPrescriptionHistory() {
             const displayFeed = document.getElementById("historyFeed");
@@ -342,7 +343,7 @@
                 const snapshot = await db.collection("history").get();
 
                 if (snapshot.empty) {
-                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No history records tracked yet.</p>";
+                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No history database sheets synced yet.</p>";
                     return;
                 }
 
@@ -380,7 +381,7 @@
             }
         }
 
-        // Run application loop execution sequence
+        // Initialize App Operations
         async function runEngine() {
             await loadMedicineTags();
             await loadPrescriptionHistory();
