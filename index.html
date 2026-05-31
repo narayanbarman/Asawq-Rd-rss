@@ -3,389 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simplified Doctor Desk</title>
+    <title>Medicine Manager - Firebase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            background-color: #f5f7fb; 
+        .medicine-tag {
+            transition: all 0.2s ease;
         }
-        .app-layout { 
-            display: flex; 
-            gap: 20px; 
-            height: 90vh; 
-        }
-        .sidebar { 
-            flex: 1; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            display: flex; 
-            flex-direction: column; 
-        }
-        .tag-list { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 8px; 
-            margin-top: 15px; 
-            overflow-y: auto; 
-        }
-        .med-tag { 
-            background: #e3f2fd; 
-            color: #0d47a1; 
-            border: 1px solid #bbdefb; 
-            padding: 8px 12px; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            font-size: 14px; 
-            font-weight: 500; 
-            transition: all 0.2s; 
-        }
-        .med-tag:hover { 
-            background: #007bff; 
-            color: white; 
-            transform: translateY(-1px); 
-        }
-        .main-workspace { 
-            flex: 3; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-        }
-        .prescription-box, .history-box { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-        }
-        .prescription-box { 
-            flex: 2; 
-        }
-        .history-box { 
-            flex: 1.5; 
-            overflow-y: auto; 
-        }
-        .form-row { 
-            margin-bottom: 15px; 
-        }
-        label { 
-            display: block; 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            color: #495057; 
-        }
-        input[type="text"], textarea { 
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid #ced4da; 
-            border-radius: 4px; 
-            box-sizing: border-box; 
-        }
-        .prescription-item { 
-            display: flex; 
-            gap: 10px; 
-            background: #f8f9fa; 
-            padding: 10px; 
-            margin-bottom: 8px; 
-            border-radius: 4px; 
-            align-items: center; 
-        }
-        .item-name { 
-            flex: 2; 
-            font-weight: bold; 
-            color: #212529; 
-        }
-        .item-input { 
-            flex: 1; 
-            padding: 6px; 
-            border: 1px solid #ced4da; 
-            border-radius: 4px; 
-        }
-        .remove-btn { 
-            background: #dc3545; 
-            color: white; 
-            border: none; 
-            padding: 6px 10px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: bold;
-        }
-        .btn-primary { 
-            background: #28a745; 
-            color: white; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: 4px; 
-            font-size: 16px; 
-            cursor: pointer; 
-            width: 100%; 
-            font-weight: bold; 
-        }
-        .btn-primary:hover { 
-            background: #218838; 
-        }
-        .history-card { 
-            border-left: 4px solid #007bff; 
-            background: #f8f9fa; 
-            padding: 12px; 
-            margin-bottom: 10px; 
-            border-radius: 4px; 
-        }
-        .history-meds { 
-            font-size: 13px; 
-            color: #495057; 
-            margin: 5px 0 0 0; 
-            padding-left: 15px; 
+        .medicine-tag:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body>
-
-    <div class="app-layout">
-        <div class="sidebar">
-            <h3 style="margin-top: 0;">Medicine Directory</h3>
-            <p style="font-size: 12px; color: #6c757d; margin: 0 0 10px 0;">
-                Click any tag below to insert it directly into the active prescription form.
-            </p>
-            <div class="tag-list" id="firebaseTagsContainer">Loading tags directory...</div>
-        </div>
-
-        <div class="main-workspace">
-            <div class="prescription-box">
-                <h3 style="margin-top: 0;">Active Prescription Form</h3>
-                
-                <div class="form-row">
-                    <label for="patientName">Patient Name</label>
-                    <input type="text" id="patientName" placeholder="Enter patient's full name" required>
+<body class="bg-gray-950 text-gray-200 min-h-screen">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex h-screen">
+            <!-- Left Sidebar -->
+            <div class="w-96 bg-gray-900 border-r border-gray-800 p-6 flex flex-col">
+                <div class="flex items-center gap-3 mb-8">
+                    <i class="fa-solid fa-pills text-3xl text-emerald-500"></i>
+                    <h1 class="text-2xl font-bold">MedManager</h1>
                 </div>
-
-                <div class="form-row">
-                    <label>Selected Medicines & Dosages</label>
-                    <div id="activePrescriptionMeds">
-                        <p style="color: #6c757d; font-size: 13px; font-style: italic; margin: 5px 0;" id="emptyFormMessage">
-                            No medicines selected yet. Click from the left directory to add items.
-                        </p>
+                
+                <div class="mb-8">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        Add New Medicine
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Medicine Name</label>
+                            <input 
+                                id="medicineInput"
+                                type="text" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 text-white"
+                                placeholder="e.g. Paracetamol 500mg"
+                                onkeypress="if(event.key === 'Enter') addMedicine()">
+                        </div>
+                        
+                        <button 
+                            onclick="addMedicine()"
+                            class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-plus"></i>
+                            ADD MEDICINE
+                        </button>
                     </div>
                 </div>
-
-                <div class="form-row">
-                    <label for="advice">Doctor's Advice / Instructions</label>
-                    <textarea id="advice" rows="3" placeholder="General healthcare notes or instructions..."></textarea>
+                
+                <div class="mt-auto">
+                    <div class="bg-gray-800 rounded-2xl p-4 text-sm">
+                        <p class="text-emerald-400 font-medium">Firebase Connected</p>
+                        <p class="text-gray-500 text-xs mt-1">Project: test-e314b</p>
+                    </div>
                 </div>
-
-                <button class="btn-primary" id="savePrescriptionBtn">Save & Commit Prescription</button>
             </div>
-
-            <div class="history-box">
-                <h3 style="margin-top: 0;">Prescription Logs History</h3>
-                <div id="historyFeed">Loading history data stream...</div>
+            
+            <!-- Main Content -->
+            <div class="flex-1 p-8 overflow-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-4xl font-bold">Your Medicines</h1>
+                        <p class="text-gray-400 mt-1" id="count">0 medicines stored</p>
+                    </div>
+                    <button onclick="clearAll()" 
+                            class="text-red-400 hover:text-red-500 flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-trash"></i>
+                        Clear All
+                    </button>
+                </div>
+                
+                <!-- Medicine Tags -->
+                <div id="medicinesContainer" class="flex flex-wrap gap-3">
+                    <!-- Tags will be added here by JavaScript -->
+                </div>
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden flex flex-col items-center justify-center h-96 text-center">
+                    <i class="fa-solid fa-pills text-6xl text-gray-700 mb-4"></i>
+                    <p class="text-xl text-gray-500">No medicines added yet</p>
+                    <p class="text-gray-600 mt-2">Add your first medicine from the left panel</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
     <script>
-        // Matching your 'Test website' configuration parameters exactly
+        // ================== YOUR FIREBASE CONFIG ==================
         const firebaseConfig = {
-            apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
-            authDomain: "test-website-22778.firebaseapp.com",
-            projectId: "test-website-22778",
-            storageBucket: "test-website-22778.firebasestorage.app",
-            messagingSenderId: "862083661951",
-            appId: "1:862083661951:web:838f650debb207a2fe7f4a",
-            measurementId: "G-9E5RYBBKJS"
+            apiKey: "AIzaSyC6bTnw4H0e_hvDuXs3ARCDK0WwV8hMBx-M",
+            authDomain: "test-e314b.firebaseapp.com",
+            projectId: "test-e314b",
+            storageBucket: "test-e314b.firebasestorage.app",
+            messagingSenderId: "285607765408",
+            appId: "1:285607765408:web:51950af188b492c28430c5",
+            measurementId: "G-EK6E85EMF4"
         };
 
-        // Initialize App Configuration
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const medicinesRef = db.collection("medicines");
 
-        let activeMedicines = [];
+        let medicines = [];
 
-        // =========================================================================
-        // AUTOMATIC MEDICINE GENERATOR AND LOADER ENGINE
-        // =========================================================================
-        async function loadMedicineTags() {
-            const container = document.getElementById("firebaseTagsContainer");
-            if (!container) return;
-
-            try {
-                const snapshot = await db.collection("medicines").get();
-                
-                // If data stream is blank, trigger automatic collection setup
-                if (snapshot.empty) {
-                    container.innerHTML = "<span style='color:#777; font-size:12px;'>Generating starter tags...</span>";
-                    
-                    await db.collection("medicines").add({ name: "Paracetamol 500mg" });
-                    await db.collection("medicines").add({ name: "Amoxicillin 500mg" });
-                    await db.collection("medicines").add({ name: "Pantocid 40mg" });
-                    await db.collection("medicines").add({ name: "Cetirizine 10mg" });
-                    
-                    setTimeout(loadMedicineTags, 1500);
-                    return;
-                }
-
-                container.innerHTML = ""; 
-                
-                snapshot.forEach(doc => {
-                    const medData = doc.data();
-                    if (!medData.name) return;
-                    
-                    const tagElement = document.createElement("div");
-                    tagElement.className = "med-tag";
-                    tagElement.textContent = medData.name;
-                    
-                    tagElement.addEventListener("click", () => addMedicineToForm(medData.name));
-                    container.appendChild(tagElement);
-                });
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = `<span style='color:red;'>Database Error: ${err.message}</span>`;
-            }
-        }
-
-        // =========================================================================
-        // FORM MANIPULATION LOGIC
-        // =========================================================================
-        function addMedicineToForm(medicineName) {
-            if (activeMedicines.some(m => m.name === medicineName)) return;
-            activeMedicines.push({ name: medicineName, dosage: "", duration: "" });
-            renderActiveFormItems();
-        }
-
-        function renderActiveFormItems() {
-            const targetDiv = document.getElementById("activePrescriptionMeds");
-            const msg = document.getElementById("emptyFormMessage");
-            if (!targetDiv) return;
-
-            const existingRows = targetDiv.querySelectorAll(".prescription-item");
-            existingRows.forEach(el => el.remove());
-
-            if (activeMedicines.length === 0) {
-                if (msg) msg.style.display = "block";
+        // Render medicines as tags
+        function renderMedicines() {
+            const container = document.getElementById("medicinesContainer");
+            const emptyState = document.getElementById("emptyState");
+            container.innerHTML = "";
+            
+            if (medicines.length === 0) {
+                emptyState.classList.remove("hidden");
+                document.getElementById("count").textContent = "0 medicines stored";
                 return;
             }
-            if (msg) msg.style.display = "none";
+            
+            emptyState.classList.add("hidden");
+            document.getElementById("count").textContent = `${medicines.length} medicines stored`;
 
-            activeMedicines.forEach((med, index) => {
-                const row = document.createElement("div");
-                row.className = "prescription-item";
-                row.innerHTML = `
-                    <span class="item-name">${med.name}</span>
-                    <input type="text" class="item-input dosage-field" placeholder="Dosage (1-0-1)" required value="${med.dosage}">
-                    <input type="text" class="item-input duration-field" placeholder="Duration (5 days)" required value="${med.duration}">
-                    <button type="button" class="remove-btn">×</button>
-                `;
-
-                row.querySelector(".dosage-field").addEventListener("input", (e) => activeMedicines[index].dosage = e.target.value);
-                row.querySelector(".duration-field").addEventListener("input", (e) => activeMedicines[index].duration = e.target.value);
+            medicines.forEach((med, index) => {
+                const tag = document.createElement("div");
+                tag.className = `medicine-tag group bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-emerald-500 px-6 py-3 rounded-3xl flex items-center gap-3 text-lg cursor-default`;
                 
-                row.querySelector(".remove-btn").addEventListener("click", () => {
-                    activeMedicines.splice(index, 1);
-                    renderActiveFormItems();
-                });
-
-                targetDiv.appendChild(row);
+                tag.innerHTML = `
+                    <span class="font-medium">${med.name}</span>
+                    <button onclick="deleteMedicine('${med.id}')" 
+                            class="ml-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                container.appendChild(tag);
             });
         }
 
-        // =========================================================================
-        // SAVE ACTION TO HISTORY
-        // =========================================================================
-        document.getElementById("savePrescriptionBtn").addEventListener("click", async () => {
-            const patientName = document.getElementById("patientName").value.trim();
-            const adviceText = document.getElementById("advice").value.trim();
-
-            if (!patientName) {
-                alert("Please write down a Patient Name.");
+        // Add new medicine
+        async function addMedicine() {
+            const input = document.getElementById("medicineInput");
+            const name = input.value.trim();
+            
+            if (!name) {
+                alert("Please enter a medicine name");
                 return;
             }
-            if (activeMedicines.length === 0) {
-                alert("Please add at least one medicine tag from the left panel.");
-                return;
-            }
-
-            const payload = {
-                patientName: patientName,
-                advice: adviceText,
-                medicines: activeMedicines,
-                timestamp: firebase.firestore.Timestamp.fromDate(new Date())
-            };
-
+            
             try {
-                await db.collection("history").add(payload);
-                alert("Prescription saved successfully!");
-                
-                document.getElementById("patientName").value = "";
-                document.getElementById("advice").value = "";
-                activeMedicines = [];
-                renderActiveFormItems();
-                
-                await loadPrescriptionHistory();
-            } catch (err) {
-                alert("Save Failed: " + err.message);
-            }
-        });
-
-        // =========================================================================
-        // FETCH HISTORY LOG FEED
-        // =========================================================================
-        async function loadPrescriptionHistory() {
-            const displayFeed = document.getElementById("historyFeed");
-            if (!displayFeed) return;
-
-            try {
-                const snapshot = await db.collection("history").get();
-
-                if (snapshot.empty) {
-                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No prescription records found.</p>";
-                    return;
-                }
-
-                displayFeed.innerHTML = ""; 
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    let formattedDate = "Date Unknown";
-                    if (data.timestamp) {
-                        if (typeof data.timestamp.toDate === 'function') {
-                            formattedDate = data.timestamp.toDate().toLocaleString();
-                        } else {
-                            formattedDate = new Date(data.timestamp).toLocaleString();
-                        }
-                    }
-                    
-                    const card = document.createElement("div");
-                    card.className = "history-card";
-                    
-                    const medicinesArray = data.medicines || [];
-                    const medsHtml = medicinesArray.map(m => `
-                        <li><strong>${m.name}</strong> — ${m.dosage || 'N/A'} (${m.duration || 'N/A'})</li>
-                    `).join("");
-
-                    card.innerHTML = `
-                        <strong style="color:#1a73e8; font-size:15px;">${data.patientName || 'Unknown Patient'}</strong> 
-                        <span style="font-size:11px; color:#aaa; float:right;">${formattedDate}</span>
-                        <ul class="history-meds">${medsHtml}</ul>
-                        ${data.advice ? `<p style="margin:5px 0 0 0; font-size:12px; color:#5f6368;"><strong>Advice:</strong> ${data.advice}</p>` : ""}
-                    `;
-                    displayFeed.appendChild(card);
+                await medicinesRef.add({
+                    name: name,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-            } catch (err) {
-                displayFeed.innerHTML = `<p style='color:red;'>Fetch failed: ${err.message}</p>`;
+                
+                input.value = "";
+                // Real-time listener will update the list
+            } catch (error) {
+                console.error("Error adding medicine:", error);
+                alert("Failed to add medicine. Check console.");
             }
         }
 
-        // Run application functions
-        async function runEngine() {
-            await loadMedicineTags();
-            await loadPrescriptionHistory();
+        // Delete medicine
+        async function deleteMedicine(id) {
+            if (!confirm("Delete this medicine?")) return;
+            
+            try {
+                await medicinesRef.doc(id).delete();
+            } catch (error) {
+                console.error("Error deleting medicine:", error);
+                alert("Failed to delete medicine.");
+            }
         }
-        runEngine();
+
+        // Clear all medicines
+        async function clearAll() {
+            if (!confirm("Delete ALL medicines? This cannot be undone!")) return;
+            
+            try {
+                const snapshot = await medicinesRef.get();
+                const batch = db.batch();
+                
+                snapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                await batch.commit();
+            } catch (error) {
+                console.error("Error clearing medicines:", error);
+            }
+        }
+
+        // Real-time listener
+        function setupListener() {
+            medicinesRef.orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+                medicines = [];
+                snapshot.forEach(doc => {
+                    medicines.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                renderMedicines();
+            }, (error) => {
+                console.error("Listener error:", error);
+            });
+        }
+
+        // Initialize everything
+        function init() {
+            setupListener();
+            
+            // Tailwind script already loaded via CDN
+            console.log("%c✅ Firebase Medicine Manager Ready!", "color: #10b981; font-size: 16px;");
+        }
+
+        // Start the app
+        window.onload = init;
     </script>
 </body>
 </html>
