@@ -1,352 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro – Refined UI & Professional Analytics</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { background: #eef2f7; padding: 15px; }
-    .dashboard { max-width: 1600px; margin: 0 auto; }
-    .header {
-      background: #0a4c6e;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 28px;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .logo h1 { font-size: 1.3rem; font-weight: 600; }
-    .logo p { font-size: 0.65rem; opacity: 0.8; }
-    
-    /* Login Portal styles */
-    .auth-container { max-width: 450px; margin: 100px auto; background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
-    .auth-container h2 { color: #0a4c6e; margin-bottom: 10px; font-weight: 700; }
-    .auth-container p { color: #64748b; font-size: 0.9rem; margin-bottom: 25px; }
-    .google-login-btn { background: #0a7e8c; color: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 10px; transition: 0.2s; }
-    .google-login-btn:hover { background: #0a6975; transform: translateY(-1px); }
-
-    .top-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 15px;
-      background: white;
-      padding: 8px 16px;
-      border-radius: 40px;
-      width: fit-content;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      align-items: center;
-    }
-    .top-btn {
-      background: #f1f5f9;
-      border: none;
-      padding: 5px 14px;
-      border-radius: 40px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: 0.1s;
-    }
-    .top-btn:hover { background: #e2e8f0; }
-    .prescription-layout { display: flex; gap: 20px; flex-wrap: wrap; }
-    .left-panel {
-      flex: 1.2;
-      min-width: 280px;
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      padding: 16px;
-      height: fit-content;
-    }
-    .right-panel {
-      flex: 2.5;
-      min-width: 480px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .card {
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      padding: 16px;
-    }
-    .card-title {
-      font-weight: 600;
-      font-size: 1rem;
-      margin-bottom: 12px;
-      border-left: 4px solid #0a7e8c;
-      padding-left: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      color: #1f3b4c;
-    }
-    .card-title span { display: flex; align-items: center; gap: 6px; }
-    .search-bar {
-      background: #f1f5f9;
-      border-radius: 40px;
-      padding: 6px 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-      border: 1px solid #e2e8f0;
-      position: relative;
-    }
-    .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.85rem; outline: none; }
-    .suggestions-dropdown {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border: 1px solid #cbd5e1;
-      border-radius: 20px;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 10;
-      display: none;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
-    .suggestions-dropdown div { padding: 8px 16px; cursor: pointer; font-size: 0.8rem; }
-    .suggestions-dropdown div:hover { background: #e6f4f5; }
-    .med-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 300px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-    }
-    .med-item {
-      background: #f8fafc;
-      border-radius: 20px;
-      padding: 8px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      border: 1px solid #e2edf2;
-      transition: all 0.15s;
-    }
-    .med-item:hover { background: #e6f4f5; border-color: #0a7e8c; transform: translateX(2px); }
-    .med-name { font-weight: 600; color: #0c4e6e; font-size: 0.85rem; }
-    .med-detail { font-size: 0.65rem; color: #4b6b87; }
-    .pin-icon {
-      cursor: pointer;
-      font-size: 1rem;
-      width: 28px;
-      text-align: center;
-      color: #94a3b8;
-      transition: 0.1s;
-      margin-left: 8px;
-    }
-    .pin-icon.pinned { color: #f59e0b; }
-    .pin-icon:hover { color: #eab308; transform: scale(1.1); }
-    .most-used {
-      background: #fef9e3;
-      padding: 8px;
-      border-radius: 16px;
-      margin: 12px 0;
-    }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
-    .btn-sm {
-      background: #ecfdf5;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .btn-primary { background: #0a7e8c; color: white; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
-    .btn-outline { background: white; border: 1px solid #0a7e8c; color: #0a7e8c; }
-    .btn-danger { background: #fee2e2; color: #b91c1c; border: none; }
-    .btn-danger:hover { background: #fecaca; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-    th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
-    input, select { border: 1px solid #cbd5e1; border-radius: 14px; padding: 6px 8px; font-size: 0.75rem; width: 100%; }
-    .patient-row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .name-field, .lastname-field { flex: 2; }
-    .age-field, .gender-field { flex: 1; }
-    .layout-toggle { background: #f8fafc; border-radius: 40px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.7rem; }
-    .prescription-preview { background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 16px; }
-    .prescription-preview.split-line { border-left: 3px solid #0a7e8c; background: #fffdf7; padding-left: 18px; }
-    .tag-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-    .tag { background: #eef2ff; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
-    .tag:hover { background: #0a7e8c; color: white; }
-    .advice-tag { background: #e6f4f5; padding: 3px 10px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 3px; font-size: 0.7rem; }
-    .advice-tag:hover { background: #0a7e8c; color: white; }
-    .modal {
-      display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
-      overflow-y: auto;
-    }
-    .modal-content {
-      background: white; margin: 3% auto; padding: 20px; border-radius: 28px;
-      width: 95%; max-width: 800px;
-    }
-    .bottom-buttons { display: flex; gap: 12px; margin-top: 15px; justify-content: flex-end; flex-wrap: wrap; }
-    .margin-control { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-    .history-filters, .analysis-filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; }
-    .filter-group { display: flex; flex-direction: column; gap: 4px; }
-    .filter-group label { font-size: 0.7rem; font-weight: 500; color: #4b6b87; }
-    .history-list, .analysis-stats { max-height: 400px; overflow-y: auto; }
-    .history-item, .stat-item {
-      background: #f8fafc;
-      margin: 8px 0;
-      padding: 10px 14px;
-      border-radius: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      border: 1px solid #e2e8f0;
-    }
-    .close-modal { float: right; font-size: 26px; font-weight: bold; cursor: pointer; color: #6b7280; }
-    .close-modal:hover { color: black; }
-    .inventory-table { width: 100%; border-collapse: collapse; }
-    .inventory-table th, .inventory-table td { border: 1px solid #e2e8f0; padding: 8px; vertical-align: middle; }
-    .analysis-cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-    .analytics-card { background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 24px; padding: 16px; flex: 1; min-width: 120px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
-    .analytics-card .number { font-size: 2rem; font-weight: 700; color: #0a7e8c; }
-    .analytics-card .label { font-size: 0.7rem; color: #4b6b87; margin-top: 6px; }
-    .hidden { display: none !important; }
-    @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
-    @media (max-width: 800px) { .right-panel { min-width: auto; } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Prescription Portal</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
+        .container { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .prescription-form, .history-panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .prescription-form { flex: 2; }
+        .history-panel { flex: 1; max-height: 80vh; overflow-y: auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], textarea, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .med-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        .btn-add-med { background-color: #28a745; margin-bottom: 15px; }
+        .btn-add-med:hover { background-color: #218838; }
+        .history-card { border-left: 4px solid #007bff; background: #f8f9fa; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+        .tag { display: inline-block; background: #e2e3e5; padding: 2px 8px; margin-right: 5px; border-radius: 12px; font-size: 12px; }
+    </style>
 </head>
 <body>
 
-<div id="auth-screen" class="auth-container">
-  <i class="fas fa-stethoscope" style="font-size: 3.5rem; color: #0a4c6e; margin-bottom: 15px;"></i>
-  <h2>FastRx Pro</h2>
-  <p>Secure Medical Cloud Portal</p>
-  <button id="login-btn" class="google-login-btn">
-    <i class="fab fa-google"></i> Doctor Sign In with Google
-  </button>
-</div>
+    <h2 style="text-align: center;">Doctor Consultation & Prescription Dashboard</h2>
 
-<div id="app-screen" class="dashboard hidden">
-  <div class="header">
-    <div class="logo">
-      <h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1>
-      <p id="doctor-profile-badge">Loading Profile...</p>
-    </div>
-    <div style="display: flex; align-items: center; gap: 15px;">
-      <div class="badge" style="background:#ffb347; padding:4px 12px; border-radius:40px; font-size:0.7rem; color: black; font-weight: 600;">Cloud Connected</div>
-      <button id="logout-btn" class="top-btn" style="background: #fee2e2; color: #b91c1c;"><i class="fas fa-sign-out-alt"></i> Logout</button>
-    </div>
-  </div>
+    <div class="container">
+        <div class="prescription-form">
+            <h3>New Prescription</h3>
+            
+            <div class="form-group">
+                <label for="patientName">Patient Name:</label>
+                <input type="text" id="patientName" placeholder="Enter patient name" required>
+            </div>
 
-  <div class="top-actions">
-    <button class="top-btn" id="quickMedicineBtn"><i class="fas fa-plus-circle"></i> Add Medicine</button>
-    <button class="top-btn" id="bulkTriggerBtn"><i class="fas fa-upload"></i> Bulk Upload</button>
-    <button class="top-btn" id="showHistoryBtn"><i class="fas fa-history"></i> History</button>
-    <button class="top-btn" id="analysisBtn"><i class="fas fa-chart-line"></i> Analysis</button>
-    <button class="top-btn" id="helpBtn"><i class="fas fa-question-circle"></i> Help</button>
-    <input type="file" id="bulkMedFile" accept=".json,.csv" style="display:none">
-  </div>
+            <div class="form-group">
+                <label>Medicines:</label>
+                <div id="medicinesContainer">
+                    </div>
+                <button type="button" class="btn-add-med" id="addMedRowBtn">+ Add Medicine</button>
+            </div>
 
-  <div class="prescription-layout">
-    <div class="left-panel">
-      <div class="card-title"><span><i class="fas fa-pills"></i> Medicine Library</span></div>
-      <div class="search-bar">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchMedicine" placeholder="Search medicine..." autocomplete="off">
-        <div id="suggestionsBox" class="suggestions-dropdown"></div>
-      </div>
-      <div id="pinnedSection" style="margin-bottom: 16px; display: none;">
-        <div style="font-weight:600; font-size:0.8rem;">⭐ Pinned Favourites</div>
-        <div id="pinnedList" class="med-grid" style="max-height: 200px;"></div>
-      </div>
-      <div style="font-weight:600; font-size:0.8rem;">🔥 Most Used</div>
-      <div id="mostUsedContainer" class="most-used"></div>
-      <div class="flex-between">
-        <span style="font-weight:600; font-size:0.8rem;">📚 All Medicines</span>
-        <button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button>
-      </div>
-      <div id="medicineListContainer" class="med-grid"></div>
+            <div class="form-group">
+                <label for="advice">Doctor's Advice / Instructions:</label>
+                <textarea id="advice" rows="4" placeholder="Enter general health advice..."></textarea>
+            </div>
 
-      <div class="flex-between" style="margin-top: 16px;">
-        <span class="card-title" style="margin-bottom:0;"><i class="fas fa-comment-dots"></i> Quick Advice</span>
-        <button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button>
-      </div>
-      <div class="tag-group" id="adviceTagList"></div>
-      <div class="flex-between">
-        <input type="text" id="customAdviceInput" placeholder="Type new advice, then Add" style="flex:3;">
-        <button class="btn-sm" id="addCustomAdviceBtn">Add</button>
-      </div>
-      <div id="currentAdvicesList" style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
-    </div>
+            <div class="form-group">
+                <label for="tags">Tags (Comma separated):</label>
+                <input type="text" id="tags" placeholder="e.g., Follow-up, Diabetes, High Risk">
+            </div>
 
-    <div class="right-panel">
-      <div class="card">
-        <div class="card-title"><span><i class="fas fa-user"></i> Patient (optional)</span></div>
-        <div class="patient-row">
-          <div class="name-field"><input type="text" id="firstName" list="firstNames" placeholder="First name"></div>
-          <div class="lastname-field"><input type="text" id="lastName" list="lastNames" placeholder="Last name"></div>
-          <div class="age-field"><input type="text" id="patientAge" placeholder="Age"></div>
-          <div class="gender-field"><select id="patientGender"><option value="">Gender</option><option>M</option><option>F</option><option>O</option></select></div>
+            <button type="button" id="savePrescriptionBtn" style="width: 100%; padding: 12px; font-size: 16px;">Save & Commit Prescription</button>
         </div>
-        <div style="margin-top:8px;">
-          <input type="text" id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis">
-          <datalist id="diseaseSuggestions"><option>Hypertension</option><option>Diabetes Type 2</option><option>URTI</option><option>UTI</option><option>Malaria</option></datalist>
-        </div>
-        <datalist id="firstNames"><option>Rajesh</option><option>Suresh</option><option>Priya</option></datalist>
-        <datalist id="lastNames"><option>Sharma</option><option>Verma</option><option>Patel</option></datalist>
-      </div>
 
-      <div class="card">
-        <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items</span></div>
-        <div style="overflow-x: auto;">
-          <table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table>
+        <div class="history-panel">
+            <h3>Consultation History</h3>
+            <div id="historyList">Loading historical logs...</div>
         </div>
-        <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
-      </div>
-
-      <div class="card">
-        <div class="flex-between"><div class="card-title" style="margin-bottom:0;"><span><i class="fas fa-eye"></i> Preview</span></div><div class="layout-toggle"><label><input type="radio" name="paperStyle" value="plain" checked> Simple</label><label><input type="radio" name="paperStyle" value="split"> Left line</label></div></div>
-        <div class="margin-control"><label><i class="fas fa-arrows-alt-v"></i> Print top margin (mm):</label><input type="number" id="printTopMargin" value="20" step="2" min="0" max="60"> mm <span style="font-size:0.7rem;">(for letterhead)</span></div>
-        <div id="previewContainer" class="prescription-preview"><div id="livePreviewArea"></div></div>
-        <div class="bottom-buttons"><button class="btn-primary" id="savePrescriptionBtn"><i class="fas fa-save"></i> Save</button><button class="btn-primary" id="printPreviewBtn" style="background:#2c6e5c;"><i class="fas fa-print"></i> Print</button><button class="btn-sm btn-outline" id="clearCurrentBtn">Clear</button></div>
-      </div>
     </div>
-  </div>
-</div>
 
-<div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
-
-<div id="analysisModal" class="modal"><div class="modal-content" style="max-width: 900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3>
-  <div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div>
-  <div id="analysisCards" class="analysis-cards"></div>
-  <canvas id="monthlyChart" width="400" height="220" style="max-height: 250px; width: 100%;"></canvas>
-  <div id="analysisStats" style="margin-top: 16px;"></div>
-</div></div>
-
-<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory (Name & Dosage)</h3><div style="overflow-x: auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
-
-<div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
-
-<div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage (mg / ml)</label><input type="text" id="modalDosage">
-  <div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency" placeholder="Or type custom">
-  <div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration" placeholder="Or type custom">
-  <div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake" placeholder="Or type custom">
-  <div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
-
-<div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Medicine Name</label><input type="text" id="quickName"><label>Dosage (mg/ml)</label><input type="text" id="quickDosage"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
-
-<div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin: 16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
-
-<script type="module" src="app.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+        }
+      }
+    </script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
