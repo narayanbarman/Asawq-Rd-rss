@@ -3,153 +3,213 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro – Cloud Prescription with Firebase</title>
+  <title>FastRx Pro – Cloud Prescription with Google Login</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Firebase SDKs (modular compat for simplicity) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { background: #eef2f7; padding: 20px; }
+    body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
     .header {
-      background: linear-gradient(135deg, #0b2b40, #0a4c6e);
+      background: #0a4c6e;
       color: white;
-      padding: 18px 24px;
-      border-radius: 32px;
-      margin-bottom: 24px;
+      padding: 10px 20px;
+      border-radius: 28px;
+      margin-bottom: 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 15px;
     }
-    .logo h1 { font-size: 1.6rem; font-weight: 700; }
-    .logo p { font-size: 0.8rem; opacity: 0.9; }
-    .user-area { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.15); padding: 6px 16px 6px 12px; border-radius: 60px; }
-    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #ffb347; display: flex; align-items: center; justify-content: center; }
-    .user-avatar img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-    .btn-google { background: white; color: #0a4c6e; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .logo h1 { font-size: 1.3rem; font-weight: 600; }
+    .logo p { font-size: 0.65rem; opacity: 0.8; }
+    .user-area { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.15); padding: 5px 14px 5px 10px; border-radius: 60px; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #ffb347; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .user-avatar img { width: 32px; height: 32px; object-fit: cover; }
+    .btn-google { background: white; color: #0a4c6e; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; }
     .btn-google i { color: #DB4437; }
-    .btn-logout { background: rgba(0,0,0,0.3); color: white; border: none; padding: 6px 14px; border-radius: 40px; cursor: pointer; }
-    .prescription-layout { display: flex; gap: 24px; flex-wrap: wrap; }
-    .left-panel { flex: 1.2; min-width: 280px; background: white; border-radius: 28px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); padding: 18px; height: fit-content; }
-    .right-panel { flex: 2.5; min-width: 500px; display: flex; flex-direction: column; gap: 24px; }
-    .card { background: white; border-radius: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); padding: 20px; }
-    .card-title { font-weight: 700; font-size: 1.2rem; margin-bottom: 15px; border-left: 5px solid #0a7e8c; padding-left: 12px; display: flex; align-items: center; gap: 8px; color: #1f3b4c; }
-    .search-bar { background: #f1f5f9; border-radius: 48px; padding: 8px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 18px; border: 1px solid #e2e8f0; position: relative; }
-    .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.9rem; outline: none; }
+    .btn-logout { background: rgba(0,0,0,0.3); color: white; border: none; padding: 5px 12px; border-radius: 40px; cursor: pointer; font-size: 0.75rem; }
+    .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; color: white; font-size: 1.2rem; backdrop-filter: blur(4px); }
+    .top-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; background: white; padding: 8px 16px; border-radius: 50px; width: fit-content; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .top-btn { background: #f1f5f9; border: none; padding: 5px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 500; cursor: pointer; }
+    .top-btn:hover { background: #e2e8f0; }
+    .prescription-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+    .left-panel { flex: 1.2; min-width: 280px; background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; height: fit-content; }
+    .right-panel { flex: 2.5; min-width: 480px; display: flex; flex-direction: column; gap: 20px; }
+    .card { background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; }
+    .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 12px; border-left: 4px solid #0a7e8c; padding-left: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; color: #1f3b4c; }
+    .card-title span { display: flex; align-items: center; gap: 6px; }
+    .search-bar { background: #f1f5f9; border-radius: 40px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; position: relative; }
+    .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.85rem; outline: none; }
     .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 20px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-    .suggestions-dropdown div { padding: 8px 16px; cursor: pointer; font-size: 0.85rem; }
+    .suggestions-dropdown div { padding: 8px 16px; cursor: pointer; font-size: 0.8rem; }
     .suggestions-dropdown div:hover { background: #e6f4f5; }
-    .med-grid { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; margin-bottom: 20px; padding-right: 4px; }
-    .med-item { background: #f8fafc; border-radius: 20px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; border: 1px solid #e2edf2; }
+    .med-grid { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
+    .med-item { background: #f8fafc; border-radius: 20px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2edf2; transition: all 0.15s; }
     .med-item:hover { background: #e6f4f5; border-color: #0a7e8c; transform: translateX(2px); }
-    .med-name { font-weight: 600; color: #0c4e6e; }
-    .med-detail { font-size: 0.7rem; color: #4b6b87; }
-    .add-badge { background: #d9f0ec; border-radius: 30px; padding: 4px 10px; font-size: 0.7rem; font-weight: 600; color: #0a7e8c; }
-    .most-used { background: #fef9e3; padding: 8px; border-radius: 20px; margin: 12px 0; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 8px; }
-    .upload-area { border-top: 1px solid #e2e8f0; margin-top: 20px; padding-top: 15px; }
-    .btn-sm { background: #ecfdf5; border: none; padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
-    .btn-primary { background: #0a7e8c; color: white; border: none; padding: 10px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; }
+    .med-name { font-weight: 600; color: #0c4e6e; font-size: 0.85rem; }
+    .med-detail { font-size: 0.65rem; color: #4b6b87; }
+    .pin-icon { cursor: pointer; font-size: 1rem; width: 28px; text-align: center; color: #94a3b8; transition: 0.1s; margin-left: 8px; }
+    .pin-icon.pinned { color: #f59e0b; }
+    .pin-icon:hover { color: #eab308; transform: scale(1.1); }
+    .most-used { background: #fef9e3; padding: 8px; border-radius: 16px; margin: 12px 0; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+    .btn-sm { background: #ecfdf5; border: none; padding: 5px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
+    .btn-primary { background: #0a7e8c; color: white; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
     .btn-outline { background: white; border: 1px solid #0a7e8c; color: #0a7e8c; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    th, td { padding: 10px 5px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
-    input, select, textarea { border: 1px solid #cbd5e1; border-radius: 16px; padding: 8px 10px; font-size: 0.8rem; width: 100%; }
-    .patient-row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .name-field { flex: 2; }
-    .lastname-field { flex: 2; }
-    .age-field { flex: 1; }
-    .gender-field { flex: 1; }
-    .layout-toggle { background: #f8fafc; border-radius: 40px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .prescription-preview { background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; transition: all 0.2s; }
-    .prescription-preview.split-line { border-left: 4px solid #0a7e8c; background: #fffdf7; padding-left: 24px; }
-    .history-list { max-height: 280px; overflow-y: auto; }
-    .history-item { background: #f1f5f9; margin: 8px 0; padding: 12px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(3px); }
-    .modal-content { background-color: white; margin: 5% auto; padding: 24px; border-radius: 32px; width: 90%; max-width: 550px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); }
-    .tag-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-    .tag { background: #eef2ff; padding: 6px 14px; border-radius: 40px; font-size: 0.8rem; cursor: pointer; transition: 0.1s; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; border: none; }
+    .btn-danger:hover { background: #fecaca; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    input, select { border: 1px solid #cbd5e1; border-radius: 14px; padding: 6px 8px; font-size: 0.75rem; width: 100%; }
+    .patient-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .name-field, .lastname-field { flex: 2; }
+    .age-field, .gender-field { flex: 1; }
+    .layout-toggle { background: #f8fafc; border-radius: 40px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.7rem; }
+    .prescription-preview { background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 16px; }
+    .prescription-preview.split-line { border-left: 3px solid #0a7e8c; background: #fffdf7; padding-left: 18px; }
+    .tag-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .tag { background: #eef2ff; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
     .tag:hover { background: #0a7e8c; color: white; }
-    .advice-tag { background: #e6f4f5; padding: 4px 12px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 4px; }
-    .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; color: white; font-size: 1.2rem; }
-    .error-toast { position: fixed; bottom: 20px; right: 20px; background: #dc2626; color: white; padding: 12px 20px; border-radius: 40px; z-index: 3000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); max-width: 300px; }
-    @media (max-width: 900px) { .prescription-layout { flex-direction: column; } .right-panel { min-width: auto; } }
+    .advice-tag { background: #e6f4f5; padding: 3px 10px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 3px; font-size: 0.7rem; }
+    .advice-tag:hover { background: #0a7e8c; color: white; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); overflow-y: auto; }
+    .modal-content { background: white; margin: 3% auto; padding: 20px; border-radius: 28px; width: 95%; max-width: 800px; }
+    .bottom-buttons { display: flex; gap: 12px; margin-top: 15px; justify-content: flex-end; flex-wrap: wrap; }
+    .margin-control { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .history-filters, .analysis-filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; }
+    .filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .filter-group label { font-size: 0.7rem; font-weight: 500; color: #4b6b87; }
+    .history-list, .analysis-stats { max-height: 400px; overflow-y: auto; }
+    .history-item, .stat-item { background: #f8fafc; margin: 8px 0; padding: 10px 14px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2e8f0; }
+    .close-modal { float: right; font-size: 26px; font-weight: bold; cursor: pointer; color: #6b7280; }
+    .close-modal:hover { color: black; }
+    .inventory-table { width: 100%; border-collapse: collapse; }
+    .inventory-table th, .inventory-table td { border: 1px solid #e2e8f0; padding: 8px; vertical-align: middle; }
+    .analysis-cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .analytics-card { background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 24px; padding: 16px; flex: 1; min-width: 120px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
+    .analytics-card .number { font-size: 2rem; font-weight: 700; color: #0a7e8c; }
+    .analytics-card .label { font-size: 0.7rem; color: #4b6b87; margin-top: 6px; }
+    @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
+    @media (max-width: 800px) { .right-panel { min-width: auto; } }
+    .login-container { text-align: center; padding: 60px 20px; background: white; border-radius: 32px; max-width: 500px; margin: 50px auto; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 <div class="dashboard" id="app">
   <div class="header">
-    <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Cloud Prescription | Google Sign-in</p></div>
+    <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Cloud + Google Sign-in</p></div>
     <div id="userWidget"></div>
   </div>
 
-  <div id="mainContent" style="display: none;">
-    <!-- same inner layout -->
+  <!-- Main App (hidden until login) -->
+  <div id="mainApp" class="hidden">
+    <div class="top-actions">
+      <button class="top-btn" id="quickMedicineBtn"><i class="fas fa-plus-circle"></i> Add Medicine</button>
+      <button class="top-btn" id="bulkTriggerBtn"><i class="fas fa-upload"></i> Bulk Upload</button>
+      <button class="top-btn" id="showHistoryBtn"><i class="fas fa-history"></i> History</button>
+      <button class="top-btn" id="analysisBtn"><i class="fas fa-chart-line"></i> Analysis</button>
+      <button class="top-btn" id="helpBtn"><i class="fas fa-question-circle"></i> Help</button>
+      <input type="file" id="bulkMedFile" accept=".json,.csv" style="display:none">
+    </div>
+
     <div class="prescription-layout">
+      <!-- LEFT PANEL -->
       <div class="left-panel">
-        <div class="card-title"><i class="fas fa-pills"></i> Medicine Library</div>
-        <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="searchMedicine" placeholder="Search medicine..."><div id="suggestionsBox" class="suggestions-dropdown"></div></div>
-        <div class="card-title" style="font-size:1rem;">🔥 Most Used</div>
+        <div class="card-title"><span><i class="fas fa-pills"></i> Medicine Library</span></div>
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchMedicine" placeholder="Search medicine..." autocomplete="off">
+          <div id="suggestionsBox" class="suggestions-dropdown"></div>
+        </div>
+        <div id="pinnedSection" style="margin-bottom: 16px; display: none;">
+          <div style="font-weight:600; font-size:0.8rem;">⭐ Pinned Favourites</div>
+          <div id="pinnedList" class="med-grid" style="max-height: 200px;"></div>
+        </div>
+        <div style="font-weight:600; font-size:0.8rem;">🔥 Most Used</div>
         <div id="mostUsedContainer" class="most-used"></div>
-        <div class="card-title" style="font-size:1rem;">📚 All Medicines</div>
+        <div class="flex-between">
+          <span style="font-weight:600; font-size:0.8rem;">📚 All Medicines</span>
+          <button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button>
+        </div>
         <div id="medicineListContainer" class="med-grid"></div>
-        <div class="upload-area"><button class="btn-sm" id="quickMedicineBtn"><i class="fas fa-plus-circle"></i> Quick Medicine</button></div>
+
+        <div class="flex-between" style="margin-top: 16px;">
+          <span class="card-title" style="margin-bottom:0;"><i class="fas fa-comment-dots"></i> Quick Advice</span>
+          <button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button>
+        </div>
+        <div class="tag-group" id="adviceTagList"></div>
+        <div class="flex-between">
+          <input type="text" id="customAdviceInput" placeholder="Type new advice, then Add" style="flex:3;">
+          <button class="btn-sm" id="addCustomAdviceBtn">Add</button>
+        </div>
+        <div id="currentAdvicesList" style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
       </div>
+
+      <!-- RIGHT PANEL -->
       <div class="right-panel">
         <div class="card">
-          <div class="card-title"><i class="fas fa-user-circle"></i> Patient (optional)</div>
+          <div class="card-title"><span><i class="fas fa-user"></i> Patient (optional)</span></div>
           <div class="patient-row">
-            <div class="name-field"><label>First name</label><input type="text" id="firstName" list="indianFirstNames"><datalist id="indianFirstNames"><option>Rajesh</option><option>Priya</option><option>Anjali</option><option>Vikram</option><option>Sunita</option></datalist></div>
-            <div class="lastname-field"><label>Last name</label><input type="text" id="lastName" list="indianLastNames"><datalist id="indianLastNames"><option>Sharma</option><option>Verma</option><option>Patel</option><option>Kumar</option></datalist></div>
-            <div class="age-field"><label>Age</label><input type="text" id="patientAge"></div>
-            <div class="gender-field"><label>Gender</label><select id="patientGender"><option value="">—</option><option>Male</option><option>Female</option></select></div>
+            <div class="name-field"><input type="text" id="firstName" list="firstNames" placeholder="First name"></div>
+            <div class="lastname-field"><input type="text" id="lastName" list="lastNames" placeholder="Last name"></div>
+            <div class="age-field"><input type="text" id="patientAge" placeholder="Age"></div>
+            <div class="gender-field"><select id="patientGender"><option value="">Gender</option><option>M</option><option>F</option><option>O</option></select></div>
           </div>
-          <div style="margin-top:12px;"><label>Diagnosis</label><input type="text" id="diagnosisField" placeholder="e.g., Hypertension, URTI"></div>
+          <div style="margin-top:8px;">
+            <input type="text" id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis">
+            <datalist id="diseaseSuggestions"><option>Hypertension</option><option>Diabetes Type 2</option><option>URTI</option><option>UTI</option><option>Malaria</option></datalist>
+          </div>
+          <datalist id="firstNames"><option>Rajesh</option><option>Suresh</option><option>Priya</option></datalist>
+          <datalist id="lastNames"><option>Sharma</option><option>Verma</option><option>Patel</option></datalist>
         </div>
+
         <div class="card">
-          <div class="card-title"><i class="fas fa-prescription-bottle"></i> Prescribed Medicines</div>
-          <div style="overflow-x:auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Form</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody>}</div>
-          <div class="flex-between"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button><button class="btn-primary" id="savePrescriptionBtn"><i class="fas fa-save"></i> Save Prescription</button></div>
+          <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items</span></div>
+          <div style="overflow-x: auto;">
+            <table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table>
+          </div>
+          <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
         </div>
+
         <div class="card">
-          <div class="card-title"><i class="fas fa-comment-dots"></i> Advice Tags</div>
-          <div class="tag-group" id="adviceTagList"></div>
-          <div class="flex-between"><input type="text" id="customAdviceInput" placeholder="Custom advice" style="flex:3;"><button class="btn-sm" id="addCustomAdviceBtn">Add</button></div>
-          <div id="currentAdvicesList" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;"></div>
-        </div>
-        <div class="card">
-          <div class="flex-between"><div class="card-title" style="margin-bottom:0;"><i class="fas fa-eye"></i> Prescription Preview</div><div class="layout-toggle"><span>Style:</span><label><input type="radio" name="paperStyle" value="plain" checked> Simple</label><label><input type="radio" name="paperStyle" value="split"> Split</label></div></div>
+          <div class="flex-between"><div class="card-title" style="margin-bottom:0;"><span><i class="fas fa-eye"></i> Preview</span></div><div class="layout-toggle"><label><input type="radio" name="paperStyle" value="plain" checked> Simple</label><label><input type="radio" name="paperStyle" value="split"> Left line</label></div></div>
+          <div class="margin-control"><label><i class="fas fa-arrows-alt-v"></i> Print top margin (mm):</label><input type="number" id="printTopMargin" value="20" step="2" min="0" max="60"> mm <span style="font-size:0.7rem;">(for letterhead)</span></div>
           <div id="previewContainer" class="prescription-preview"><div id="livePreviewArea"></div></div>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="fas fa-history"></i> Past Prescriptions</div>
-          <div id="historyListContainer" class="history-list"></div>
-          <button class="btn-sm" id="refreshHistoryBtn">Refresh</button>
+          <div class="bottom-buttons"><button class="btn-primary" id="savePrescriptionBtn"><i class="fas fa-save"></i> Save</button><button class="btn-primary" id="printPreviewBtn" style="background:#2c6e5c;"><i class="fas fa-print"></i> Print</button><button class="btn-sm btn-outline" id="clearCurrentBtn">Clear</button></div>
         </div>
       </div>
     </div>
   </div>
-  <div id="loginPrompt" style="text-align:center; padding:60px 20px; background:white; border-radius: 32px;">
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-container">
     <i class="fas fa-google" style="font-size:48px; color:#DB4437;"></i>
-    <h2>Sign in to access your prescriptions</h2>
-    <p style="margin: 15px 0; color:#555;">All your data is securely stored in the cloud</p>
-    <button id="googleSignInBtn" class="btn-google" style="margin-top:20px;"><i class="fab fa-google"></i> Sign in with Google</button>
-    <div id="authError" style="color:red; margin-top:15px; font-size:0.85rem;"></div>
+    <h2>FastRx Pro Cloud</h2>
+    <p style="margin: 15px 0; color:#555;">Sign in with Google to access your prescriptions, medicines & analytics</p>
+    <button id="googleSignInBtn" class="btn-google"><i class="fab fa-google"></i> Sign in with Google</button>
+    <div id="authError" style="color:red; margin-top:15px;"></div>
   </div>
 </div>
 
-<!-- Modals -->
-<div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Form</label><div class="tag-group" id="formTags"><span class="tag" data-form="Tablet">Tablet</span><span class="tag" data-form="Capsule">Capsule</span><span class="tag" data-form="Syrup">Syrup</span><span class="tag" data-form="Injection">Injection</span></div><input type="text" id="modalForm"><label>Dosage</label><input type="text" id="modalDosage"><label>Frequency</label><div class="tag-group" id="freqTags"><span class="tag" data-freq="1-1-1">1-1-1</span><span class="tag" data-freq="BD">BD</span><span class="tag" data-freq="OD">OD</span></div><input type="text" id="modalFrequency"><label>Duration</label><div class="tag-group" id="durationTags"><span class="tag" data-dur="5 days">5 days</span><span class="tag" data-dur="7 days">7 days</span></div><input type="text" id="modalDuration"><label>How to take</label><div class="tag-group" id="howToTakeTags"><span class="tag" data-how="After meals">After meals</span><span class="tag" data-how="Empty stomach">Empty stomach</span></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
-<div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage (mg/ml)</label><input type="text" id="quickDosage"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
+<!-- All modals (same as original) -->
+<div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
+<div id="analysisModal" class="modal"><div class="modal-content" style="max-width: 900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height: 250px; width: 100%;"></canvas><div id="analysisStats" style="margin-top: 16px;"></div></div></div>
+<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory (Name & Dosage)</h3><div style="overflow-x: auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
+<div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
+<div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage (mg / ml)</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency" placeholder="Or type custom"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration" placeholder="Or type custom"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake" placeholder="Or type custom"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
+<div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Medicine Name</label><input type="text" id="quickName"><label>Dosage (mg/ml)</label><input type="text" id="quickDosage"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
+<div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin: 16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
 
 <script>
-  // Firebase Config (same as provided)
-  
-const firebaseConfig = {
+  // Firebase Config
+  const firebaseConfig = {
   apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
   authDomain: "test-website-22778.firebaseapp.com",
   databaseURL: "https://test-website-22778-default-rtdb.firebaseio.com",
@@ -159,250 +219,262 @@ const firebaseConfig = {
   appId: "1:862083661951:web:838f650debb207a2fe7f4a",
   measurementId: "G-9E5RYBBKJS"
 };
-  
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
   
-  // Enable persistence (optional)
-  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
-  
   let currentUser = null;
-  let currentMedicines = [];
-  let currentAdvices = [];
-  let currentSerial = "";
-  let prescriptionsList = [];
-  let allMedicines = [];
-  let adviceTagsMaster = [];
+  let medicines = [];        // will hold user's medicines from firestore
+  let adviceTags = [];
+  let prescriptions = [];
+  let userFreqTags = ["1-1-1","1-0-0","0-1-0","0-0-1","BD","TID","OD"];
+  let userDurTags = ["3 days","5 days","7 days","10 days","14 days","30 days"];
+  let userHowTags = ["After meals","Empty stomach","With water","At bedtime"];
   
-  // Helper functions
-  function escapeHtml(str) { if(!str) return ""; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-  function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else { if(el) el.remove(); } }
-  function showError(msg) { let toast = document.createElement('div'); toast.className='error-toast'; toast.innerHTML=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(),4000); console.error(msg); }
+  // Current draft
+  let currentMedicines = [], currentAdvices = [], currentDiagnosis = "", currentSerial = "";
+  let pendingMedicine = null, currentTagType = "";
   
-  // Firestore operations
+  // Helper
+  function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+  function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else if(el) el.remove(); }
+  function showError(msg) { alert(msg); }
+  function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
+  
+  // Firestore data load
   async function loadUserData() {
     if(!currentUser) return;
     showLoading(true);
     try {
-      const userId = currentUser.uid;
-      // Load medicines
-      const medSnap = await db.collection('users').doc(userId).collection('medicines').get();
+      const uid = currentUser.uid;
+      // Medicines
+      const medSnap = await db.collection('users').doc(uid).collection('medicines').get();
       if(medSnap.empty) {
         const defaultMeds = [
-          { name: "Paracetamol", form: "Tablet", dosage: "500mg", frequency: "1-1-1", duration: "5 days", howToTake: "After meals", usageCount: 10 },
-          { name: "Amoxicillin", form: "Capsule", dosage: "250mg", frequency: "BD", duration: "7 days", howToTake: "Empty stomach", usageCount: 8 },
-          { name: "Azithromycin", form: "Tablet", dosage: "500mg", frequency: "OD", duration: "3 days", howToTake: "Empty stomach", usageCount: 12 },
-          { name: "Losartan", form: "Tablet", dosage: "50mg", frequency: "OD", duration: "30 days", howToTake: "Morning", usageCount: 5 },
-          { name: "Cough Syrup", form: "Syrup", dosage: "10ml", frequency: "TID", duration: "5 days", howToTake: "After meals", usageCount: 6 }
+          { name: "Paracetamol", dosage: "500mg", frequency: "1-1-1", duration: "5 days", howToTake: "After meals", usageCount: 12, pinned: false },
+          { name: "Amoxicillin", dosage: "250mg", frequency: "BD", duration: "7 days", howToTake: "Empty stomach", usageCount: 8, pinned: false },
+          { name: "Azithromycin", dosage: "500mg", frequency: "OD", duration: "3 days", howToTake: "Empty stomach", usageCount: 15, pinned: false },
+          { name: "Losartan", dosage: "50mg", frequency: "OD", duration: "30 days", howToTake: "Morning", usageCount: 5, pinned: false },
+          { name: "Cetirizine", dosage: "10mg", frequency: "HS", duration: "5 days", howToTake: "Night", usageCount: 7, pinned: false }
         ];
         for(const med of defaultMeds) {
-          await db.collection('users').doc(userId).collection('medicines').add({ ...med, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+          await db.collection('users').doc(uid).collection('medicines').add({ ...med, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
         }
-        const newSnap = await db.collection('users').doc(userId).collection('medicines').get();
-        allMedicines = newSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const newSnap = await db.collection('users').doc(uid).collection('medicines').get();
+        medicines = newSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       } else {
-        allMedicines = medSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        medicines = medSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       }
-      // Load advice tags
-      const adviceDoc = await db.collection('users').doc(userId).collection('settings').doc('adviceTags').get();
-      if(adviceDoc.exists) adviceTagsMaster = adviceDoc.data().tags || ["Take plenty of fluids", "Avoid driving", "Review after 3 days"];
-      else { adviceTagsMaster = ["Take plenty of fluids", "Avoid driving", "Review after 3 days"]; await db.collection('users').doc(userId).collection('settings').doc('adviceTags').set({ tags: adviceTagsMaster }); }
-      // Load prescriptions
-      const prescSnap = await db.collection('users').doc(userId).collection('prescriptions').orderBy('createdAt', 'desc').get();
-      prescriptionsList = prescSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Advice tags
+      const advDoc = await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get();
+      if(advDoc.exists) adviceTags = advDoc.data().tags || ["Take plenty of fluids", "Avoid driving", "Review after 3 days"];
+      else { adviceTags = ["Take plenty of fluids", "Avoid driving", "Review after 3 days"]; await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({ tags: adviceTags }); }
+      // Tag preferences
+      const freqDoc = await db.collection('users').doc(uid).collection('settings').doc('freqTags').get();
+      if(freqDoc.exists) userFreqTags = freqDoc.data().tags;
+      else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({ tags: userFreqTags });
+      const durDoc = await db.collection('users').doc(uid).collection('settings').doc('durTags').get();
+      if(durDoc.exists) userDurTags = durDoc.data().tags;
+      else await db.collection('users').doc(uid).collection('settings').doc('durTags').set({ tags: userDurTags });
+      const howDoc = await db.collection('users').doc(uid).collection('settings').doc('howTags').get();
+      if(howDoc.exists) userHowTags = howDoc.data().tags;
+      else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({ tags: userHowTags });
+      // Prescriptions
+      const prescSnap = await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt', 'desc').get();
+      prescriptions = prescSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
+      // Render UI
       renderMedicineList();
       renderMostUsed();
-      renderAdviceTagList();
-      renderHistory();
+      renderPinnedSection();
+      renderAdviceTags();
       resetCurrentDraft();
       updatePreview();
-    } catch(e) { 
-      console.error(e); 
-      showError("Failed to load data: " + e.message); 
-    } finally { showLoading(false); }
+    } catch(e) { console.error(e); showError("Failed to load data: "+e.message); }
+    finally { showLoading(false); }
   }
   
-  async function updateMedicineUsage(medId) {
+  // Save helpers
+  async function saveMedicines() {
     if(!currentUser) return;
-    const medRef = db.collection('users').doc(currentUser.uid).collection('medicines').doc(medId);
-    const doc = await medRef.get();
-    if(doc.exists) {
-      let newCount = (doc.data().usageCount || 0) + 1;
-      await medRef.update({ usageCount: newCount });
-      const idx = allMedicines.findIndex(m => m.id === medId);
-      if(idx !== -1) allMedicines[idx].usageCount = newCount;
+    const uid = currentUser.uid;
+    const batch = db.batch();
+    for(const med of medicines) {
+      const ref = db.collection('users').doc(uid).collection('medicines').doc(med.id);
+      batch.set(ref, { name: med.name, dosage: med.dosage, frequency: med.frequency, duration: med.duration, howToTake: med.howToTake, usageCount: med.usageCount, pinned: med.pinned });
+    }
+    await batch.commit();
+  }
+  async function saveAdviceTags() {
+    if(!currentUser) return;
+    await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({ tags: adviceTags });
+  }
+  async function savePrescriptions() {
+    if(!currentUser) return;
+    const uid = currentUser.uid;
+    for(const p of prescriptions) {
+      await db.collection('users').doc(uid).collection('prescriptions').doc(p.id).set(p);
     }
   }
-  
-  async function addNewMedicineToDB(medObj) {
+  async function saveTags() {
     if(!currentUser) return;
-    const newRef = await db.collection('users').doc(currentUser.uid).collection('medicines').add({ ...medObj, usageCount: medObj.usageCount || 0, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    allMedicines.push({ id: newRef.id, ...medObj, usageCount: medObj.usageCount || 0 });
-    renderMedicineList(); renderMostUsed();
+    const uid = currentUser.uid;
+    await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({ tags: userFreqTags });
+    await db.collection('users').doc(uid).collection('settings').doc('durTags').set({ tags: userDurTags });
+    await db.collection('users').doc(uid).collection('settings').doc('howTags').set({ tags: userHowTags });
   }
   
-  async function savePrescriptionToFirestore() {
-    if(currentMedicines.length===0 && currentAdvices.length===0) { showError("Add at least one medicine or advice"); return; }
-    const firstName = document.getElementById("firstName").value.trim();
-    const lastName = document.getElementById("lastName").value.trim();
-    const age = document.getElementById("patientAge").value.trim();
-    const gender = document.getElementById("patientGender").value;
-    const diagnosis = document.getElementById("diagnosisField").value.trim();
-    const serial = `RX${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`;
-    const prescriptionData = {
-      serial, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      dateTime: new Date().toISOString(),
-      patient: { firstName, lastName, age, gender: gender || "" }, diagnosis,
-      medicines: JSON.parse(JSON.stringify(currentMedicines)), advices: [...currentAdvices]
-    };
-    await db.collection('users').doc(currentUser.uid).collection('prescriptions').add(prescriptionData);
-    showError("✓ Prescription saved to cloud!", false);
-    await loadUserData();
-    resetCurrentDraft();
+  // UI functions (adapted to use async saves)
+  async function updateMedicineUsage(medId) {
+    const med = medicines.find(m => m.id === medId);
+    if(med) { med.usageCount = (med.usageCount||0) + 1; await saveMedicines(); renderMostUsed(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); }
   }
-  
-  async function updateAdviceTagsMaster(newTags) {
-    if(!currentUser) return;
-    adviceTagsMaster = newTags;
-    await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({ tags: adviceTagsMaster });
-    renderAdviceTagList();
+  async function addNewMedicine(medObj) {
+    const newId = Date.now().toString();
+    const newMed = { id: newId, ...medObj, usageCount: medObj.usageCount||0, pinned: medObj.pinned||false };
+    medicines.push(newMed);
+    if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed);
+    renderMedicineList(); renderMostUsed(); renderPinnedSection();
   }
+  async function deleteMedicineById(idx) { medicines.splice(idx,1); await saveMedicines(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); }
   
-  // UI rendering functions
-  function renderMedicineList(searchTerm="") {
-    let filtered = allMedicines.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    filtered.sort((a,b)=> (b.usageCount||0) - (a.usageCount||0));
+  function renderMedicineList(search="") {
+    let filtered = medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase()));
+    filtered.sort((a,b)=>b.usageCount - a.usageCount);
     const container = document.getElementById("medicineListContainer");
     if(!container) return;
-    container.innerHTML = filtered.map(med => `<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.form} | ${med.dosage}</div></div><div class="add-badge"><i class="fas fa-plus"></i> Select</div></div>`).join("");
-    document.querySelectorAll("#medicineListContainer .med-item").forEach(el => {
-      el.addEventListener("click", () => { const id = el.getAttribute("data-med-id"); const med = allMedicines.find(m=>m.id===id); if(med) openFullPopup(med); });
+    container.innerHTML = filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon ${med.pinned ? 'pinned' : ''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join("");
+    document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{
+      el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); });
     });
+    document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }}));
+  }
+  function renderPinnedSection() {
+    const pinned = medicines.filter(m=>m.pinned===true);
+    const section = document.getElementById("pinnedSection");
+    const container = document.getElementById("pinnedList");
+    if(pinned.length===0) { section.style.display="none"; return; }
+    section.style.display="block";
+    container.innerHTML = pinned.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon pinned" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join("");
+    document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); });
+    document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }}));
   }
   function renderMostUsed() {
-    const sorted = [...allMedicines].sort((a,b)=> (b.usageCount||0)-(a.usageCount||0)).slice(0,6);
+    const sorted = [...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5);
     const container = document.getElementById("mostUsedContainer");
-    if(container) container.innerHTML = `<div style="display:flex; flex-wrap:wrap; gap:8px;">${sorted.map(m => `<span style="background:#eef2ff; padding:4px 12px; border-radius:30px; cursor:pointer;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")}</div>`;
-    document.querySelectorAll("#mostUsedContainer span").forEach(span => { span.addEventListener("click",()=>{ const med=allMedicines.find(m=>m.id===span.dataset.mid); if(med) openFullPopup(med); }); });
+    if(container) container.innerHTML = `<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")+`</div>`;
+    document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); }));
   }
-  function renderAdviceTagList() {
-    const container = document.getElementById("adviceTagList");
-    if(container) container.innerHTML = adviceTagsMaster.map(tag => `<span class="advice-tag" data-advice="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`).join("");
-    document.querySelectorAll(".advice-tag").forEach(el => { el.addEventListener("click", () => addAdviceToCurrent(el.getAttribute("data-advice"))); });
+  function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; renderTagGroup("freqTagsContainer", userFreqTags, "freq"); renderTagGroup("durTagsContainer", userDurTags, "dur"); renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("medicineModal").style.display="block"; }
+  function renderTagGroup(containerId, tags, type){ const container=document.getElementById(containerId); if(!container) return; container.innerHTML = tags.map(t=>`<span class="tag" data-tag="${escapeHtml(t)}" data-type="${type}">${escapeHtml(t)}</span>`).join(""); container.querySelectorAll(".tag").forEach(el=>el.addEventListener("click",()=>{ if(type==="freq") document.getElementById("modalFrequency").value=el.dataset.tag; else if(type==="dur") document.getElementById("modalDuration").value=el.dataset.tag; else document.getElementById("modalHowToTake").value=el.dataset.tag; })); }
+  async function addMedicineFromPopup(){ if(pendingMedicine){ currentMedicines.push({ name:pendingMedicine.name, dosage:document.getElementById("modalDosage").value.trim()||"As directed", frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); await updateMedicineUsage(pendingMedicine.id); renderMedicinesTable(); updatePreview(); closeModal(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); } }
+  function renderMedicinesTable(){ const tbody=document.getElementById("medicinesTableBody"); tbody.innerHTML=""; currentMedicines.forEach((item,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input value="${escapeHtml(item.name)}" class="med-field" data-idx="${idx}" data-field="name">`; row.insertCell(1).innerHTML=`<input value="${escapeHtml(item.dosage)}" class="med-field" data-idx="${idx}" data-field="dosage">`; row.insertCell(2).innerHTML=`<input value="${escapeHtml(item.frequency)}" class="med-field" data-idx="${idx}" data-field="frequency">`; row.insertCell(3).innerHTML=`<input value="${escapeHtml(item.duration)}" class="med-field" data-idx="${idx}" data-field="duration">`; row.insertCell(4).innerHTML=`<input value="${escapeHtml(item.howToTake)}" class="med-field" data-idx="${idx}" data-field="howToTake">`; let del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="btn-sm"; del.onclick=()=>{currentMedicines.splice(idx,1); renderMedicinesTable(); updatePreview();}; row.insertCell(5).appendChild(del); }); document.querySelectorAll(".med-field").forEach(inp=>inp.addEventListener("change",function(){let idx=parseInt(this.dataset.idx),field=this.dataset.field; if(currentMedicines[idx]){ currentMedicines[idx][field]=this.value; updatePreview(); }})); }
+  function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
+  function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
+  function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
+  function getPreviewHTML(split){ const fn=document.getElementById("firstName").value.trim(), ln=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diag=document.getElementById("diagnosisField").value.trim(); let patient=(fn||ln)?`${fn} ${ln}`.trim():""; let genderShow=gender?`(${gender})`:""; let patientLine=(patient||age||genderShow)?`<div><strong>${patient||"Patient"}</strong> ${age?`, Age: ${age}`:''} ${genderShow}</div>`:""; let diagHtml=diag?`<div><strong>Diagnosis:</strong> ${escapeHtml(diag)}</div>`:""; let medTable=`<table style="width:100%; border-collapse:collapse; margin-top:8px;"><thead><tr style="background:#f1f5f9;"><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th></tr></thead><tbody>`; currentMedicines.forEach(it=>{medTable+=`<tr><td>${escapeHtml(it.name)}</td><td>${it.dosage||"-"}</td><td>${it.frequency||"-"}</td><td>${it.duration||"-"}</td><td>${it.howToTake||"-"}</td></tr>`;}); medTable+=`</tbody></table>`; if(currentMedicines.length===0) medTable="<p><i>No medicines added.</i></p>"; const main=`<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${new Date().toLocaleString()}</span></div>${patientLine}${diagHtml}</div>${medTable}`; if(split){ let leftDisease=diag?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diag)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div style="display:flex; gap:16px;"><div style="width:120px; border-right:1px solid #0a7e8c; padding-right:10px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${main}</div></div>`; } else { let adviceHtml=currentAdvices.length?`<div style="margin-top:12px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return main+adviceHtml; } }
+  function updatePreview(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(split); const cont=document.getElementById("previewContainer"); if(split) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
+  function resetCurrentDraft(){ currentMedicines=[]; currentAdvices=[]; document.getElementById("firstName").value=""; document.getElementById("lastName").value=""; document.getElementById("patientAge").value=""; document.getElementById("patientGender").value=""; document.getElementById("diagnosisField").value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial=generateSerial(); }
+  async function saveCurrentPrescription(){ if(currentMedicines.length===0&&currentAdvices.length===0){ alert("Add at least one medicine or advice."); return; } const newPresc={ id:Date.now().toString(), serial:currentSerial, createdAt:firebase.firestore.FieldValue.serverTimestamp(), dateTime:new Date().toISOString(), patient:{firstName:document.getElementById("firstName").value.trim(), lastName:document.getElementById("lastName").value.trim(), age:document.getElementById("patientAge").value.trim(), gender:document.getElementById("patientGender").value}, diagnosis:document.getElementById("diagnosisField").value.trim(), medicines:JSON.parse(JSON.stringify(currentMedicines)), advices:[...currentAdvices] }; prescriptions.unshift(newPresc); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('prescriptions').doc(newPresc.id).set(newPresc); resetCurrentDraft(); alert(`Saved ${currentSerial}`); }
+  function showHistoryModal(){ renderHistoryList(); document.getElementById("historyModal").style.display="block"; }
+  function renderHistoryList(){ let filtered=[...prescriptions]; const name=document.getElementById("historySearchName").value.trim().toLowerCase(); const from=document.getElementById("historyFromDate").value; const to=document.getElementById("historyToDate").value; const year=document.getElementById("historyYear").value.trim(); const month=document.getElementById("historyMonth").value; if(name) filtered=filtered.filter(p=>`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim().toLowerCase().includes(name)); if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} if(year&&!isNaN(parseInt(year))) filtered=filtered.filter(p=>new Date(p.dateTime).getFullYear()===parseInt(year)); if(month&&month!=="") filtered=filtered.filter(p=>(new Date(p.dateTime).getMonth()+1)===parseInt(month)); const container=document.getElementById("historyListContainer"); if(filtered.length===0){container.innerHTML="<div class='history-item'>No records</div>"; return;} container.innerHTML=filtered.map(p=>`<div class="history-item" data-prescid="${p.id}"><div><strong>${p.serial}</strong> | ${`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim()||"Anonymous"} | ${new Date(p.dateTime).toLocaleDateString()}</div><div><i class="fas fa-chevron-right"></i> Load</div></div>`).join(""); document.querySelectorAll("#historyListContainer .history-item").forEach(el=>el.addEventListener("click",()=>{const presc=prescriptions.find(p=>p.id===el.dataset.prescid); if(presc){ loadPrescription(presc); document.getElementById("historyModal").style.display="none";}})); }
+  function loadPrescription(presc){ currentSerial=presc.serial; document.getElementById("firstName").value=presc.patient.firstName||""; document.getElementById("lastName").value=presc.patient.lastName||""; document.getElementById("patientAge").value=presc.patient.age||""; document.getElementById("patientGender").value=presc.patient.gender||""; document.getElementById("diagnosisField").value=presc.diagnosis||""; currentMedicines=JSON.parse(JSON.stringify(presc.medicines||[])); currentAdvices=[...(presc.advices||[])]; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); }
+  function resetHistoryFilters(){ document.getElementById("historySearchName").value=""; document.getElementById("historyFromDate").value=""; document.getElementById("historyToDate").value=""; document.getElementById("historyYear").value=""; document.getElementById("historyMonth").value=""; renderHistoryList(); }
+  function openQuickPopup(){ document.getElementById("quickModal").style.display="block"; }
+  async function addQuickMedicine(){ let name=document.getElementById("quickName").value.trim(); let dosage=document.getElementById("quickDosage").value.trim(); if(!name){alert("Enter medicine name"); return;} if(!dosage) dosage="As directed"; currentMedicines.push({name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed"}); let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing) await updateMedicineUsage(existing.id); else { await addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed", usageCount:1, pinned:false }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
+  function closeModal(){ document.getElementById("medicineModal").style.display="none"; pendingMedicine=null; }
+  function closeQuickPopup(){ document.getElementById("quickModal").style.display="none"; }
+  function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=parseInt(document.getElementById("printTopMargin").value)||0; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.prescription-content{max-width:800px;margin:0 auto;}@media print{body{padding:${margin}mm 10mm 10mm 10mm;}}</style></head><body><div class="prescription-content">${html}</div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
+  function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
+  async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
+  async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"As directed", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"", usageCount:0, pinned:false }); } } alert("Imported."); }
+  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM (Cloud)\n\n• Google Sign-in secures your data\n• Pin favourites, track usage\n• History with filters, analytics chart\n• Print with custom top margin"); }
+  function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
+  function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
+  function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
+  function openMedicineInventory(){ renderSimpleInventory(); document.getElementById("medicineInventoryModal").style.display="block"; }
+  function renderSimpleInventory(){ const tbody=document.getElementById("inventoryMedBody"); tbody.innerHTML=""; medicines.forEach((med,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input type="text" value="${escapeHtml(med.name)}" class="inv-name" data-idx="${idx}">`; row.insertCell(1).innerHTML=`<input type="text" value="${escapeHtml(med.dosage)}" class="inv-dosage" data-idx="${idx}">`; let delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ medicines.splice(idx,1); saveMedicines(); renderSimpleInventory(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); }; row.insertCell(2).appendChild(delBtn); }); document.querySelectorAll(".inv-name, .inv-dosage").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx); if(!isNaN(idx) && medicines[idx]){ if(this.classList.contains("inv-name")) medicines[idx].name=this.value; else medicines[idx].dosage=this.value; saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); }})); }
+  function addInventoryMedicine(){ let name=prompt("Medicine name:"); if(!name) return; let dosage=prompt("Dosage:"); if(!dosage) dosage="As directed"; addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"", usageCount:0, pinned:false }); renderSimpleInventory(); }
+  function deleteAllMedicines(){ if(confirm("Delete ALL medicines?")){ medicines=[]; saveMedicines(); renderSimpleInventory(); renderMedicineList(""); renderMostUsed(); renderPinnedSection(); } }
+  function openAdviceInventory(){ renderAdviceInventory(); document.getElementById("adviceInventoryModal").style.display="block"; }
+  function renderAdviceInventory(){ const container=document.getElementById("adviceInventoryList"); container.innerHTML=""; adviceTags.forEach((tag,idx)=>{ const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.gap="8px"; div.style.marginBottom="8px"; const input=document.createElement("input"); input.type="text"; input.value=tag; input.style.flex="1"; input.addEventListener("change",()=>{ adviceTags[idx]=input.value; saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); }); const delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ adviceTags.splice(idx,1); saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); }; div.appendChild(input); div.appendChild(delBtn); container.appendChild(div); }); const addBtn=document.createElement("button"); addBtn.innerText="+ Add New Advice"; addBtn.className="btn-sm"; addBtn.style.marginTop="8px"; addBtn.onclick=()=>{ const newAdv=prompt("New advice:"); if(newAdv && newAdv.trim()){ adviceTags.push(newAdv.trim()); saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); } }; container.appendChild(addBtn); }
+  function deleteAllAdvice(){ if(confirm("Delete ALL advice tags?")){ adviceTags=[]; saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); } }
+  function openTagEditModal(type, title){ currentTagType=type; document.getElementById("tagEditTitle").innerText=title; renderTagEditList(); document.getElementById("tagEditModal").style.display="block"; }
+  function renderTagEditList(){ const container=document.getElementById("tagEditList"); let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); container.innerHTML=""; tags.forEach((tag,idx)=>{ const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.gap="8px"; div.style.marginBottom="6px"; const inp=document.createElement("input"); inp.value=tag; inp.style.flex="1"; inp.addEventListener("change",(e)=>{ tags[idx]=e.target.value; saveTags(); renderTagEditList(); }); const del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="btn-sm btn-danger"; del.onclick=()=>{ tags.splice(idx,1); saveTags(); renderTagEditList(); }; div.appendChild(inp); div.appendChild(del); container.appendChild(div); }); }
+  function addNewTag(){ const newTag=document.getElementById("newTagInput").value.trim(); if(!newTag) return; let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); if(!tags.includes(newTag)) tags.push(newTag); saveTags(); renderTagEditList(); document.getElementById("newTagInput").value=""; }
+  function saveTagEditAndClose(){ saveTags(); if(currentTagType==="freq") renderTagGroup("freqTagsContainer", userFreqTags, "freq"); else if(currentTagType==="dur") renderTagGroup("durTagsContainer", userDurTags, "dur"); else renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("tagEditModal").style.display="none"; }
+  function bindEvents(){
+    document.getElementById("searchMedicine").addEventListener("input",e=>renderMedicineList(e.target.value));
+    document.getElementById("clearAllMedicinesBtn").addEventListener("click",()=>{currentMedicines=[]; renderMedicinesTable(); updatePreview();});
+    document.getElementById("quickMedicineBtn").addEventListener("click",openQuickPopup);
+    document.getElementById("bulkTriggerBtn").addEventListener("click",()=>document.getElementById("bulkMedFile").click());
+    document.getElementById("bulkMedFile").addEventListener("change",e=>{if(e.target.files[0]) importMedicinesFromFile(e.target.files[0]); e.target.value="";});
+    document.getElementById("addCustomAdviceBtn").addEventListener("click",()=>{const val=document.getElementById("customAdviceInput").value.trim(); if(val) addAdvice(val); document.getElementById("customAdviceInput").value="";});
+    document.getElementById("showHistoryBtn").addEventListener("click",showHistoryModal);
+    document.getElementById("analysisBtn").addEventListener("click",showAnalysis);
+    document.getElementById("helpBtn").addEventListener("click",showHelp);
+    document.getElementById("savePrescriptionBtn").addEventListener("click",saveCurrentPrescription);
+    document.getElementById("printPreviewBtn").addEventListener("click",printWithMargin);
+    document.getElementById("clearCurrentBtn").addEventListener("click",resetCurrentDraft);
+    document.getElementById("modalConfirmBtn").addEventListener("click",addMedicineFromPopup);
+    document.getElementById("modalCancelBtn").addEventListener("click",closeModal);
+    document.getElementById("quickConfirmBtn").addEventListener("click",addQuickMedicine);
+    document.getElementById("quickCancelBtn").addEventListener("click",closeQuickPopup);
+    document.getElementById("applyHistoryFilter").addEventListener("click",()=>renderHistoryList());
+    document.getElementById("resetHistoryFilter").addEventListener("click",resetHistoryFilters);
+    document.getElementById("closeHistoryModal").addEventListener("click",()=>document.getElementById("historyModal").style.display="none");
+    document.getElementById("closeAnalysisModal").addEventListener("click",()=>document.getElementById("analysisModal").style.display="none");
+    document.getElementById("applyAnalysisFilter").addEventListener("click",updateAnalysisDashboard);
+    document.getElementById("resetAnalysisFilter").addEventListener("click",resetAnalysisFilters);
+    window.addEventListener("click",e=>{ if(e.target===document.getElementById("historyModal")) document.getElementById("historyModal").style.display="none"; if(e.target===document.getElementById("analysisModal")) document.getElementById("analysisModal").style.display="none"; if(e.target===document.getElementById("medicineInventoryModal")) document.getElementById("medicineInventoryModal").style.display="none"; if(e.target===document.getElementById("adviceInventoryModal")) document.getElementById("adviceInventoryModal").style.display="none"; if(e.target===document.getElementById("tagEditModal")) document.getElementById("tagEditModal").style.display="none"; });
+    document.getElementById("manageMedsBtn").addEventListener("click",openMedicineInventory);
+    document.getElementById("closeInventoryModal").addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
+    document.getElementById("closeInventoryBtn").addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
+    document.getElementById("deleteAllMedsBtn").addEventListener("click",deleteAllMedicines);
+    document.getElementById("addInventoryMedicineBtn").addEventListener("click",addInventoryMedicine);
+    document.getElementById("manageAdviceBtn").addEventListener("click",openAdviceInventory);
+    document.getElementById("closeAdviceInventoryModal").addEventListener("click",()=>document.getElementById("adviceInventoryModal").style.display="none");
+    document.getElementById("closeAdviceInventoryBtn").addEventListener("click",()=>document.getElementById("adviceInventoryModal").style.display="none");
+    document.getElementById("deleteAllAdviceBtn").addEventListener("click",deleteAllAdvice);
+    document.getElementById("editFreqTagsBtn").addEventListener("click",()=>openTagEditModal("freq","Edit Frequency Tags"));
+    document.getElementById("editDurTagsBtn").addEventListener("click",()=>openTagEditModal("dur","Edit Duration Tags"));
+    document.getElementById("editHowTagsBtn").addEventListener("click",()=>openTagEditModal("how","Edit 'How to take' Tags"));
+    document.getElementById("addNewTagBtn").addEventListener("click",addNewTag);
+    document.getElementById("saveTagEditBtn").addEventListener("click",saveTagEditAndClose);
+    document.getElementById("cancelTagEditBtn").addEventListener("click",()=>document.getElementById("tagEditModal").style.display="none");
+    ["firstName","lastName","patientAge","patientGender","diagnosisField"].forEach(id=>document.getElementById(id)?.addEventListener("input",updatePreview));
+    document.querySelectorAll('input[name="paperStyle"]').forEach(r=>r.addEventListener("change",()=>updatePreview()));
   }
-  function addAdviceToCurrent(text) { if(text.trim()) { currentAdvices.push(text.trim()); renderCurrentAdvices(); updatePreview(); } }
-  function renderCurrentAdvices() {
-    const container = document.getElementById("currentAdvicesList");
-    if(container) container.innerHTML = currentAdvices.map((adv, idx) => `<span style="background:#eef2ff; padding:4px 12px; border-radius:30px; display:inline-flex; align-items:center; gap:6px;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer;" data-adv-idx="${idx}"></i></span>`).join("");
-    document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon => { icon.addEventListener("click", (e) => { const idx = parseInt(icon.getAttribute("data-adv-idx")); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview(); }); });
-  }
-  function renderMedicinesTable() {
-    const tbody = document.getElementById("medicinesTableBody");
-    if(!tbody) return;
-    tbody.innerHTML = "";
-    currentMedicines.forEach((item, idx) => {
-      let row = tbody.insertRow();
-      row.insertCell(0).innerHTML = `<input type="text" value="${escapeHtml(item.name)}" class="med-field" data-idx="${idx}" data-field="name">`;
-      row.insertCell(1).innerHTML = `<input type="text" value="${escapeHtml(item.form)}" class="med-field" data-idx="${idx}" data-field="form">`;
-      row.insertCell(2).innerHTML = `<input type="text" value="${escapeHtml(item.dosage)}" class="med-field" data-idx="${idx}" data-field="dosage">`;
-      row.insertCell(3).innerHTML = `<input type="text" value="${escapeHtml(item.frequency)}" class="med-field" data-idx="${idx}" data-field="frequency">`;
-      row.insertCell(4).innerHTML = `<input type="text" value="${escapeHtml(item.duration)}" class="med-field" data-idx="${idx}" data-field="duration">`;
-      row.insertCell(5).innerHTML = `<input type="text" value="${escapeHtml(item.howToTake)}" class="med-field" data-idx="${idx}" data-field="howToTake">`;
-      let delBtn = document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm"; delBtn.onclick = () => { currentMedicines.splice(idx,1); renderMedicinesTable(); updatePreview(); };
-      row.insertCell(6).appendChild(delBtn);
-    });
-    document.querySelectorAll(".med-field").forEach(inp => { inp.addEventListener("change", function() { let idx=parseInt(this.dataset.idx), field=this.dataset.field; if(currentMedicines[idx]) { currentMedicines[idx][field]=this.value; updatePreview(); } }); });
-  }
-  function getPreviewHTML(splitMode=false) {
-    const firstName=document.getElementById("firstName")?.value||"", lastName=document.getElementById("lastName")?.value||"", age=document.getElementById("patientAge")?.value||"", gender=document.getElementById("patientGender")?.value||"", diagnosis=document.getElementById("diagnosisField")?.value||"";
-    let patientName = (firstName||lastName)?`${firstName} ${lastName}`.trim():"";
-    let medTable = `<table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#f1f5f9;"><th>Medicine</th><th>Form</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How</th></tr></thead><tbody>${currentMedicines.map(it=>`<tr><td>${escapeHtml(it.name)}</td><td>${it.form||"-"}</td><td>${it.dosage||"-"}</td><td>${it.frequency||"-"}</td><td>${it.duration||"-"}</td><td>${it.howToTake||"-"}</td></tr>`).join("")}</tbody></table>`;
-    if(currentMedicines.length===0) medTable="<p><i>No medicines added.</i></p>";
-    const main = `<div style="margin-bottom:10px;"><strong>${currentSerial}</strong> | ${new Date().toLocaleString()}</div><div>${patientName} ${age?`, Age: ${age}`:''} ${gender}</div><div>${diagnosis?`<strong>Dx:</strong> ${escapeHtml(diagnosis)}`:''}</div>${medTable}<div style="margin-top:15px;">Doctor Signature: ___________</div>`;
-    if(splitMode) return `<div style="display:flex; gap:20px;"><div style="width:140px; border-right:2px solid #0a7e8c; padding-right:12px;"><strong>Advice</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div><div style="flex:1;">${main}</div></div>`;
-    else return main + (currentAdvices.length? `<div style="margin-top:15px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:"");
-  }
-  function updatePreview() { const split = document.querySelector('input[name="paperStyle"]:checked')?.value==="split"; document.getElementById("livePreviewArea").innerHTML = getPreviewHTML(split); }
-  function resetCurrentDraft() { currentMedicines=[]; currentAdvices=[]; const fname=document.getElementById("firstName"); if(fname) fname.value=""; const lname=document.getElementById("lastName"); if(lname) lname.value=""; const age=document.getElementById("patientAge"); if(age) age.value=""; const gender=document.getElementById("patientGender"); if(gender) gender.value=""; const diag=document.getElementById("diagnosisField"); if(diag) diag.value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial = `RX${Math.floor(Math.random()*10000)}`; }
-  function renderHistory() { const container = document.getElementById("historyListContainer"); if(container) container.innerHTML = prescriptionsList.map(p => `<div class="history-item" data-id="${p.id}"><div><strong>${p.serial}</strong> | ${p.patient.firstName || "?"} ${p.patient.lastName || ""} | ${p.dateTime ? new Date(p.dateTime).toLocaleDateString() : "recent"}</div><div><i class="fas fa-chevron-right"></i> Load</div></div>`).join(""); document.querySelectorAll(".history-item").forEach(el => { el.addEventListener("click", async () => { const id = el.dataset.id; const presc = prescriptionsList.find(p=>p.id===id); if(presc) { currentMedicines = presc.medicines || []; currentAdvices = presc.advices || []; document.getElementById("firstName").value = presc.patient.firstName||""; document.getElementById("lastName").value = presc.patient.lastName||""; document.getElementById("patientAge").value = presc.patient.age||""; document.getElementById("patientGender").value = presc.patient.gender||""; document.getElementById("diagnosisField").value = presc.diagnosis||""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); } }); }); }
   
-  // Popup handlers
-  let pendingMedicine = null;
-  function openFullPopup(med) { pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalForm").value=med.form||""; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; document.getElementById("medicineModal").style.display="block"; }
-  async function addMedicineFromPopup() { if(pendingMedicine) { currentMedicines.push({ name:pendingMedicine.name, form:document.getElementById("modalForm").value||"Tablet", dosage:document.getElementById("modalDosage").value||"", frequency:document.getElementById("modalFrequency").value||"", duration:document.getElementById("modalDuration").value||"", howToTake:document.getElementById("modalHowToTake").value||"" }); await updateMedicineUsage(pendingMedicine.id); renderMedicinesTable(); updatePreview(); closeModal(); renderMedicineList(document.getElementById("searchMedicine")?.value||""); renderMostUsed(); } }
-  function closeModal() { document.getElementById("medicineModal").style.display="none"; pendingMedicine=null; }
-  function openQuickPopup() { document.getElementById("quickName").value=""; document.getElementById("quickDosage").value=""; document.getElementById("quickModal").style.display="block"; }
-  async function addQuickMedicine() { let name = document.getElementById("quickName").value.trim(); let dosage = document.getElementById("quickDosage").value.trim(); if(!name) return showError("Enter medicine name"); if(!dosage) dosage="As directed"; currentMedicines.push({ name, form:"Tablet", dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed" }); let existing = allMedicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing) await updateMedicineUsage(existing.id); else { await addNewMedicineToDB({ name, form:"Tablet", dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed", usageCount:1 }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
-  function closeQuickPopup() { document.getElementById("quickModal").style.display="none"; }
-  
-  // Auth with error handling and fallback to redirect if popup blocked
+  // Auth
   function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
     auth.signInWithPopup(provider).catch(error => {
-      console.error("Popup error:", error);
-      if (error.code === 'auth/popup-blocked') {
-        showError("Popup blocked! Trying redirect method...");
-        auth.signInWithRedirect(provider);
-      } else {
-        document.getElementById("authError").innerText = "Sign-in failed: " + error.message;
-        showError(error.message);
-      }
+      if(error.code === 'auth/popup-blocked') auth.signInWithRedirect(provider);
+      else document.getElementById("authError").innerText = error.message;
     });
   }
-  
-  // Handle redirect result
-  auth.getRedirectResult().catch(error => {
-    console.error("Redirect error:", error);
-    if(error) showError("Redirect sign-in failed: " + error.message);
-  });
-  
+  auth.getRedirectResult().catch(console.error);
   function updateUIBasedOnAuth(user) {
     if(user) {
       currentUser = user;
-      document.getElementById("loginPrompt").style.display = "none";
-      document.getElementById("mainContent").style.display = "block";
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("mainApp").classList.remove("hidden");
       document.getElementById("userWidget").innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
       document.getElementById("logoutBtn")?.addEventListener("click", () => auth.signOut());
       loadUserData();
     } else {
       currentUser = null;
-      document.getElementById("loginPrompt").style.display = "block";
-      document.getElementById("mainContent").style.display = "none";
+      document.getElementById("loginScreen").style.display = "block";
+      document.getElementById("mainApp").classList.add("hidden");
       document.getElementById("userWidget").innerHTML = `<button id="googleSignInBtn2" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
       document.getElementById("googleSignInBtn2")?.addEventListener("click", signInWithGoogle);
-      const btn = document.getElementById("googleSignInBtn");
-      if(btn) btn.addEventListener("click", signInWithGoogle);
-      document.getElementById("authError").innerText = "";
+      document.getElementById("googleSignInBtn")?.addEventListener("click", signInWithGoogle);
     }
   }
-  
   auth.onAuthStateChanged(user => updateUIBasedOnAuth(user));
   
-  // Event listeners after DOM ready
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("savePrescriptionBtn")?.addEventListener("click", savePrescriptionToFirestore);
-    document.getElementById("clearAllMedicinesBtn")?.addEventListener("click", () => { currentMedicines=[]; renderMedicinesTable(); updatePreview(); });
-    document.getElementById("quickMedicineBtn")?.addEventListener("click", openQuickPopup);
-    document.getElementById("addCustomAdviceBtn")?.addEventListener("click", () => { let val=document.getElementById("customAdviceInput")?.value.trim(); if(val) addAdviceToCurrent(val); document.getElementById("customAdviceInput").value=""; });
-    document.getElementById("refreshHistoryBtn")?.addEventListener("click", loadUserData);
-    document.getElementById("modalConfirmBtn")?.addEventListener("click", addMedicineFromPopup);
-    document.getElementById("modalCancelBtn")?.addEventListener("click", closeModal);
-    document.getElementById("quickConfirmBtn")?.addEventListener("click", addQuickMedicine);
-    document.getElementById("quickCancelBtn")?.addEventListener("click", closeQuickPopup);
-    document.getElementById("searchMedicine")?.addEventListener("input", e => renderMedicineList(e.target.value));
-    ["firstName","lastName","patientAge","patientGender","diagnosisField"].forEach(id => document.getElementById(id)?.addEventListener("input", updatePreview));
-    document.querySelectorAll('input[name="paperStyle"]').forEach(r => r.addEventListener("change", updatePreview));
-    // Tag listeners for popup
-    document.querySelectorAll("#formTags .tag, #freqTags .tag, #durationTags .tag, #howToTakeTags .tag").forEach(t => t.addEventListener("click", function() { 
-      let targetId = this.parentElement.id;
-      let inputId = targetId === "formTags" ? "modalForm" : targetId === "freqTags" ? "modalFrequency" : targetId === "durationTags" ? "modalDuration" : "modalHowToTake";
-      document.getElementById(inputId).value = this.getAttribute(`data-${targetId === "formTags" ? "form" : targetId === "freqTags" ? "freq" : targetId === "durationTags" ? "dur" : "how"}`);
-    }));
-  });
+  document.addEventListener("DOMContentLoaded", () => { bindEvents(); setupSearchSuggestions(); });
 </script>
 </body>
 </html>
