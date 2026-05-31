@@ -16,8 +16,6 @@
             gap: 20px; 
             height: 90vh; 
         }
-        
-        /* Left Sidebar - Medicine Tags Directory */
         .sidebar { 
             flex: 1; 
             background: white; 
@@ -50,8 +48,6 @@
             color: white; 
             transform: translateY(-1px); 
         }
-        
-        /* Right Side Workspace Panels */
         .main-workspace { 
             flex: 3; 
             display: flex; 
@@ -71,8 +67,6 @@
             flex: 1.5; 
             overflow-y: auto; 
         }
-        
-        /* Interface Row Inputs Form Styling */
         .form-row { 
             margin-bottom: 15px; 
         }
@@ -89,8 +83,6 @@
             border-radius: 4px; 
             box-sizing: border-box; 
         }
-        
-        /* Selected Medicine Injection Items styling */
         .prescription-item { 
             display: flex; 
             gap: 10px; 
@@ -120,8 +112,6 @@
             cursor: pointer; 
             font-weight: bold;
         }
-        
-        /* Control Commit Save Action button */
         .btn-primary { 
             background: #28a745; 
             color: white; 
@@ -136,8 +126,6 @@
         .btn-primary:hover { 
             background: #218838; 
         }
-        
-        /* Timeline Log Cards styling */
         .history-card { 
             border-left: 4px solid #007bff; 
             background: #f8f9fa; 
@@ -156,7 +144,6 @@
 <body>
 
     <div class="app-layout">
-        <!-- LEFT SIDEBAR -->
         <div class="sidebar">
             <h3 style="margin-top: 0;">Medicine Directory</h3>
             <p style="font-size: 12px; color: #6c757d; margin: 0 0 10px 0;">
@@ -165,7 +152,6 @@
             <div class="tag-list" id="firebaseTagsContainer">Loading tags directory...</div>
         </div>
 
-        <!-- RIGHT SIDEBAR -->
         <div class="main-workspace">
             <div class="prescription-box">
                 <h3 style="margin-top: 0;">Active Prescription Form</h3>
@@ -199,25 +185,22 @@
         </div>
     </div>
 
-    <!-- LOAD FIREBASE GLOBAL COMPAT SCRIPTS -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <!-- INLINE ENGINE LOGIC -->
     <script>
         // =========================================================================
-        // 1. FIREBASE SETUP
+        // 1. FIREBASE SETUP (Verify your precise credentials inside this block)
         // =========================================================================
         const firebaseConfig = {
           apiKey: "YOUR_API_KEY",
-          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-          projectId: "YOUR_PROJECT_ID",
-          storageBucket: "YOUR_PROJECT_ID.appspot.com",
-          messagingSenderId: "YOUR_SENDER_ID",
+          authDomain: "prescription-maker.firebaseapp.com",
+          projectId: "prescription-maker",
+          storageBucket: "prescription-maker.appspot.com",
+          messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
           appId: "YOUR_APP_ID"
         };
 
-        // Global instances initialization
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -234,17 +217,7 @@
                 const snapshot = await db.collection("medicines").get();
                 
                 if (snapshot.empty) {
-                    console.log("Database empty. Injecting automatic starter templates...");
-                    const defaultMeds = [
-                        "Paracetamol 500mg", "Amoxicillin 500mg", "Cetirizine 10mg", 
-                        "Metformin 500mg", "Pantoprazole 40mg", "Azithromycin 500mg", 
-                        "Ibuprofen 400mg", "Omeprazole 20mg"
-                    ];
-                    
-                    for (const medName of defaultMeds) {
-                        await db.collection("medicines").add({ name: medName });
-                    }
-                    await loadMedicineTags();
+                    container.innerHTML = "<span style='color:#777; font-size:12px;'>No medicines found in database. Go to console and add documents.</span>";
                     return;
                 }
 
@@ -252,6 +225,8 @@
                 
                 snapshot.forEach(doc => {
                     const medData = doc.data();
+                    if (!medData.name) return; // skip fields without name parameter
+                    
                     const tagElement = document.createElement("div");
                     tagElement.className = "med-tag";
                     tagElement.textContent = medData.name;
@@ -330,7 +305,7 @@
                 patientName: patientName,
                 advice: adviceText,
                 medicines: activeMedicines,
-                timestamp: new Date().toISOString() // Dynamic ISO string format bypasses Firestore native timestamp parsing errors
+                timestamp: firebase.firestore.Timestamp.fromDate(new Date()) // Native safe timestamp storage
             };
 
             try {
@@ -349,7 +324,7 @@
         });
 
         // =========================================================================
-        // 5. FETCH HISTORY FROM FIRESTORE
+        // 5. FETCH HISTORY FROM FIRESTORE (Safely handles both Object and Text Strings)
         // =========================================================================
         async function loadPrescriptionHistory() {
             const displayFeed = document.getElementById("historyFeed");
@@ -367,17 +342,28 @@
                 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    let formattedDate = data.timestamp ? new Date(data.timestamp).toLocaleString() : "Date Unknown";
+                    
+                    // SAFE TIMESTAMP RENDERING FILTER BLOCK
+                    let formattedDate = "Date Unknown";
+                    if (data.timestamp) {
+                        if (typeof data.timestamp.toDate === 'function') {
+                            formattedDate = data.timestamp.toDate().toLocaleString(); // Handles native object formats
+                        } else {
+                            formattedDate = new Date(data.timestamp).toLocaleString(); // Handles raw string data fallbacks
+                        }
+                    }
                     
                     const card = document.createElement("div");
                     card.className = "history-card";
                     
-                    const medsHtml = data.medicines.map(m => `
+                    // Error protection for formatting medicines array maps
+                    const medicinesArray = data.medicines || [];
+                    const medsHtml = medicinesArray.map(m => `
                         <li><strong>${m.name}</strong> — ${m.dosage || 'N/A'} (${m.duration || 'N/A'})</li>
                     `).join("");
 
                     card.innerHTML = `
-                        <strong style="color:#1a73e8; font-size:15px;">${data.patientName}</strong> 
+                        <strong style="color:#1a73e8; font-size:15px;">${data.patientName || 'Unknown Patient'}</strong> 
                         <span style="font-size:11px; color:#aaa; float:right;">${formattedDate}</span>
                         <ul class="history-meds">${medsHtml}</ul>
                         ${data.advice ? `<p style="margin:5px 0 0 0; font-size:12px; color:#5f6368;"><strong>Advice:</strong> ${data.advice}</p>` : ""}
@@ -385,6 +371,7 @@
                     displayFeed.appendChild(card);
                 });
             } catch (err) {
+                console.error("Fetch Loop Error: ", err);
                 displayFeed.innerHTML = `<p style='color:red;'>Fetch failed: ${err.message}</p>`;
             }
         }
