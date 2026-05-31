@@ -3,107 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicine Manager - Firebase</title>
+    <title>Medicine Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    
-    <style>
-        .medicine-tag {
-            transition: all 0.2s ease;
-        }
-        .medicine-tag:hover {
-            transform: scale(1.05);
-        }
-    </style>
 </head>
-<body class="bg-gray-950 text-gray-200 min-h-screen">
-    <div class="max-w-7xl mx-auto">
-        <div class="flex h-screen">
-            <!-- Left Sidebar -->
-            <div class="w-96 bg-gray-900 border-r border-gray-800 p-6 flex flex-col">
-                <div class="flex items-center gap-3 mb-8">
-                    <i class="fa-solid fa-pills text-3xl text-emerald-500"></i>
-                    <h1 class="text-2xl font-bold">MedManager</h1>
-                </div>
-                
-                <div class="mb-8">
-                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-plus"></i>
-                        Add New Medicine
-                    </h2>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Medicine Name</label>
-                            <input 
-                                id="medicineInput"
-                                type="text" 
-                                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 text-white"
-                                placeholder="e.g. Paracetamol 500mg"
-                                onkeypress="if(event.key === 'Enter') addMedicine()">
-                        </div>
-                        
-                        <button 
-                            onclick="addMedicine()"
-                            class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 transition">
-                            <i class="fa-solid fa-plus"></i>
-                            ADD MEDICINE
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="mt-auto">
-                    <div class="bg-gray-800 rounded-2xl p-4 text-sm">
-                        <p class="text-emerald-400 font-medium">Firebase Connected</p>
-                        <p class="text-gray-500 text-xs mt-1">Project: test-e314b</p>
-                    </div>
-                </div>
-            </div>
+<body class="bg-gray-950 text-gray-200">
+    <div class="max-w-7xl mx-auto flex h-screen">
+        <!-- Left Panel -->
+        <div class="w-96 bg-gray-900 p-6 border-r border-gray-700">
+            <h1 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <i class="fa-solid fa-pills text-emerald-500"></i> MedManager
+            </h1>
             
-            <!-- Main Content -->
-            <div class="flex-1 p-8 overflow-auto">
-                <div class="flex justify-between items-center mb-8">
-                    <div>
-                        <h1 class="text-4xl font-bold">Your Medicines</h1>
-                        <p class="text-gray-400 mt-1" id="count">0 medicines stored</p>
-                    </div>
-                    <button onclick="clearAll()" 
-                            class="text-red-400 hover:text-red-500 flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-trash"></i>
-                        Clear All
-                    </button>
-                </div>
-                
-                <!-- Medicine Tags -->
-                <div id="medicinesContainer" class="flex flex-wrap gap-3">
-                    <!-- Tags will be added here by JavaScript -->
-                </div>
-                
-                <!-- Empty State -->
-                <div id="emptyState" class="hidden flex flex-col items-center justify-center h-96 text-center">
-                    <i class="fa-solid fa-pills text-6xl text-gray-700 mb-4"></i>
-                    <p class="text-xl text-gray-500">No medicines added yet</p>
-                    <p class="text-gray-600 mt-2">Add your first medicine from the left panel</p>
-                </div>
+            <h2 class="text-lg mb-4">Add Medicine</h2>
+            <input id="medicineInput" 
+                   type="text" 
+                   class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 mb-4 focus:outline-none focus:border-emerald-500"
+                   placeholder="Enter medicine name...">
+            
+            <button onclick="addMedicine()" 
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-semibold">
+                    ADD MEDICINE
+            </button>
+        </div>
+
+        <!-- Main Area -->
+        <div class="flex-1 p-8 overflow-auto">
+            <h1 class="text-3xl font-bold mb-6">Your Medicines</h1>
+            <div id="medicinesContainer" class="flex flex-wrap gap-3"></div>
+            <div id="emptyState" class="hidden text-center py-20">
+                <p class="text-gray-500 text-xl">No medicines added yet</p>
             </div>
         </div>
     </div>
 
     <script>
-        // ================== YOUR FIREBASE CONFIG ==================
+        // ================== PASTE YOUR NEW CONFIG HERE ==================
         const firebaseConfig = {
-    apiKey: "AIzaSyCxF0X080EPLT6dE_MykC0Lcd...",
-    authDomain: "test-website-22778.firebaseapp.com",
-    projectId: "test-website-22778",
-    storageBucket: "test-website-22778.firebasestorage.app",
-    messagingSenderId: "862083661951",
-    appId: "1:862083661951:web:838f650debb207a2fe7f14a",
-    measurementId: "G-9E5RY8BKSJ"   // (if shown)
-};
+            apiKey: "AIzaSyCxF0X080EPLT6dE_MykC0Lcd...",   // ← Replace this whole object
+            authDomain: "test-website-22778.firebaseapp.com",
+            projectId: "test-website-22778",
+            storageBucket: "test-website-22778.firebasestorage.app",
+            messagingSenderId: "862083661951",
+            appId: "1:862083661951:web:838f650debb207a2fe7f14a"
+        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -112,116 +58,68 @@
 
         let medicines = [];
 
-        // Render medicines as tags
         function renderMedicines() {
             const container = document.getElementById("medicinesContainer");
-            const emptyState = document.getElementById("emptyState");
+            const empty = document.getElementById("emptyState");
             container.innerHTML = "";
-            
+
             if (medicines.length === 0) {
-                emptyState.classList.remove("hidden");
-                document.getElementById("count").textContent = "0 medicines stored";
+                empty.classList.remove("hidden");
                 return;
             }
-            
-            emptyState.classList.add("hidden");
-            document.getElementById("count").textContent = `${medicines.length} medicines stored`;
+            empty.classList.add("hidden");
 
-            medicines.forEach((med, index) => {
-                const tag = document.createElement("div");
-                tag.className = `medicine-tag group bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-emerald-500 px-6 py-3 rounded-3xl flex items-center gap-3 text-lg cursor-default`;
-                
-                tag.innerHTML = `
-                    <span class="font-medium">${med.name}</span>
+            medicines.forEach(med => {
+                const div = document.createElement("div");
+                div.className = "bg-gray-800 border border-gray-700 hover:border-red-500 rounded-3xl px-5 py-3 flex items-center gap-3 group";
+                div.innerHTML = `
+                    <span>${med.name}</span>
                     <button onclick="deleteMedicine('${med.id}')" 
-                            class="ml-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
+                            class="ml-auto text-gray-400 group-hover:text-red-500">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 `;
-                container.appendChild(tag);
+                container.appendChild(div);
             });
         }
 
-        // Add new medicine
         async function addMedicine() {
             const input = document.getElementById("medicineInput");
             const name = input.value.trim();
-            
-            if (!name) {
-                alert("Please enter a medicine name");
-                return;
-            }
-            
+            if (!name) return alert("Enter medicine name");
+
             try {
                 await medicinesRef.add({
                     name: name,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                
                 input.value = "";
-                // Real-time listener will update the list
-            } catch (error) {
-                console.error("Error adding medicine:", error);
-                alert("Failed to add medicine. Check console.");
+                console.log("✅ Medicine added successfully");
+            } catch (e) {
+                console.error("Error:", e);
+                alert("Failed to add. Check console (F12)");
             }
         }
 
-        // Delete medicine
         async function deleteMedicine(id) {
-            if (!confirm("Delete this medicine?")) return;
-            
-            try {
+            if (confirm("Delete this medicine?")) {
                 await medicinesRef.doc(id).delete();
-            } catch (error) {
-                console.error("Error deleting medicine:", error);
-                alert("Failed to delete medicine.");
             }
         }
 
-        // Clear all medicines
-        async function clearAll() {
-            if (!confirm("Delete ALL medicines? This cannot be undone!")) return;
-            
-            try {
-                const snapshot = await medicinesRef.get();
-                const batch = db.batch();
-                
-                snapshot.docs.forEach(doc => {
-                    batch.delete(doc.ref);
-                });
-                
-                await batch.commit();
-            } catch (error) {
-                console.error("Error clearing medicines:", error);
-            }
-        }
-
-        // Real-time listener
-        function setupListener() {
-            medicinesRef.orderBy("createdAt", "desc").onSnapshot((snapshot) => {
-                medicines = [];
-                snapshot.forEach(doc => {
-                    medicines.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
+        // Real-time updates
+        function loadData() {
+            medicinesRef.orderBy("createdAt", "desc").onSnapshot(snapshot => {
+                medicines = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMedicines();
-            }, (error) => {
-                console.error("Listener error:", error);
             });
         }
 
-        // Initialize everything
-        function init() {
-            setupListener();
-            
-            // Tailwind script already loaded via CDN
-            console.log("%c✅ Firebase Medicine Manager Ready!", "color: #10b981; font-size: 16px;");
-        }
-
-        // Start the app
-        window.onload = init;
+        // Start
+        window.onload = () => {
+            loadData();
+            console.log("🚀 Medicine App Started - Check console for errors");
+        };
     </script>
 </body>
 </html>
