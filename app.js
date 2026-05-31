@@ -1,6 +1,3 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
-
 // =========================================================================
 // 1. FIREBASE CONFIGURATION (Replace with your actual keys from Settings)
 // =========================================================================
@@ -13,9 +10,9 @@ const firebaseConfig = {
   appId: "YOUR_APP_ID"
 };
 
-// Initialize Firebase & Firestore database instance
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Initialize Firebase using global compat mapping
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 // Local array to keep track of medicines currently being added to the form
 let activeMedicines = [];
@@ -28,11 +25,11 @@ async function loadMedicineTags() {
     if (!container) return;
 
     try {
-        const snapshot = await getDocs(collection(db, "medicines"));
+        const snapshot = await db.collection("medicines").get();
         
-        // AUTOMATIC SEEDING: If your database has 0 medicines, this injects default templates automatically
+        // AUTOMATIC SEEDING: If database is empty, seed initial tags automatically
         if (snapshot.empty) {
-            console.log("Medicines collection is empty! Seeding baseline templates...");
+            console.log("Medicines collection empty! Seeding baseline templates...");
             const defaultMeds = [
                 "Paracetamol 500mg", "Amoxicillin 500mg", "Cetirizine 10mg", 
                 "Metformin 500mg", "Pantoprazole 40mg", "Azithromycin 500mg", 
@@ -40,14 +37,13 @@ async function loadMedicineTags() {
             ];
             
             for (const medName of defaultMeds) {
-                await addDoc(collection(db, "medicines"), { name: medName });
+                await db.collection("medicines").add({ name: medName });
             }
-            // Re-fetch automatically after seeding completes
             await loadMedicineTags();
             return;
         }
 
-        container.innerHTML = ""; // Clear out the loading text
+        container.innerHTML = ""; // Clear loading message
         
         snapshot.forEach(doc => {
             const medData = doc.data();
@@ -55,7 +51,6 @@ async function loadMedicineTags() {
             tagElement.className = "med-tag";
             tagElement.textContent = medData.name;
             
-            // Interaction: Clicking a left-side tag adds it instantly to the prescription card on the right
             tagElement.addEventListener("click", () => addMedicineToForm(medData.name));
             container.appendChild(tagElement);
         });
@@ -69,7 +64,6 @@ async function loadMedicineTags() {
 // 3. PRESCRIPTION LIVE COMPILER LOGIC
 // =========================================================================
 function addMedicineToForm(medicineName) {
-    // Prevent adding the exact same medicine twice inside the working card
     if (activeMedicines.some(m => m.name === medicineName)) return;
 
     activeMedicines.push({ name: medicineName, dosage: "", duration: "" });
@@ -81,7 +75,6 @@ function renderActiveFormItems() {
     const msg = document.getElementById("emptyFormMessage");
     if (!targetDiv) return;
 
-    // Remove any old rows before rebuilding the list
     const existingRows = targetDiv.querySelectorAll(".prescription-item");
     existingRows.forEach(el => el.remove());
 
@@ -102,11 +95,9 @@ function renderActiveFormItems() {
             <button type="button" class="remove-btn">×</button>
         `;
 
-        // Sync typed input values straight back into our local array state data mapping
         row.querySelector(".dosage-field").addEventListener("input", (e) => activeMedicines[index].dosage = e.target.value);
         row.querySelector(".duration-field").addEventListener("input", (e) => activeMedicines[index].duration = e.target.value);
         
-        // Remove item logic
         row.querySelector(".remove-btn").addEventListener("click", () => {
             activeMedicines.splice(index, 1);
             renderActiveFormItems();
@@ -117,7 +108,7 @@ function renderActiveFormItems() {
 }
 
 // =========================================================================
-// 4. AUTOMATED SAVE FUNCTION (WRITES TO FIRESTORE HISTORY COLLECTION)
+// 4. AUTOMATED SAVE FUNCTION (WRITES TO HISTORY)
 // =========================================================================
 document.getElementById("savePrescriptionBtn").addEventListener("click", async () => {
     const patientName = document.getElementById("patientName").value.trim();
@@ -132,26 +123,22 @@ document.getElementById("savePrescriptionBtn").addEventListener("click", async (
         return;
     }
 
-    // Prepare complete data payload object structure
     const prescriptionPayload = {
         patientName: patientName,
         advice: adviceText,
         medicines: activeMedicines,
-        timestamp: new Date() // Firebase automatically maps native dates
+        timestamp: new Date()
     };
 
     try {
-        // Firebase automatically handles creating the 'history' collection & unique document IDs dynamically
-        await addDoc(collection(db, "history"), prescriptionPayload);
+        await db.collection("history").add(prescriptionPayload);
         alert("Prescription saved to Firestore successfully!");
         
-        // Clear screen form fields back to pristine states cleanly
         document.getElementById("patientName").value = "";
         document.getElementById("advice").value = "";
         activeMedicines = [];
         renderActiveFormItems();
         
-        // Re-fetch timeline log feed list instantly to render changes immediately
         await loadPrescriptionHistory();
     } catch (err) {
         console.error("Firestore Save Error: ", err);
@@ -160,28 +147,25 @@ document.getElementById("savePrescriptionBtn").addEventListener("click", async (
 });
 
 // =========================================================================
-// 5. AUTOMATED FETCH FUNCTION (READS HISTORY LOG DATA FROM FIRESTORE)
+// 5. AUTOMATED FETCH FUNCTION (READS HISTORY LOG DATA)
 // =========================================================================
 async function loadPrescriptionHistory() {
     const displayFeed = document.getElementById("historyFeed");
     if (!displayFeed) return;
 
     try {
-        // Clean call targeted fetch (No sorting filter applied to prevent Firebase configuration index blocks)
-        const snapshot = await getDocs(collection(db, "history"));
+        const snapshot = await db.collection("history").get();
 
         if (snapshot.empty) {
             displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No past prescription history records tracked.</p>";
             return;
         }
 
-        displayFeed.innerHTML = ""; // Wipe loading text layout placeholder elements safely
+        displayFeed.innerHTML = ""; 
         
-        // Unpack records dynamically
         snapshot.forEach(doc => {
             const data = doc.data();
             
-            // Safe timestamp format resolution checking if seconds attributes exist
             let dateStr = "Date Unknown";
             if (data.timestamp) {
                 const dateObj = data.timestamp.seconds ? new Date(data.timestamp.seconds * 1000) : new Date(data.timestamp);
