@@ -1,42 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FastRx Login</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background:#eef2f7;
+  margin: 0;
+}
+.card{
+  background:#fff;
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+  text-align:center;
+  width:320px;
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#0a7e8c;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+  font-weight: bold;
+}
+button:hover{
+  opacity:.95;
+}
+.logout-btn {
+  background: #d9534f;
+  margin-top: 20px;
+}
+.success-icon {
+  font-size: 48px;
+  color: #2ec4b6;
+  margin-bottom: 10px;
+}
+/* Utility classes to toggle screens */
+.hidden {
+  display: none !important;
+}
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: LOGIN FORM -->
+<div id="loginCard" class="card">
+  <h2>FastRx Pro</h2>
+  <p>Doctor Login</p>
+  <button id="googleLoginBtn">
+    Continue with Google
+  </button>
+</div>
+
+<!-- SCREEN 2: SUCCESS PAGE (Hidden by default) -->
+<div id="successCard" class="card hidden">
+  <div class="success-icon">✓</div>
+  <h2>Login Successful!</h2>
+  <p>Welcome back to your panel.</p>
+  <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+  <p style="font-size: 14px; color: #666;">Logged in as:</p>
+  <b id="userEmail" style="color: #0a7e8c; font-size: 16px;"></b>
+  
+  <button id="logoutBtn" class="logout-btn">Logout</button>
+</div>
+
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
+// Initialize Supabase
 const supabase = createClient(
   'https://qejpughcbxosjdcahqzm.supabase.co',
   'sb_publishable_l6259X-5NrXjszGC3ex9Hw_pl9ieLfo'
 )
 
+// Handle Google Login Trigger
 async function signInGoogle(){
-  await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      // This tells Supabase exactly where to send the user after a successful login
-      redirectTo: 'https://narayanbarman.github.io/Asawq-Rd-rss/'
-    }
-  })
-}
-
-document
-.getElementById('googleLoginBtn')
-.addEventListener('click', signInGoogle)
-
-async function checkUser(){
-  const { data } = await supabase.auth.getUser()
-
-  if(data && data.user){
-    document.getElementById('userBox').innerHTML = `
-      <p>Logged in as:</p>
-      <b>${data.user.email}</b>
-      <br><br>
-      <button onclick="logout()">Logout</button>
-    `
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://narayanbarman.github.io/Asawq-Rd-rss/'
+      }
+    });
+    if (error) throw error;
+  } catch (err) {
+    alert("Login Error: " + err.message);
   }
 }
 
-window.logout = async function(){
-  await supabase.auth.signOut()
-  location.reload()
+// Bind Login Button Click
+document.getElementById('googleLoginBtn').addEventListener('click', signInGoogle);
+
+// Check if a user session exists and update UI
+async function checkUser(){
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.log("No active user session found.");
+      return;
+    }
+
+    if(data && data.user){
+      // 1. Hide Login Screen, Show Success Screen
+      document.getElementById('loginCard').classList.add('hidden');
+      document.getElementById('successCard').classList.remove('hidden');
+      
+      // 2. Insert User Email
+      document.getElementById('userEmail').innerText = data.user.email;
+    }
+  } catch (err) {
+    console.error("Session check broken:", err);
+  }
 }
 
-checkUser()
+// Handle Logout Trigger
+async function handleLogout(){
+  await supabase.auth.signOut();
+  window.location.href = 'https://narayanbarman.github.io/Asawq-Rd-rss/';
+}
+
+// Bind Logout Button Click safely via event listener
+document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+
+// Run check on page load
+checkUser();
 </script>
+
+</body>
+</html>
