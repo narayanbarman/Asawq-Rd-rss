@@ -156,6 +156,7 @@
 <body>
 
     <div class="app-layout">
+        <!-- LEFT SIDEBAR -->
         <div class="sidebar">
             <h3 style="margin-top: 0;">Medicine Directory</h3>
             <p style="font-size: 12px; color: #6c757d; margin: 0 0 10px 0;">
@@ -164,8 +165,8 @@
             <div class="tag-list" id="firebaseTagsContainer">Loading tags directory...</div>
         </div>
 
+        <!-- RIGHT SIDEBAR -->
         <div class="main-workspace">
-            
             <div class="prescription-box">
                 <h3 style="margin-top: 0;">Active Prescription Form</h3>
                 
@@ -195,13 +196,205 @@
                 <h3 style="margin-top: 0;">Prescription Logs History</h3>
                 <div id="historyFeed">Loading chronological logs database stream...</div>
             </div>
-
         </div>
     </div>
 
+    <!-- LOAD FIREBASE GLOBAL COMPAT SCRIPTS -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <script src="app.js"></script>
+    <!-- INLINE ENGINE LOGIC -->
+    <script>
+        // =========================================================================
+        // 1. FIREBASE SETUP
+        // =========================================================================
+        const firebaseConfig = {
+          apiKey: "YOUR_API_KEY",
+          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+          projectId: "YOUR_PROJECT_ID",
+          storageBucket: "YOUR_PROJECT_ID.appspot.com",
+          messagingSenderId: "YOUR_SENDER_ID",
+          appId: "YOUR_APP_ID"
+        };
+
+        // Global instances initialization
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let activeMedicines = [];
+
+        // =========================================================================
+        // 2. FETCH MEDICINE TAGS (LEFT SIDE)
+        // =========================================================================
+        async function loadMedicineTags() {
+            const container = document.getElementById("firebaseTagsContainer");
+            if (!container) return;
+
+            try {
+                const snapshot = await db.collection("medicines").get();
+                
+                if (snapshot.empty) {
+                    console.log("Database empty. Injecting automatic starter templates...");
+                    const defaultMeds = [
+                        "Paracetamol 500mg", "Amoxicillin 500mg", "Cetirizine 10mg", 
+                        "Metformin 500mg", "Pantoprazole 40mg", "Azithromycin 500mg", 
+                        "Ibuprofen 400mg", "Omeprazole 20mg"
+                    ];
+                    
+                    for (const medName of defaultMeds) {
+                        await db.collection("medicines").add({ name: medName });
+                    }
+                    await loadMedicineTags();
+                    return;
+                }
+
+                container.innerHTML = ""; 
+                
+                snapshot.forEach(doc => {
+                    const medData = doc.data();
+                    const tagElement = document.createElement("div");
+                    tagElement.className = "med-tag";
+                    tagElement.textContent = medData.name;
+                    
+                    tagElement.addEventListener("click", () => addMedicineToForm(medData.name));
+                    container.appendChild(tagElement);
+                });
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<span style='color:red;'>Error: ${err.message}</span>`;
+            }
+        }
+
+        // =========================================================================
+        // 3. UI FORM INTERACTIONS
+        // =========================================================================
+        function addMedicineToForm(medicineName) {
+            if (activeMedicines.some(m => m.name === medicineName)) return;
+            activeMedicines.push({ name: medicineName, dosage: "", duration: "" });
+            renderActiveFormItems();
+        }
+
+        function renderActiveFormItems() {
+            const targetDiv = document.getElementById("activePrescriptionMeds");
+            const msg = document.getElementById("emptyFormMessage");
+            if (!targetDiv) return;
+
+            const existingRows = targetDiv.querySelectorAll(".prescription-item");
+            existingRows.forEach(el => el.remove());
+
+            if (activeMedicines.length === 0) {
+                if (msg) msg.style.display = "block";
+                return;
+            }
+            if (msg) msg.style.display = "none";
+
+            activeMedicines.forEach((med, index) => {
+                const row = document.createElement("div");
+                row.className = "prescription-item";
+                row.innerHTML = `
+                    <span class="item-name">${med.name}</span>
+                    <input type="text" class="item-input dosage-field" placeholder="Dosage (1-0-1)" required value="${med.dosage}">
+                    <input type="text" class="item-input duration-field" placeholder="Duration (5 days)" required value="${med.duration}">
+                    <button type="button" class="remove-btn">×</button>
+                `;
+
+                row.querySelector(".dosage-field").addEventListener("input", (e) => activeMedicines[index].dosage = e.target.value);
+                row.querySelector(".duration-field").addEventListener("input", (e) => activeMedicines[index].duration = e.target.value);
+                
+                row.querySelector(".remove-btn").addEventListener("click", () => {
+                    activeMedicines.splice(index, 1);
+                    renderActiveFormItems();
+                });
+
+                targetDiv.appendChild(row);
+            });
+        }
+
+        // =========================================================================
+        // 4. SAVE TO FIRESTORE HISTORY
+        // =========================================================================
+        document.getElementById("savePrescriptionBtn").addEventListener("click", async () => {
+            const patientName = document.getElementById("patientName").value.trim();
+            const adviceText = document.getElementById("advice").value.trim();
+
+            if (!patientName) {
+                alert("Please specify a Patient Name.");
+                return;
+            }
+            if (activeMedicines.length === 0) {
+                alert("Please add medicines from the left panel directory.");
+                return;
+            }
+
+            const payload = {
+                patientName: patientName,
+                advice: adviceText,
+                medicines: activeMedicines,
+                timestamp: new Date().toISOString() // Dynamic ISO string format bypasses Firestore native timestamp parsing errors
+            };
+
+            try {
+                await db.collection("history").add(payload);
+                alert("Prescription saved successfully!");
+                
+                document.getElementById("patientName").value = "";
+                document.getElementById("advice").value = "";
+                activeMedicines = [];
+                renderActiveFormItems();
+                
+                await loadPrescriptionHistory();
+            } catch (err) {
+                alert("Database Save Failed: " + err.message);
+            }
+        });
+
+        // =========================================================================
+        // 5. FETCH HISTORY FROM FIRESTORE
+        // =========================================================================
+        async function loadPrescriptionHistory() {
+            const displayFeed = document.getElementById("historyFeed");
+            if (!displayFeed) return;
+
+            try {
+                const snapshot = await db.collection("history").get();
+
+                if (snapshot.empty) {
+                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No history found.</p>";
+                    return;
+                }
+
+                displayFeed.innerHTML = ""; 
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    let formattedDate = data.timestamp ? new Date(data.timestamp).toLocaleString() : "Date Unknown";
+                    
+                    const card = document.createElement("div");
+                    card.className = "history-card";
+                    
+                    const medsHtml = data.medicines.map(m => `
+                        <li><strong>${m.name}</strong> — ${m.dosage || 'N/A'} (${m.duration || 'N/A'})</li>
+                    `).join("");
+
+                    card.innerHTML = `
+                        <strong style="color:#1a73e8; font-size:15px;">${data.patientName}</strong> 
+                        <span style="font-size:11px; color:#aaa; float:right;">${formattedDate}</span>
+                        <ul class="history-meds">${medsHtml}</ul>
+                        ${data.advice ? `<p style="margin:5px 0 0 0; font-size:12px; color:#5f6368;"><strong>Advice:</strong> ${data.advice}</p>` : ""}
+                    `;
+                    displayFeed.appendChild(card);
+                });
+            } catch (err) {
+                displayFeed.innerHTML = `<p style='color:red;'>Fetch failed: ${err.message}</p>`;
+            }
+        }
+
+        // Run engine setup execution
+        async function runEngine() {
+            await loadMedicineTags();
+            await loadPrescriptionHistory();
+        }
+        runEngine();
+    </script>
 </body>
 </html>
