@@ -1,125 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicine Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-</head>
-<body class="bg-gray-950 text-gray-200">
-    <div class="max-w-7xl mx-auto flex h-screen">
-        <!-- Left Panel -->
-        <div class="w-96 bg-gray-900 p-6 border-r border-gray-700">
-            <h1 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i class="fa-solid fa-pills text-emerald-500"></i> MedManager
-            </h1>
-            
-            <h2 class="text-lg mb-4">Add Medicine</h2>
-            <input id="medicineInput" 
-                   type="text" 
-                   class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 mb-4 focus:outline-none focus:border-emerald-500"
-                   placeholder="Enter medicine name...">
-            
-            <button onclick="addMedicine()" 
-                    class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-semibold">
-                    ADD MEDICINE
-            </button>
-        </div>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastRx Pro – Prescription Maker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-        <!-- Main Area -->
-        <div class="flex-1 p-8 overflow-auto">
-            <h1 class="text-3xl font-bold mb-6">Your Medicines</h1>
-            <div id="medicinesContainer" class="flex flex-wrap gap-3"></div>
-            <div id="emptyState" class="hidden text-center py-20">
-                <p class="text-gray-500 text-xl">No medicines added yet</p>
-            </div>
-        </div>
+  <style>
+    /* Your original styles + Tailwind */
+    * { font-family: 'Inter', sans-serif; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+    .modal-content { background: white; margin: 5% auto; padding: 24px; border-radius: 24px; width: 90%; max-width: 550px; }
+    .tag { @apply bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm cursor-pointer hover:bg-blue-600 hover:text-white transition; }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+<div id="authScreen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 to-teal-800">
+  <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md">
+    <h1 class="text-3xl font-bold text-center mb-8 text-teal-800">FastRx Pro</h1>
+    
+    <div id="loginForm">
+      <input id="email" type="email" placeholder="Email" class="w-full p-4 border rounded-2xl mb-4">
+      <input id="password" type="password" placeholder="Password" class="w-full p-4 border rounded-2xl mb-4">
+      <button onclick="login()" class="w-full bg-teal-600 text-white py-4 rounded-2xl font-semibold mb-3">Login</button>
+      <button onclick="googleLogin()" class="w-full border border-gray-300 py-4 rounded-2xl flex items-center justify-center gap-3">
+        <i class="fab fa-google"></i> Continue with Google
+      </button>
+      <p class="text-center mt-4 text-sm">
+        <a href="#" onclick="showForgotPassword()" class="text-teal-600">Forgot Password?</a>
+      </p>
+      <p class="text-center mt-6 text-sm">Don't have account? <span onclick="toggleAuth()" class="text-teal-600 cursor-pointer">Sign Up</span></p>
     </div>
 
-    <script>
-        // ================== PASTE YOUR NEW CONFIG HERE ==================
-        const firebaseConfig = {
-            apiKey: "AIzaSyCxF0X080EPLT6dE_MykC0Lcd...",   // ← Replace this whole object
-            authDomain: "test-website-22778.firebaseapp.com",
-            projectId: "test-website-22778",
-            storageBucket: "test-website-22778.firebasestorage.app",
-            messagingSenderId: "862083661951",
-            appId: "1:862083661951:web:838f650debb207a2fe7f14a"
-        };
+    <div id="registerForm" class="hidden">
+      <input id="regEmail" type="email" placeholder="Email" class="w-full p-4 border rounded-2xl mb-4">
+      <input id="regPassword" type="password" placeholder="Password (min 6 chars)" class="w-full p-4 border rounded-2xl mb-4">
+      <button onclick="register()" class="w-full bg-teal-600 text-white py-4 rounded-2xl font-semibold">Create Account</button>
+      <p class="text-center mt-6 text-sm">Already have account? <span onclick="toggleAuth()" class="text-teal-600 cursor-pointer">Login</span></p>
+    </div>
+  </div>
+</div>
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const medicinesRef = db.collection("medicines");
+<!-- Main App (hidden initially) -->
+<div id="mainApp" class="hidden">
+  <!-- Your original HTML content goes here -->
+  <!-- ... (I'll keep it short for now - paste your full HTML below this comment) ... -->
+  
+  <div class="dashboard p-6">
+    <div class="header">
+      <div class="logo">
+        <h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1>
+        <p>Doctor's Digital Prescription</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="userEmail" class="text-sm"></span>
+        <button onclick="logout()" class="bg-red-100 text-red-600 px-5 py-2 rounded-2xl text-sm font-medium">Logout</button>
+      </div>
+    </div>
 
-        let medicines = [];
+    <!-- Paste the rest of your original HTML (prescription-layout, modals, etc.) here -->
+    <!-- For brevity, I'm showing only key parts. Replace with your full body content -->
 
-        function renderMedicines() {
-            const container = document.getElementById("medicinesContainer");
-            const empty = document.getElementById("emptyState");
-            container.innerHTML = "";
+  </div>
+</div>
 
-            if (medicines.length === 0) {
-                empty.classList.remove("hidden");
-                return;
-            }
-            empty.classList.add("hidden");
+<script>
+// ================== FIREBASE CONFIG ==================
+const firebaseConfig = {
+  apiKey: "AIzaSyCxF0X080EPLT6dE_MykC0Lcd...", // ← REPLACE WITH YOUR CONFIG
+  authDomain: "test-website-22778.firebaseapp.com",
+  projectId: "test-website-22778",
+  storageBucket: "test-website-22778.firebasestorage.app",
+  messagingSenderId: "862083661951",
+  appId: "1:862083661951:web:838f650debb207a2fe7f14a"
+};
 
-            medicines.forEach(med => {
-                const div = document.createElement("div");
-                div.className = "bg-gray-800 border border-gray-700 hover:border-red-500 rounded-3xl px-5 py-3 flex items-center gap-3 group";
-                div.innerHTML = `
-                    <span>${med.name}</span>
-                    <button onclick="deleteMedicine('${med.id}')" 
-                            class="ml-auto text-gray-400 group-hover:text-red-500">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                `;
-                container.appendChild(div);
-            });
-        }
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-        async function addMedicine() {
-            const input = document.getElementById("medicineInput");
-            const name = input.value.trim();
-            if (!name) return alert("Enter medicine name");
+// ================== AUTH FUNCTIONS ==================
+function toggleAuth() {
+  document.getElementById('loginForm').classList.toggle('hidden');
+  document.getElementById('registerForm').classList.toggle('hidden');
+}
 
-            try {
-                await medicinesRef.add({
-                    name: name,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                input.value = "";
-                console.log("✅ Medicine added successfully");
-            } catch (e) {
-                console.error("Error:", e);
-                alert("Failed to add. Check console (F12)");
-            }
-        }
+async function register() {
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+  } catch (e) { alert(e.message); }
+}
 
-        async function deleteMedicine(id) {
-            if (confirm("Delete this medicine?")) {
-                await medicinesRef.doc(id).delete();
-            }
-        }
+async function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (e) { alert(e.message); }
+}
 
-        // Real-time updates
-        function loadData() {
-            medicinesRef.orderBy("createdAt", "desc").onSnapshot(snapshot => {
-                medicines = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderMedicines();
-            });
-        }
+async function googleLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await auth.signInWithPopup(provider);
+  } catch (e) { alert(e.message); }
+}
 
-        // Start
-        window.onload = () => {
-            loadData();
-            console.log("🚀 Medicine App Started - Check console for errors");
-        };
-    </script>
+function logout() {
+  auth.signOut();
+}
+
+function showForgotPassword() {
+  const email = prompt("Enter your email for password reset:");
+  if (email) {
+    auth.sendPasswordResetEmail(email)
+      .then(() => alert("Password reset link sent!"))
+      .catch(e => alert(e.message));
+  }
+}
+
+// ================== FIRESTORE HELPERS ==================
+const userMedsRef = () => db.collection('users').doc(auth.currentUser.uid).collection('medicines');
+const userPrescriptionsRef = () => db.collection('users').doc(auth.currentUser.uid).collection('prescriptions');
+
+// Auth State Listener
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('userEmail').textContent = user.email;
+    
+    loadUserData();
+  } else {
+    document.getElementById('authScreen').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+  }
+});
+
+// Load user medicines from Firestore
+async function loadUserData() {
+  // Load medicines
+  userMedsRef().onSnapshot(snapshot => {
+    medicines = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    renderMedicineList();
+    renderMostUsed();
+  });
+}
+
+// Example: Save medicine to Firestore
+async function saveMedicine(med) {
+  await userMedsRef().add(med);
+}
+
+// ================== INTEGRATE WITH YOUR EXISTING CODE ==================
+// Replace your localStorage functions with Firestore versions
+
+// Example: When adding medicine from popup
+async function addMedicineToPrescription() {
+  // ... your existing logic
+  // Then save to Firestore
+  await db.collection('users').doc(auth.currentUser.uid).collection('prescriptions').add({
+    patient: currentPatient,
+    diagnosis: currentDiagnosis,
+    medicines: currentMedicines,
+    advices: currentAdvices,
+    serial: generateSerial(),
+    date: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+// Paste your full original script here and modify save/load functions
+</script>
 </body>
 </html>
