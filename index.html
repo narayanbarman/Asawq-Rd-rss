@@ -5,53 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simplified Doctor Desk</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fb; }
-        .app-layout { display: flex; gap: 20px; height: 90vh; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f5f7fb; 
+        }
+        .app-layout { 
+            display: flex; 
+            gap: 20px; 
+            height: 90vh; 
+        }
         
-        /* Left Sidebar - Medicine Tags */
-        .sidebar { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; overflow-y: auto; }
-        .med-tag { background: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
-        .med-tag:hover { background: #007bff; color: white; transform: translateY(-1px); }
+        /* Left Sidebar - Medicine Tags Directory */
+        .sidebar { 
+            flex: 1; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .tag-list { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            margin-top: 15px; 
+            overflow-y: auto; 
+        }
+        .med-tag { 
+            background: #e3f2fd; 
+            color: #0d47a1; 
+            border: 1px solid #bbdefb; 
+            padding: 8px 12px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 500; 
+            transition: all 0.2s; 
+        }
+        .med-tag:hover { 
+            background: #007bff; 
+            color: white; 
+            transform: translateY(-1px); 
+        }
         
-        /* Right Side - Main Workspace */
-        .main-workspace { flex: 3; display: flex; flex-direction: column; gap: 20px; }
-        .prescription-box, .history-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .prescription-box { flex: 2; }
-        .history-box { flex: 1.5; overflow-y: auto; }
+        /* Right Side Workspace Panels */
+        .main-workspace { 
+            flex: 3; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+        .prescription-box, .history-box { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+        .prescription-box { 
+            flex: 2; 
+        }
+        .history-box { 
+            flex: 1.5; 
+            overflow-y: auto; 
+        }
         
-        /* Form Styling */
-        .form-row { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; color: #495057; }
-        input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; }
+        /* Interface Row Inputs Form Styling */
+        .form-row { 
+            margin-bottom: 15px; 
+        }
+        label { 
+            display: block; 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+            color: #495057; 
+        }
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ced4da; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
         
-        /* Selected Medicine Rows */
-        .prescription-item { display: flex; gap: 10px; background: #f8f9fa; padding: 10px; margin-bottom: 8px; border-radius: 4px; align-items: center; }
-        .item-name { flex: 2; font-weight: bold; color: #212529; }
-        .item-input { flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 4px; }
-        .remove-btn { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+        /* Selected Medicine Injection Items styling */
+        .prescription-item { 
+            display: flex; 
+            gap: 10px; 
+            background: #f8f9fa; 
+            padding: 10px; 
+            margin-bottom: 8px; 
+            border-radius: 4px; 
+            align-items: center; 
+        }
+        .item-name { 
+            flex: 2; 
+            font-weight: bold; 
+            color: #212529; 
+        }
+        .item-input { 
+            flex: 1; 
+            padding: 6px; 
+            border: 1px solid #ced4da; 
+            border-radius: 4px; 
+        }
+        .remove-btn { 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            padding: 6px 10px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
         
-        /* Buttons */
-        .btn-primary { background: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; font-weight: bold; }
-        .btn-primary:hover { background: #218838; }
+        /* Control Commit Save Action button */
+        .btn-primary { 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 4px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-weight: bold; 
+        }
+        .btn-primary:hover { 
+            background: #218838; 
+        }
         
-        /* History Layout */
-        .history-card { border-left: 4px solid #007bff; background: #f8f9fa; padding: 12px; margin-bottom: 10px; border-radius: 4px; position: relative; }
-        .history-meds { font-size: 13px; color: #495057; margin: 5px 0 0 0; padding-left: 15px; }
+        /* Timeline Log Cards styling */
+        .history-card { 
+            border-left: 4px solid #007bff; 
+            background: #f8f9fa; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            border-radius: 4px; 
+        }
+        .history-meds { 
+            font-size: 13px; 
+            color: #495057; 
+            margin: 5px 0 0 0; 
+            padding-left: 15px; 
+        }
     </style>
 </head>
 <body>
 
     <div class="app-layout">
         <div class="sidebar">
-            <h3>Medicine Directory</h3>
-            <p style="font-size: 12px; color: #6c757d; margin: 0;">Click a tag to add it directly to the active prescription form on the right.</p>
-            <div class="tag-list" id="firebaseTagsContainer">Loading tags...</div>
+            <h3 style="margin-top: 0;">Medicine Directory</h3>
+            <p style="font-size: 12px; color: #6c757d; margin: 0 0 10px 0;">
+                Click any tag below to insert it directly into the active prescription card on the right side.
+            </p>
+            <div class="tag-list" id="firebaseTagsContainer">Loading tags directory...</div>
         </div>
 
         <div class="main-workspace">
+            
             <div class="prescription-box">
-                <h3>Active Prescription</h3>
+                <h3 style="margin-top: 0;">Active Prescription Form</h3>
                 
                 <div class="form-row">
                     <label for="patientName">Patient Name</label>
@@ -61,33 +177,31 @@
                 <div class="form-row">
                     <label>Selected Medicines & Dosages</label>
                     <div id="activePrescriptionMeds">
-                        <p style="color: #6c757d; font-size: 13px; font-style: italic;" id="emptyFormMessage">No medicines selected yet. Click from the left directory to add.</p>
+                        <p style="color: #6c757d; font-size: 13px; font-style: italic; margin: 5px 0;" id="emptyFormMessage">
+                            No medicines selected yet. Click from the left directory to add items.
+                        </p>
                     </div>
                 </div>
 
                 <div class="form-row">
-                    <label for="advice">Doctor's Advice / Notes</label>
-                    <textarea id="advice" rows="3" placeholder="General instructions..."></textarea>
+                    <label for="advice">Doctor's Advice / Instructions</label>
+                    <textarea id="advice" rows="3" placeholder="General healthcare notes or instructions..."></textarea>
                 </div>
 
-                <button class="btn-primary" id="savePrescriptionBtn">Save Prescription</button>
+                <button class="btn-primary" id="savePrescriptionBtn">Save & Commit Prescription</button>
             </div>
 
             <div class="history-box">
-                <h3>Prescription Logs History</h3>
-                <div id="historyFeed">Loading past records...</div>
+                <h3 style="margin-top: 0;">Prescription Logs History</h3>
+                <div id="historyFeed">Loading chronological logs database stream...</div>
             </div>
+
         </div>
     </div>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
-        }
-      }
-    </script>
-    <script type="module" src="app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script src="app.js"></script>
 </body>
 </html>
