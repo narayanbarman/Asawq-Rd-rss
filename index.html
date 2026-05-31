@@ -1,159 +1,385 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Medicine App</title>
-  <style>
-    body { font-family: Arial; margin: 0; }
-    .center { display:flex; height:100vh; justify-content:center; align-items:center; flex-direction:column; }
-    .hidden { display:none; }
-
-    #home { display:flex; height:100vh; }
-
-    #sidebar {
-      width:300px;
-      background:#f2f2f2;
-      padding:20px;
-      box-sizing:border-box;
-    }
-
-    #content {
-      flex:1;
-      padding:20px;
-    }
-
-    input {
-      width:100%;
-      padding:10px;
-      margin-bottom:10px;
-    }
-
-    button {
-      padding:10px;
-      width:100%;
-      cursor:pointer;
-    }
-
-    .tag {
-      display:inline-block;
-      background:#4CAF50;
-      color:white;
-      padding:5px 10px;
-      margin:5px;
-      border-radius:20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simplified Doctor Desk</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f5f7fb; 
+        }
+        .app-layout { 
+            display: flex; 
+            gap: 20px; 
+            height: 90vh; 
+        }
+        .sidebar { 
+            flex: 1; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .tag-list { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            margin-top: 15px; 
+            overflow-y: auto; 
+        }
+        .med-tag { 
+            background: #e3f2fd; 
+            color: #0d47a1; 
+            border: 1px solid #bbdefb; 
+            padding: 8px 12px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 500; 
+            transition: all 0.2s; 
+        }
+        .med-tag:hover { 
+            background: #007bff; 
+            color: white; 
+            transform: translateY(-1px); 
+        }
+        .main-workspace { 
+            flex: 3; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+        .prescription-box, .history-box { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+        .prescription-box { 
+            flex: 2; 
+        }
+        .history-box { 
+            flex: 1.5; 
+            overflow-y: auto; 
+        }
+        .form-row { 
+            margin-bottom: 15px; 
+        }
+        label { 
+            display: block; 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+            color: #495057; 
+        }
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ced4da; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+        .prescription-item { 
+            display: flex; 
+            gap: 10px; 
+            background: #f8f9fa; 
+            padding: 10px; 
+            margin-bottom: 8px; 
+            border-radius: 4px; 
+            align-items: center; 
+        }
+        .item-name { 
+            flex: 2; 
+            font-weight: bold; 
+            color: #212529; 
+        }
+        .item-input { 
+            flex: 1; 
+            padding: 6px; 
+            border: 1px solid #ced4da; 
+            border-radius: 4px; 
+        }
+        .remove-btn { 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            padding: 6px 10px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        .btn-primary { 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 4px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-weight: bold; 
+        }
+        .btn-primary:hover { 
+            background: #218838; 
+        }
+        .history-card { 
+            border-left: 4px solid #007bff; 
+            background: #f8f9fa; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            border-radius: 4px; 
+        }
+        .history-meds { 
+            font-size: 13px; 
+            color: #495057; 
+            margin: 5px 0 0 0; 
+            padding-left: 15px; 
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- LOGIN PAGE -->
-<div id="loginPage" class="center">
-  <h2>Medicine App Login</h2>
-  <button onclick="googleLogin()">Login with Google</button>
-</div>
+    <div class="app-layout">
+        <div class="sidebar">
+            <h3 style="margin-top: 0;">Medicine Directory</h3>
+            <p style="font-size: 12px; color: #6c757d; margin: 0 0 10px 0;">
+                Click any tag below to insert it directly into the active prescription card on the right side.
+            </p>
+            <div class="tag-list" id="firebaseTagsContainer">Loading tags directory...</div>
+        </div>
 
-<!-- HOME PAGE -->
-<div id="home" class="hidden">
+        <div class="main-workspace">
+            <div class="prescription-box">
+                <h3 style="margin-top: 0;">Active Prescription Form</h3>
+                
+                <div class="form-row">
+                    <label for="patientName">Patient Name</label>
+                    <input type="text" id="patientName" placeholder="Enter patient's full name" required>
+                </div>
 
-  <div id="sidebar">
-    <h3>Add Medicine</h3>
-    <input id="medicineInput" placeholder="Enter medicine name">
-    <button onclick="addMedicine()">Add</button>
-  </div>
+                <div class="form-row">
+                    <label>Selected Medicines & Dosages</label>
+                    <div id="activePrescriptionMeds">
+                        <p style="color: #6c757d; font-size: 13px; font-style: italic; margin: 5px 0;" id="emptyFormMessage">
+                            No medicines selected yet. Click from the left directory to add items.
+                        </p>
+                    </div>
+                </div>
 
-  <div id="content">
-    <h2>Your Medicines</h2>
-    <div id="medicineList"></div>
-  </div>
+                <div class="form-row">
+                    <label for="advice">Doctor's Advice / Instructions</label>
+                    <textarea id="advice" rows="3" placeholder="General healthcare notes or instructions..."></textarea>
+                </div>
 
-</div>
+                <button class="btn-primary" id="savePrescriptionBtn">Save & Commit Prescription</button>
+            </div>
 
-<!-- FIREBASE SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+            <div class="history-box">
+                <h3 style="margin-top: 0;">Prescription Logs History</h3>
+                <div id="historyFeed">Loading chronological logs database stream...</div>
+            </div>
+        </div>
+    </div>
 
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    query,
-    onSnapshot
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  // 🔥 YOUR FIREBASE CONFIG (replace this)
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "XXXX",
-    appId: "XXXX"
-  };
+    <script>
+        // =========================================================================
+        // YOUR UPDATED CONFIGURATION INTEGRATION
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
+            authDomain: "test-website-22778.firebaseapp.com",
+            projectId: "test-website-22778",
+            storageBucket: "test-website-22778.firebasestorage.app",
+            messagingSenderId: "862083661951",
+            appId: "1:862083661951:web:838f650debb207a2fe7f4a",
+            measurementId: "G-9E5RYBBKJS"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+        // Initialize App Configuration
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-  let currentUser = null;
+        let activeMedicines = [];
 
-  // LOGIN
-  window.googleLogin = async function () {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  }
+        // =========================================================================
+        // FETCH MEDICINE TAGS
+        // =========================================================================
+        async function loadMedicineTags() {
+            const container = document.getElementById("firebaseTagsContainer");
+            if (!container) return;
 
-  // AUTH STATE
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      currentUser = user;
-      document.getElementById("loginPage").classList.add("hidden");
-      document.getElementById("home").classList.remove("hidden");
-      loadMedicines();
-    }
-  });
+            try {
+                const snapshot = await db.collection("medicines").get();
+                
+                if (snapshot.empty) {
+                    container.innerHTML = "<span style='color:#777; font-size:12px;'>Connected! Database is empty. Create a collection named 'medicines' in your Firebase console and add documents.</span>";
+                    return;
+                }
 
-  // ADD MEDICINE
-  window.addMedicine = async function () {
-    const value = document.getElementById("medicineInput").value;
-    if (!value) return;
-
-    await addDoc(collection(db, "medicines"), {
-      name: value,
-      userId: currentUser.uid,
-      time: Date.now()
-    });
-
-    document.getElementById("medicineInput").value = "";
-  }
-
-  // LOAD MEDICINES
-  function loadMedicines() {
-    const q = query(collection(db, "medicines"));
-
-    onSnapshot(q, (snapshot) => {
-      const list = document.getElementById("medicineList");
-      list.innerHTML = "";
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-
-        if (data.userId === currentUser.uid) {
-          const span = document.createElement("span");
-          span.className = "tag";
-          span.innerText = data.name;
-          list.appendChild(span);
+                container.innerHTML = ""; 
+                
+                snapshot.forEach(doc => {
+                    const medData = doc.data();
+                    if (!medData.name) return;
+                    
+                    const tagElement = document.createElement("div");
+                    tagElement.className = "med-tag";
+                    tagElement.textContent = medData.name;
+                    
+                    tagElement.addEventListener("click", () => addMedicineToForm(medData.name));
+                    container.appendChild(tagElement);
+                });
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<span style='color:red;'>Permission/Config Error: ${err.message}</span>`;
+            }
         }
-      });
-    });
-  }
 
-</script>
+        // =========================================================================
+        // LIVE FORM LOGIC
+        // =========================================================================
+        function addMedicineToForm(medicineName) {
+            if (activeMedicines.some(m => m.name === medicineName)) return;
+            activeMedicines.push({ name: medicineName, dosage: "", duration: "" });
+            renderActiveFormItems();
+        }
 
+        function renderActiveFormItems() {
+            const targetDiv = document.getElementById("activePrescriptionMeds");
+            const msg = document.getElementById("emptyFormMessage");
+            if (!targetDiv) return;
+
+            const existingRows = targetDiv.querySelectorAll(".prescription-item");
+            existingRows.forEach(el => el.remove());
+
+            if (activeMedicines.length === 0) {
+                if (msg) msg.style.display = "block";
+                return;
+            }
+            if (msg) msg.style.display = "none";
+
+            activeMedicines.forEach((med, index) => {
+                const row = document.createElement("div");
+                row.className = "prescription-item";
+                row.innerHTML = `
+                    <span class="item-name">${med.name}</span>
+                    <input type="text" class="item-input dosage-field" placeholder="Dosage (1-0-1)" required value="${med.dosage}">
+                    <input type="text" class="item-input duration-field" placeholder="Duration (5 days)" required value="${med.duration}">
+                    <button type="button" class="remove-btn">×</button>
+                `;
+
+                row.querySelector(".dosage-field").addEventListener("input", (e) => activeMedicines[index].dosage = e.target.value);
+                row.querySelector(".duration-field").addEventListener("input", (e) => activeMedicines[index].duration = e.target.value);
+                
+                row.querySelector(".remove-btn").addEventListener("click", () => {
+                    activeMedicines.splice(index, 1);
+                    renderActiveFormItems();
+                });
+
+                targetDiv.appendChild(row);
+            });
+        }
+
+        // =========================================================================
+        // SAVE PRESCRIPTION
+        // =========================================================================
+        document.getElementById("savePrescriptionBtn").addEventListener("click", async () => {
+            const patientName = document.getElementById("patientName").value.trim();
+            const adviceText = document.getElementById("advice").value.trim();
+
+            if (!patientName) {
+                alert("Please enter a Patient Name.");
+                return;
+            }
+            if (activeMedicines.length === 0) {
+                alert("Please add at least one medicine tag.");
+                return;
+            }
+
+            const payload = {
+                patientName: patientName,
+                advice: adviceText,
+                medicines: activeMedicines,
+                timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+            };
+
+            try {
+                await db.collection("history").add(payload);
+                alert("Prescription saved successfully!");
+                
+                document.getElementById("patientName").value = "";
+                document.getElementById("advice").value = "";
+                activeMedicines = [];
+                renderActiveFormItems();
+                
+                await loadPrescriptionHistory();
+            } catch (err) {
+                alert("Save Failed: " + err.message);
+            }
+        });
+
+        // =========================================================================
+        // FETCH WORKSPACE HISTORY
+        // =========================================================================
+        async function loadPrescriptionHistory() {
+            const displayFeed = document.getElementById("historyFeed");
+            if (!displayFeed) return;
+
+            try {
+                const snapshot = await db.collection("history").get();
+
+                if (snapshot.empty) {
+                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No history records tracked yet.</p>";
+                    return;
+                }
+
+                displayFeed.innerHTML = ""; 
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    let formattedDate = "Date Unknown";
+                    if (data.timestamp) {
+                        if (typeof data.timestamp.toDate === 'function') {
+                            formattedDate = data.timestamp.toDate().toLocaleString();
+                        } else {
+                            formattedDate = new Date(data.timestamp).toLocaleString();
+                        }
+                    }
+                    
+                    const card = document.createElement("div");
+                    card.className = "history-card";
+                    
+                    const medicinesArray = data.medicines || [];
+                    const medsHtml = medicinesArray.map(m => `
+                        <li><strong>${m.name}</strong> — ${m.dosage || 'N/A'} (${m.duration || 'N/A'})</li>
+                    `).join("");
+
+                    card.innerHTML = `
+                        <strong style="color:#1a73e8; font-size:15px;">${data.patientName || 'Unknown Patient'}</strong> 
+                        <span style="font-size:11px; color:#aaa; float:right;">${formattedDate}</span>
+                        <ul class="history-meds">${medsHtml}</ul>
+                        ${data.advice ? `<p style="margin:5px 0 0 0; font-size:12px; color:#5f6368;"><strong>Advice:</strong> ${data.advice}</p>` : ""}
+                    `;
+                    displayFeed.appendChild(card);
+                });
+            } catch (err) {
+                displayFeed.innerHTML = `<p style='color:red;'>Fetch failed: ${err.message}</p>`;
+            }
+        }
+
+        // Run Engine
+        async function runEngine() {
+            await loadMedicineTags();
+            await loadPrescriptionHistory();
+        }
+        runEngine();
+    </script>
 </body>
 </html>
