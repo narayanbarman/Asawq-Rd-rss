@@ -1,58 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>FastRx Login</title>
-
-<style>
-body{
-  font-family:Arial,sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  background:#eef2f7;
-}
-.card{
-  background:#fff;
-  padding:30px;
-  border-radius:16px;
-  box-shadow:0 8px 24px rgba(0,0,0,.08);
-  text-align:center;
-  width:320px;
-}
-button{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  background:#0a7e8c;
-  color:white;
-  font-size:16px;
-  cursor:pointer;
-}
-button:hover{
-  opacity:.95;
-}
-#userBox{
-  margin-top:20px;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <h2>FastRx Pro</h2>
-  <p>Doctor Login</p>
-
-  <button id="googleLoginBtn">
-    Continue with Google
-  </button>
-
-  <div id="userBox"></div>
-</div>
-
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
@@ -63,19 +8,23 @@ const supabase = createClient(
 
 async function signInGoogle(){
   await supabase.auth.signInWithOAuth({
-    provider:'google'
+    provider: 'google',
+    options: {
+      // This tells Supabase exactly where to send the user after a successful login
+      redirectTo: 'https://narayanbarman.github.io/Asawq-Rd-rss/'
+    }
   })
 }
 
 document
 .getElementById('googleLoginBtn')
-.addEventListener('click',signInGoogle)
+.addEventListener('click', signInGoogle)
 
 async function checkUser(){
   const { data } = await supabase.auth.getUser()
 
-  if(data.user){
-    document.getElementById('userBox').innerHTML=`
+  if(data && data.user){
+    document.getElementById('userBox').innerHTML = `
       <p>Logged in as:</p>
       <b>${data.user.email}</b>
       <br><br>
@@ -91,6 +40,3 @@ window.logout = async function(){
 
 checkUser()
 </script>
-
-</body>
-</html>
