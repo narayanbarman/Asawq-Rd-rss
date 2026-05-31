@@ -12,8 +12,11 @@
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --primary-neon: #06b6d4;
-  --success-neon: #10b981;
-  --danger-neon: #f43f5e;
+  
+  /* Green Success Screen Colors */
+  --bg-success: #059669;
+  --card-success: #065f46;
+  --text-success: #ecfdf5;
 }
 
 body {
@@ -28,6 +31,13 @@ body {
   margin: 0;
   padding: 20px;
   box-sizing: border-box;
+  transition: background 0.5s ease;
+}
+
+/* Dynamic Green Screen Mode applied to the full page */
+body.success-mode {
+  background: var(--bg-success);
+  color: var(--text-success);
 }
 
 .portal-container {
@@ -39,6 +49,14 @@ body {
   text-align: center;
   width: 100%;
   max-width: 380px;
+  transition: all 0.5s ease;
+}
+
+/* Green card style when logged in */
+body.success-mode .portal-container {
+  background: var(--card-success);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 h2 {
@@ -55,6 +73,10 @@ h2 {
   color: var(--text-muted);
   font-size: 14px;
   margin-bottom: 30px;
+}
+
+body.success-mode .subtitle {
+  color: #a7f3d0;
 }
 
 button {
@@ -84,43 +106,43 @@ button {
 }
 
 .btn-logout {
-  background: rgba(244, 63, 94, 0.1);
-  color: var(--danger-neon);
-  border: 1px solid rgba(244, 63, 94, 0.2);
+  background: #ffffff;
+  color: #065f46;
   margin-top: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .btn-logout:hover {
-  background: var(--danger-neon);
-  color: white;
+  background: #f0fdf4;
+  transform: translateY(-1px);
 }
 
-/* Success Layout Styles */
-.success-badge {
-  width: 60px;
-  height: 60px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 2px solid var(--success-neon);
+/* Success Layout Elements */
+.success-icon-badge {
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 3px solid #ffffff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px auto;
-  color: var(--success-neon);
-  font-size: 28px;
-  font-weight: bold;
+  color: #ffffff;
+  font-size: 36px;
 }
 
 .user-email-display {
   background: rgba(0, 0, 0, 0.2);
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   word-break: break-all;
-  color: var(--primary-neon);
+  color: #ffffff;
+  font-weight: bold;
 }
 
-/* Live Debug Console Log Window */
+/* Diagnostic Window at the bottom */
 .debug-console {
   width: 100%;
   max-width: 380px;
@@ -135,6 +157,11 @@ button {
   text-align: left;
 }
 
+body.success-mode .debug-console {
+  background: #022c22;
+  border-color: #064e3b;
+}
+
 .debug-title {
   color: #64748b;
   margin-bottom: 8px;
@@ -142,6 +169,10 @@ button {
   text-transform: uppercase;
   font-size: 10px;
   letter-spacing: 1px;
+}
+
+body.success-mode .debug-title {
+  color: #34d399;
 }
 
 .debug-logs {
@@ -158,10 +189,10 @@ button {
 </head>
 <body>
 
-<!-- MAIN INTERFACE CARD -->
+<!-- CORE WEB CONTAINER -->
 <div class="portal-container">
   
-  <!-- SIGN IN STATE -->
+  <!-- STATE A: STANDARD LOGIN VIEW -->
   <div id="loginViewState">
     <h2>FastRx <span class="brand-accent">Pro</span></h2>
     <div class="subtitle">Clinical Authentication Terminal</div>
@@ -172,47 +203,47 @@ button {
     </button>
   </div>
 
-  <!-- SUCCESS STATE (Hidden Initially) -->
+  <!-- STATE B: GREEN SUCCESSFUL VIEW -->
   <div id="successViewState" class="hidden">
-    <div class="success-badge">✓</div>
-    <h2>Access Granted</h2>
-    <div class="subtitle">Medical Session Active</div>
+    <div class="success-icon-badge">✓</div>
+    <h2>Login Successful!</h2>
+    <div class="subtitle">Welcome back to your workspace.</div>
     
-    <p style="text-align: left; font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">Authenticated Operator:</p>
-    <div id="userEmail" class="user-email-display">Checking session...</div>
+    <p style="text-align: left; font-size: 13px; margin-bottom: 5px; opacity: 0.9;">Connected Account:</p>
+    <div id="userEmail" class="user-email-display">Loading operator session...</div>
     
-    <button id="logoutBtn" class="btn-logout">Terminate Session (Logout)</button>
+    <button id="logoutBtn" class="btn-logout">Logout</button>
   </div>
 
 </div>
 
-<!-- REAL-TIME DEBUG TERMINAL LOG -->
+<!-- TRACKING & DIAGNOSTIC SYSTEM -->
 <div class="debug-console">
   <div class="debug-title">⚙️ System Diagnostic Console</div>
-  <div id="debugLogs" class="debug-logs">Initializing auth system...</div>
+  <div id="debugLogs" class="debug-logs">Initializing core auth logic...</div>
 </div>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-// Diagnostic logger setup
+// Setup runtime display debugging
 const logOutput = document.getElementById('debugLogs');
 function debugLog(message) {
   const timestamp = new Date().toLocaleTimeString();
   logOutput.innerText += `\n[${timestamp}] ${message}`;
-  console.log(`[DEBUG] ${message}`);
+  logOutput.scrollTop = logOutput.scrollHeight;
 }
 
-// 1. Initialize Supabase Client
+// 1. Initialize Supabase Connection
 const supabase = createClient(
   'https://qejpughcbxosjdcahqzm.supabase.co',
   'sb_publishable_l6259X-5NrXjszGC3ex9Hw_pl9ieLfo'
 )
-debugLog("Supabase Client Loaded.");
+debugLog("Supabase Engine Online.");
 
-// 2. Trigger Google OAuth
+// 2. Run OAuth Sequence
 async function signInGoogle(){
-  debugLog("Redirecting operator to Google Auth Gateway...");
+  debugLog("Redirecting terminal control to Google OAuth API...");
   try {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -222,33 +253,37 @@ async function signInGoogle(){
     });
     if (error) throw error;
   } catch (err) {
-    debugLog(`🔴 OAuth Dispatch Error: ${err.message}`);
+    debugLog(`🔴 Authorization Trigger Crash: ${err.message}`);
   }
 }
 
-// 3. Bind Actions
+// 3. Setup Button Listeners
 document.getElementById('googleLoginBtn').addEventListener('click', signInGoogle);
 document.getElementById('logoutBtn').addEventListener('click', async () => {
-  debugLog("Terminating session tokens...");
+  debugLog("Executing logoff routine...");
   await supabase.auth.signOut();
   window.location.href = 'https://narayanbarman.github.io/Asawq-Rd-rss/';
 });
 
-// 4. LISTEN FOR REAL-TIME AUTH STATE CHANGES
-// This catches the token immediately when Google hands control back to your site
+// 4. Listen for User Authentication Events
 supabase.auth.onAuthStateChange((event, session) => {
-  debugLog(`Auth State Fired Event: [${event}]`);
+  debugLog(`Detected System Event Token: [${event}]`);
   
   if (session && session.user) {
-    debugLog(`✅ Active User Context Found: ${session.user.email}`);
+    debugLog(`✅ Session Validated. Profile: ${session.user.email}`);
     
-    // Switch Visual States
+    // Switch the whole browser background to vibrant green
+    document.body.classList.add('success-mode');
+    
+    // Toggle application layouts
     document.getElementById('loginViewState').classList.add('hidden');
     document.getElementById('successViewState').classList.remove('hidden');
     document.getElementById('userEmail').innerText = session.user.email;
   } else {
-    debugLog("ℹ️ No active authorization session found. Ready for login.");
-    // Force view reset to login state if not authorized
+    debugLog("ℹ️ No profile tokens parsed. Staying on authorization wall.");
+    
+    // Reset back to standard dark look if unauthenticated
+    document.body.classList.remove('success-mode');
     document.getElementById('loginViewState').classList.remove('hidden');
     document.getElementById('successViewState').classList.add('hidden');
   }
