@@ -1,314 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>FastRx Pro Portal</title>
-
-<style>
-:root {
-  --bg-dark: #0f172a;
-  --card-bg: #1e293b;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --primary-neon: #06b6d4;
-  
-  /* Green Success Screen Colors */
-  --bg-success: #059669;
-  --card-success: #065f46;
-  --text-success: #ecfdf5;
-}
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: var(--bg-dark);
-  color: var(--text-main);
-  margin: 0;
-  padding: 20px;
-  box-sizing: border-box;
-  transition: background 0.5s ease;
-}
-
-body.success-mode {
-  background: var(--bg-success);
-  color: var(--text-success);
-}
-
-.portal-container {
-  background: var(--card-bg);
-  padding: 40px;
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  text-align: center;
-  width: 100%;
-  max-width: 380px;
-  transition: all 0.5s ease;
-}
-
-body.success-mode .portal-container {
-  background: var(--card-success);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-h2 {
-  font-size: 28px;
-  margin: 0 0 8px 0;
-  letter-spacing: 0.5px;
-}
-
-.brand-accent {
-  color: var(--primary-neon);
-}
-
-.subtitle {
-  color: var(--text-muted);
-  font-size: 14px;
-  margin-bottom: 30px;
-}
-
-body.success-mode .subtitle {
-  color: #a7f3d0;
-}
-
-button {
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-google {
-  background: transparent;
-  color: var(--text-main);
-  border: 2px solid #334155;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.btn-google:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: var(--primary-neon);
-}
-
-.btn-logout {
-  background: #ffffff;
-  color: #065f46;
-  margin-top: 25px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.btn-logout:hover {
-  background: #f0fdf4;
-}
-
-.success-icon-badge {
-  width: 70px;
-  height: 70px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 3px solid #ffffff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px auto;
-  color: #ffffff;
-  font-size: 36px;
-}
-
-.user-email-display {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  word-break: break-all;
-  color: #ffffff;
-  font-weight: bold;
-}
-
-.debug-console {
-  width: 100%;
-  max-width: 380px;
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 12px;
-  margin-top: 20px;
-  padding: 15px;
-  box-sizing: border-box;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
-  text-align: left;
-}
-
-body.success-mode .debug-console {
-  background: #022c22;
-  border-color: #064e3b;
-}
-
-.debug-title {
-  color: #64748b;
-  margin-bottom: 8px;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-size: 10px;
-  letter-spacing: 1px;
-}
-
-body.success-mode .debug-title {
-  color: #34d399;
-}
-
-.debug-logs {
-  max-height: 120px;
-  overflow-y: auto;
-  color: #a7f3d0;
-  white-space: pre-wrap;
-}
-
-.hidden {
-  display: none !important;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Prescription Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .flex { display: flex; justify-content: space-between; align-items: center; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        .hidden { display: none !important; }
+        .template-section { margin: 20px 0; padding: 15px; background: #e9ecef; border-radius: 5px; }
+        .pill { display: inline-block; background: #fff; padding: 8px 12px; margin: 5px; border-radius: 20px; border: 1px solid #ced4da; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .pill:hover { background: #007bff; color: white; border-color: #007bff; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; }
+        textarea { height: 120px; }
+        .prescription-output { border: 2px solid #333; padding: 20px; margin-top: 30px; background: #fff; }
+        @media print {
+            body * { visibility: hidden; }
+            .prescription-output, .prescription-output * { visibility: visible; }
+            .prescription-output { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="portal-container">
-  
-  <!-- SIGN IN VIEW -->
-  <div id="loginViewState">
-    <h2>FastRx <span class="brand-accent">Pro</span></h2>
-    <div class="subtitle">Clinical Authentication Terminal</div>
-    
-    <button id="googleLoginBtn" class="btn-google">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      Continue with Google
-    </button>
-  </div>
+<div class="container">
+    <div id="auth-screen" class="flex">
+        <h2>Prescription Portal Login</h2>
+        <button id="login-btn">Sign in with Google</button>
+    </div>
 
-  <!-- GREEN SUCCESS VIEW -->
-  <div id="successViewState" class="hidden">
-    <div class="success-icon-badge">✓</div>
-    <h2>Login Successful!</h2>
-    <div class="subtitle">Welcome back to your workspace.</div>
-    
-    <p style="text-align: left; font-size: 13px; margin-bottom: 5px; opacity: 0.9;">Connected Account:</p>
-    <div id="userEmail" class="user-email-display">Validating session tokens...</div>
-    
-    <button id="logoutBtn" class="btn-logout">Logout</button>
-  </div>
+    <div id="app-screen" class="hidden">
+        <div class="flex">
+            <div>
+                <h3>Welcome, Dr. <span id="doc-name">---</span></h3>
+                <p style="margin:0; font-size:12px; color:gray;" id="doc-email"></p>
+            </div>
+            <button id="logout-btn" style="background:#dc3545;">Logout</button>
+        </div>
+        
+        <hr style="margin:20px 0; border:0; border-top:1px solid #ddd;">
 
+        <div class="template-section">
+            <h4>⚡ Fast Click Medicine Templates</h4>
+            <div id="template-container">
+                </div>
+        </div>
+
+        <div class="flex" style="gap: 20px; align-items: flex-start;">
+            <div style="flex: 1;">
+                <h4>Patient Info</h4>
+                <input type="text" id="patient-name" placeholder="Patient Full Name">
+                <input type="number" id="patient-age" placeholder="Age" style="width: 48%; display:inline-block;">
+                <input type="text" id="patient-sex" placeholder="Sex (M/F/O)" style="width: 48%; display:inline-block; float:right;">
+                
+                <h4>Rx / Medicine Details</h4>
+                <textarea id="prescription-text" placeholder="Click templates above or type custom instructions here..."></textarea>
+                
+                <button id="save-print-btn" style="width: 100%; margin-top: 10px; background: #28a745;">Save & Print Prescription</button>
+            </div>
+        </div>
+
+        <div id="print-area" class="prescription-output hidden">
+            <h2 style="text-align: center; margin-bottom: 5px;">PRESCRIPTION</h2>
+            <p style="text-align: center; margin-top: 0; color: gray;">Generated via Cloud Portal</p>
+            <div class="flex" style="border-bottom: 1px solid #333; padding-bottom: 10px;">
+                <p><strong>Doctor:</strong> Dr. <span id="print-doc"></span></p>
+                <p><strong>Date:</strong> <span id="print-date"></span></p>
+            </div>
+            <div style="padding: 15px 0; border-bottom: 1px solid #eee;">
+                <p><strong>Patient:</strong> <span id="print-p-name"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Age/Sex:</strong> <span id="print-p-meta"></span></p>
+            </div>
+            <div style="min-height: 200px; padding-top: 15px;">
+                <h3 style="margin-top:0;">Rx:</h3>
+                <p id="print-rx" style="white-space: pre-wrap; line-height: 1.6;"></p>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="debug-console">
-  <div class="debug-title">⚙️ System Diagnostic Console</div>
-  <div id="debugLogs" class="debug-logs">Initializing core auth logic...</div>
-</div>
-
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-const logOutput = document.getElementById('debugLogs');
-function debugLog(message) {
-  const timestamp = new Date().toLocaleTimeString();
-  logOutput.innerText += `\n[${timestamp}] ${message}`;
-  logOutput.scrollTop = logOutput.scrollHeight;
-}
-
-// Initialize Supabase Client
-const supabase = createClient(
-  'https://qejpughcbxosjdcahqzm.supabase.co',
-  'sb_publishable_l6259X-5NrXjszGC3ex9Hw_pl9ieLfo'
-);
-debugLog("Supabase Engine Online.");
-
-// Google OAuth Trigger
-async function signInGoogle(){
-  debugLog("Redirecting terminal control to Google OAuth API...");
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        // Directing explicitly to the index file helps prevent path dropping
-        redirectTo: 'https://narayanbarman.github.io/Asawq-Rd-rss/index.html'
-      }
-    });
-    if (error) throw error;
-  } catch (err) {
-    debugLog(`🔴 Authorization Trigger Crash: ${err.message}`);
-  }
-}
-
-document.getElementById('googleLoginBtn').addEventListener('click', signInGoogle);
-
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  debugLog("Executing logoff routine...");
-  await supabase.auth.signOut();
-  window.location.href = 'https://narayanbarman.github.io/Asawq-Rd-rss/';
-});
-
-// FORCE TOKEN EXTRACTION INTERCEPTOR
-async function forceTokenCheck() {
-  const currentUrl = window.location.href;
-  debugLog("Checking URL string parameters...");
-  
-  if (currentUrl.includes("access_token=")) {
-    debugLog("⚡ Found raw access tokens in URL hash! Injecting session...");
-    
-    // Parse individual URL parameters
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get("access_token");
-    const refreshToken = params.get("refresh_token");
-
-    if (accessToken && refreshToken) {
-      // Manually force Supabase to process the tokens it was skipping
-      const { data, error } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken
-      });
-      
-      if (error) {
-        debugLog(`🔴 Token Injection Failed: ${error.message}`);
-      } else if (data && data.user) {
-        debugLog(`✅ Token Injection Success! User: ${data.user.email}`);
-        showSuccessView(data.user.email);
-        return;
-      }
-    }
-  }
-}
-
-function showSuccessView(email) {
-  document.body.classList.add('success-mode');
-  document.getElementById('loginViewState').classList.add('hidden');
-  document.getElementById('successViewState').classList.remove('hidden');
-  document.getElementById('userEmail').innerText = email;
-}
-
-// Core Listener Fallback
-supabase.auth.onAuthStateChange((event, session) => {
-  debugLog(`Detected System Event Token: [${event}]`);
-  
-  if (session && session.user) {
-    debugLog(`✅ Native Session Confirmed: ${session.user.email}`);
-    showSuccessView(session.user.email);
-  } else {
-    // If native setup reports nothing, trigger our deep parameter inspector
-    forceTokenCheck();
-  }
-});
-</script>
-
+<script type="module" src="app.js"></script>
 </body>
 </html>
