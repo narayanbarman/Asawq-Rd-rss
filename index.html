@@ -190,24 +190,27 @@
 
     <script>
         // =========================================================================
-        // 1. FIREBASE SETUP (Verify your precise credentials inside this block)
+        // IMPORTANT: Verify that your exact Project ID details match your keys!
         // =========================================================================
         const firebaseConfig = {
           apiKey: "YOUR_API_KEY",
           authDomain: "prescription-maker.firebaseapp.com",
-          projectId: "prescription-maker",
+          projectId: "prescription-maker", 
           storageBucket: "prescription-maker.appspot.com",
-          messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+          messagingSenderId: "YOUR_SENDER_ID",
           appId: "YOUR_APP_ID"
         };
 
+        // Initialize App
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        
+        // FORCED ROUTING FIX: Forces the app to talk explicitly to your open (default) instance
+        const db = firebase.app().firestore();
 
         let activeMedicines = [];
 
         // =========================================================================
-        // 2. FETCH MEDICINE TAGS (LEFT SIDE)
+        // FETCH MEDICINE TAGS
         // =========================================================================
         async function loadMedicineTags() {
             const container = document.getElementById("firebaseTagsContainer");
@@ -217,7 +220,7 @@
                 const snapshot = await db.collection("medicines").get();
                 
                 if (snapshot.empty) {
-                    container.innerHTML = "<span style='color:#777; font-size:12px;'>No medicines found in database. Go to console and add documents.</span>";
+                    container.innerHTML = "<span style='color:#777; font-size:12px;'>No tags found. Go to Firebase console and add a document with a 'name' field inside the 'medicines' collection.</span>";
                     return;
                 }
 
@@ -225,7 +228,7 @@
                 
                 snapshot.forEach(doc => {
                     const medData = doc.data();
-                    if (!medData.name) return; // skip fields without name parameter
+                    if (!medData.name) return;
                     
                     const tagElement = document.createElement("div");
                     tagElement.className = "med-tag";
@@ -236,12 +239,12 @@
                 });
             } catch (err) {
                 console.error(err);
-                container.innerHTML = `<span style='color:red;'>Error: ${err.message}</span>`;
+                container.innerHTML = `<span style='color:red;'>Permission/Config Error: ${err.message}</span>`;
             }
         }
 
         // =========================================================================
-        // 3. UI FORM INTERACTIONS
+        // LIVE FORM LOGIC
         // =========================================================================
         function addMedicineToForm(medicineName) {
             if (activeMedicines.some(m => m.name === medicineName)) return;
@@ -286,18 +289,18 @@
         }
 
         // =========================================================================
-        // 4. SAVE TO FIRESTORE HISTORY
+        // SAVE PRESCRIPTION
         // =========================================================================
         document.getElementById("savePrescriptionBtn").addEventListener("click", async () => {
             const patientName = document.getElementById("patientName").value.trim();
             const adviceText = document.getElementById("advice").value.trim();
 
             if (!patientName) {
-                alert("Please specify a Patient Name.");
+                alert("Please enter a Patient Name.");
                 return;
             }
             if (activeMedicines.length === 0) {
-                alert("Please add medicines from the left panel directory.");
+                alert("Please add at least one medicine tag.");
                 return;
             }
 
@@ -305,7 +308,7 @@
                 patientName: patientName,
                 advice: adviceText,
                 medicines: activeMedicines,
-                timestamp: firebase.firestore.Timestamp.fromDate(new Date()) // Native safe timestamp storage
+                timestamp: firebase.firestore.Timestamp.fromDate(new Date())
             };
 
             try {
@@ -319,12 +322,12 @@
                 
                 await loadPrescriptionHistory();
             } catch (err) {
-                alert("Database Save Failed: " + err.message);
+                alert("Save Failed: " + err.message);
             }
         });
 
         // =========================================================================
-        // 5. FETCH HISTORY FROM FIRESTORE (Safely handles both Object and Text Strings)
+        // FETCH WORKSPACE HISTORY
         // =========================================================================
         async function loadPrescriptionHistory() {
             const displayFeed = document.getElementById("historyFeed");
@@ -334,7 +337,7 @@
                 const snapshot = await db.collection("history").get();
 
                 if (snapshot.empty) {
-                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No history found.</p>";
+                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No history records tracked yet.</p>";
                     return;
                 }
 
@@ -342,21 +345,18 @@
                 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    
-                    // SAFE TIMESTAMP RENDERING FILTER BLOCK
                     let formattedDate = "Date Unknown";
                     if (data.timestamp) {
                         if (typeof data.timestamp.toDate === 'function') {
-                            formattedDate = data.timestamp.toDate().toLocaleString(); // Handles native object formats
+                            formattedDate = data.timestamp.toDate().toLocaleString();
                         } else {
-                            formattedDate = new Date(data.timestamp).toLocaleString(); // Handles raw string data fallbacks
+                            formattedDate = new Date(data.timestamp).toLocaleString();
                         }
                     }
                     
                     const card = document.createElement("div");
                     card.className = "history-card";
                     
-                    // Error protection for formatting medicines array maps
                     const medicinesArray = data.medicines || [];
                     const medsHtml = medicinesArray.map(m => `
                         <li><strong>${m.name}</strong> — ${m.dosage || 'N/A'} (${m.duration || 'N/A'})</li>
@@ -371,12 +371,11 @@
                     displayFeed.appendChild(card);
                 });
             } catch (err) {
-                console.error("Fetch Loop Error: ", err);
                 displayFeed.innerHTML = `<p style='color:red;'>Fetch failed: ${err.message}</p>`;
             }
         }
 
-        // Run engine setup execution
+        // Run Engine
         async function runEngine() {
             await loadMedicineTags();
             await loadPrescriptionHistory();
