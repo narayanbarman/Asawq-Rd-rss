@@ -1,19 +1,220 @@
-async function runEngine() {
-    console.log("Checking Firestore connection status...");
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+
+// =========================================================================
+// 1. FIREBASE CONFIGURATION (Replace with your actual keys from Settings)
+// =========================================================================
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase & Firestore database instance
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Local array to keep track of medicines currently being added to the form
+let activeMedicines = [];
+
+// =========================================================================
+// 2. FETCH & DISPLAY MEDICINE DIRECTORY TAGS (LEFT SIDE)
+// =========================================================================
+async function loadMedicineTags() {
+    const container = document.getElementById("firebaseTagsContainer");
+    if (!container) return;
+
     try {
-        // Quick connection test: write a dummy document to a test collection
-        const testRef = await addDoc(collection(db, "connection_test"), {
-            status: "Online",
-            checkedAt: new Date()
-        });
-        console.log("Firestore Write Test: SUCCESS! Saved doc ID:", testRef.id);
+        const snapshot = await getDocs(collection(db, "medicines"));
         
-        // Execute primary dashboard streams
-        await loadMedicineTags();
+        // AUTOMATIC SEEDING: If your database has 0 medicines, this injects default templates automatically
+        if (snapshot.empty) {
+            console.log("Medicines collection is empty! Seeding baseline templates...");
+            const defaultMeds = [
+                "Paracetamol 500mg", "Amoxicillin 500mg", "Cetirizine 10mg", 
+                "Metformin 500mg", "Pantoprazole 40mg", "Azithromycin 500mg", 
+                "Ibuprofen 400mg", "Omeprazole 20mg", "Amlodipine 5mg"
+            ];
+            
+            for (const medName of defaultMeds) {
+                await addDoc(collection(db, "medicines"), { name: medName });
+            }
+            // Re-fetch automatically after seeding completes
+            await loadMedicineTags();
+            return;
+        }
+
+        container.innerHTML = ""; // Clear out the loading text
+        
+        snapshot.forEach(doc => {
+            const medData = doc.data();
+            const tagElement = document.createElement("div");
+            tagElement.className = "med-tag";
+            tagElement.textContent = medData.name;
+            
+            // Interaction: Clicking a left-side tag adds it instantly to the prescription card on the right
+            tagElement.addEventListener("click", () => addMedicineToForm(medData.name));
+            container.appendChild(tagElement);
+        });
+    } catch (err) {
+        console.error("Error fetching medicine tags: ", err);
+        container.innerHTML = `<span style='color:red;'>Fetch Error: ${err.message}</span>`;
+    }
+}
+
+// =========================================================================
+// 3. PRESCRIPTION LIVE COMPILER LOGIC
+// =========================================================================
+function addMedicineToForm(medicineName) {
+    // Prevent adding the exact same medicine twice inside the working card
+    if (activeMedicines.some(m => m.name === medicineName)) return;
+
+    activeMedicines.push({ name: medicineName, dosage: "", duration: "" });
+    renderActiveFormItems();
+}
+
+function renderActiveFormItems() {
+    const targetDiv = document.getElementById("activePrescriptionMeds");
+    const msg = document.getElementById("emptyFormMessage");
+    if (!targetDiv) return;
+
+    // Remove any old rows before rebuilding the list
+    const existingRows = targetDiv.querySelectorAll(".prescription-item");
+    existingRows.forEach(el => el.remove());
+
+    if (activeMedicines.length === 0) {
+        if (msg) msg.style.display = "block";
+        return;
+    }
+
+    if (msg) msg.style.display = "none";
+
+    activeMedicines.forEach((med, index) => {
+        const row = document.createElement("div");
+        row.className = "prescription-item";
+        row.innerHTML = `
+            <span class="item-name">${med.name}</span>
+            <input type="text" class="item-input dosage-field" placeholder="Dosage (e.g., 1-0-1)" required value="${med.dosage}">
+            <input type="text" class="item-input duration-field" placeholder="Duration (e.g., 5 days)" required value="${med.duration}">
+            <button type="button" class="remove-btn">×</button>
+        `;
+
+        // Sync typed input values straight back into our local array state data mapping
+        row.querySelector(".dosage-field").addEventListener("input", (e) => activeMedicines[index].dosage = e.target.value);
+        row.querySelector(".duration-field").addEventListener("input", (e) => activeMedicines[index].duration = e.target.value);
+        
+        // Remove item logic
+        row.querySelector(".remove-btn").addEventListener("click", () => {
+            activeMedicines.splice(index, 1);
+            renderActiveFormItems();
+        });
+
+        targetDiv.appendChild(row);
+    });
+}
+
+// =========================================================================
+// 4. AUTOMATED SAVE FUNCTION (WRITES TO FIRESTORE HISTORY COLLECTION)
+// =========================================================================
+document.getElementById("savePrescriptionBtn").addEventListener("click", async () => {
+    const patientName = document.getElementById("patientName").value.trim();
+    const adviceText = document.getElementById("advice").value.trim();
+
+    if (!patientName) {
+        alert("Please enter a valid Patient Name.");
+        return;
+    }
+    if (activeMedicines.length === 0) {
+        alert("Please select at least one medicine from the directory first.");
+        return;
+    }
+
+    // Prepare complete data payload object structure
+    const prescriptionPayload = {
+        patientName: patientName,
+        advice: adviceText,
+        medicines: activeMedicines,
+        timestamp: new Date() // Firebase automatically maps native dates
+    };
+
+    try {
+        // Firebase automatically handles creating the 'history' collection & unique document IDs dynamically
+        await addDoc(collection(db, "history"), prescriptionPayload);
+        alert("Prescription saved to Firestore successfully!");
+        
+        // Clear screen form fields back to pristine states cleanly
+        document.getElementById("patientName").value = "";
+        document.getElementById("advice").value = "";
+        activeMedicines = [];
+        renderActiveFormItems();
+        
+        // Re-fetch timeline log feed list instantly to render changes immediately
         await loadPrescriptionHistory();
     } catch (err) {
-        console.error("Firestore Core Connection FAILED:", err.message);
-        alert("Firebase Connection Error: " + err.message);
+        console.error("Firestore Save Error: ", err);
+        alert("Could not save to database. Error message: " + err.message);
     }
+});
+
+// =========================================================================
+// 5. AUTOMATED FETCH FUNCTION (READS HISTORY LOG DATA FROM FIRESTORE)
+// =========================================================================
+async function loadPrescriptionHistory() {
+    const displayFeed = document.getElementById("historyFeed");
+    if (!displayFeed) return;
+
+    try {
+        // Clean call targeted fetch (No sorting filter applied to prevent Firebase configuration index blocks)
+        const snapshot = await getDocs(collection(db, "history"));
+
+        if (snapshot.empty) {
+            displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No past prescription history records tracked.</p>";
+            return;
+        }
+
+        displayFeed.innerHTML = ""; // Wipe loading text layout placeholder elements safely
+        
+        // Unpack records dynamically
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            
+            // Safe timestamp format resolution checking if seconds attributes exist
+            let dateStr = "Date Unknown";
+            if (data.timestamp) {
+                const dateObj = data.timestamp.seconds ? new Date(data.timestamp.seconds * 1000) : new Date(data.timestamp);
+                dateStr = dateObj.toLocaleString();
+            }
+            
+            const card = document.createElement("div");
+            card.className = "history-card";
+            
+            const medsListHtml = data.medicines.map(m => `
+                <li><strong>${m.name}</strong> — ${m.dosage || 'N/A'} (${m.duration || 'N/A'})</li>
+            `).join("");
+
+            card.innerHTML = `
+                <strong style="color:#1a73e8; font-size:15px;">${data.patientName}</strong> 
+                <span style="font-size:11px; color:#aaa; float:right;">${dateStr}</span>
+                <ul class="history-meds">${medsListHtml}</ul>
+                ${data.advice ? `<p style="margin:5px 0 0 0; font-size:12px; color:#5f6368;"><strong>Advice:</strong> ${data.advice}</p>` : ""}
+            `;
+            displayFeed.appendChild(card);
+        });
+    } catch (err) {
+        console.error("Firestore Fetch History Error: ", err);
+        displayFeed.innerHTML = `<p style='color:red;'>Fetch failed: ${err.message}</p>`;
+    }
+}
+
+// =========================================================================
+// 6. MASTER INITIALIZATION ENGINE ON LOAD
+// =========================================================================
+async function runEngine() {
+    console.log("Initializing Prescription Engine Stream...");
+    await loadMedicineTags();
+    await loadPrescriptionHistory();
 }
 runEngine();
