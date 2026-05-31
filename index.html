@@ -3,61 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Prescription Portal</title>
+    <title>Simplified Doctor Desk</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
-        .container { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .prescription-form, .history-panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .prescription-form { flex: 2; }
-        .history-panel { flex: 1; max-height: 80vh; overflow-y: auto; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="text"], textarea, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .med-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #0056b3; }
-        .btn-add-med { background-color: #28a745; margin-bottom: 15px; }
-        .btn-add-med:hover { background-color: #218838; }
-        .history-card { border-left: 4px solid #007bff; background: #f8f9fa; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
-        .tag { display: inline-block; background: #e2e3e5; padding: 2px 8px; margin-right: 5px; border-radius: 12px; font-size: 12px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fb; }
+        .app-layout { display: flex; gap: 20px; height: 90vh; }
+        
+        /* Left Sidebar - Medicine Tags */
+        .sidebar { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; overflow-y: auto; }
+        .med-tag { background: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+        .med-tag:hover { background: #007bff; color: white; transform: translateY(-1px); }
+        
+        /* Right Side - Main Workspace */
+        .main-workspace { flex: 3; display: flex; flex-direction: column; gap: 20px; }
+        .prescription-box, .history-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .prescription-box { flex: 2; }
+        .history-box { flex: 1.5; overflow-y: auto; }
+        
+        /* Form Styling */
+        .form-row { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #495057; }
+        input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; }
+        
+        /* Selected Medicine Rows */
+        .prescription-item { display: flex; gap: 10px; background: #f8f9fa; padding: 10px; margin-bottom: 8px; border-radius: 4px; align-items: center; }
+        .item-name { flex: 2; font-weight: bold; color: #212529; }
+        .item-input { flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 4px; }
+        .remove-btn { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+        
+        /* Buttons */
+        .btn-primary { background: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn-primary:hover { background: #218838; }
+        
+        /* History Layout */
+        .history-card { border-left: 4px solid #007bff; background: #f8f9fa; padding: 12px; margin-bottom: 10px; border-radius: 4px; position: relative; }
+        .history-meds { font-size: 13px; color: #495057; margin: 5px 0 0 0; padding-left: 15px; }
     </style>
 </head>
 <body>
 
-    <h2 style="text-align: center;">Doctor Consultation & Prescription Dashboard</h2>
-
-    <div class="container">
-        <div class="prescription-form">
-            <h3>New Prescription</h3>
-            
-            <div class="form-group">
-                <label for="patientName">Patient Name:</label>
-                <input type="text" id="patientName" placeholder="Enter patient name" required>
-            </div>
-
-            <div class="form-group">
-                <label>Medicines:</label>
-                <div id="medicinesContainer">
-                    </div>
-                <button type="button" class="btn-add-med" id="addMedRowBtn">+ Add Medicine</button>
-            </div>
-
-            <div class="form-group">
-                <label for="advice">Doctor's Advice / Instructions:</label>
-                <textarea id="advice" rows="4" placeholder="Enter general health advice..."></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="tags">Tags (Comma separated):</label>
-                <input type="text" id="tags" placeholder="e.g., Follow-up, Diabetes, High Risk">
-            </div>
-
-            <button type="button" id="savePrescriptionBtn" style="width: 100%; padding: 12px; font-size: 16px;">Save & Commit Prescription</button>
+    <div class="app-layout">
+        <div class="sidebar">
+            <h3>Medicine Directory</h3>
+            <p style="font-size: 12px; color: #6c757d; margin: 0;">Click a tag to add it directly to the active prescription form on the right.</p>
+            <div class="tag-list" id="firebaseTagsContainer">Loading tags...</div>
         </div>
 
-        <div class="history-panel">
-            <h3>Consultation History</h3>
-            <div id="historyList">Loading historical logs...</div>
+        <div class="main-workspace">
+            <div class="prescription-box">
+                <h3>Active Prescription</h3>
+                
+                <div class="form-row">
+                    <label for="patientName">Patient Name</label>
+                    <input type="text" id="patientName" placeholder="Enter patient's full name" required>
+                </div>
+
+                <div class="form-row">
+                    <label>Selected Medicines & Dosages</label>
+                    <div id="activePrescriptionMeds">
+                        <p style="color: #6c757d; font-size: 13px; font-style: italic;" id="emptyFormMessage">No medicines selected yet. Click from the left directory to add.</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label for="advice">Doctor's Advice / Notes</label>
+                    <textarea id="advice" rows="3" placeholder="General instructions..."></textarea>
+                </div>
+
+                <button class="btn-primary" id="savePrescriptionBtn">Save Prescription</button>
+            </div>
+
+            <div class="history-box">
+                <h3>Prescription Logs History</h3>
+                <div id="historyFeed">Loading past records...</div>
+            </div>
         </div>
     </div>
 
