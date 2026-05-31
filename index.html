@@ -189,7 +189,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Your explicit verified web configuration credentials
+        // Verified configuration credentials for test-website-22778
         const firebaseConfig = {
             apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
             authDomain: "test-website-22778.firebaseapp.com",
@@ -200,7 +200,7 @@
             measurementId: "G-9E5RYBBKJS"
         };
 
-        // Initialize App Configuration globally
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -216,17 +216,15 @@
             try {
                 const snapshot = await db.collection("medicines").get();
                 
-                // AUTOMATIC RESET FIX: If database is completely empty, it populates it automatically!
+                // If database collection is empty or missing, auto-create initial entries
                 if (snapshot.empty) {
-                    container.innerHTML = "<span style='color:#777; font-size:12px;'>Database empty! Automatically generating starter tags...</span>";
+                    container.innerHTML = "<span style='color:#777; font-size:12px;'>Database empty! Generating starter tags...</span>";
                     
-                    // Injecting 4 default medical tags straight into your cloud console
                     await db.collection("medicines").add({ name: "Paracetamol 500mg" });
                     await db.collection("medicines").add({ name: "Amoxicillin 500mg" });
                     await db.collection("medicines").add({ name: "Pantocid 40mg" });
                     await db.collection("medicines").add({ name: "Cetirizine 10mg" });
                     
-                    // Reload tags view panel after 1.5 seconds
                     setTimeout(loadMedicineTags, 1500);
                     return;
                 }
@@ -246,7 +244,7 @@
                 });
             } catch (err) {
                 console.error(err);
-                container.innerHTML = `<span style='color:red;'>Database Setup Error: ${err.message}</span>`;
+                container.innerHTML = `<span style='color:red;'>Database Error: ${err.message}</span>`;
             }
         }
 
@@ -303,11 +301,11 @@
             const adviceText = document.getElementById("advice").value.trim();
 
             if (!patientName) {
-                alert("Please write down a Patient Name.");
+                alert("Please enter a Patient Name.");
                 return;
             }
             if (activeMedicines.length === 0) {
-                alert("Please add at least one medicine tag from the left panel directory.");
+                alert("Please add at least one medicine tag from the left sidebar.");
                 return;
             }
 
@@ -320,7 +318,7 @@
 
             try {
                 await db.collection("history").add(payload);
-                alert("Prescription submitted successfully!");
+                alert("Prescription saved successfully!");
                 
                 document.getElementById("patientName").value = "";
                 document.getElementById("advice").value = "";
@@ -334,7 +332,7 @@
         });
 
         // =========================================================================
-        // FETCH LOG FEED
+        // FETCH HISTORY LOG FEED
         // =========================================================================
         async function loadPrescriptionHistory() {
             const displayFeed = document.getElementById("historyFeed");
@@ -344,7 +342,7 @@
                 const snapshot = await db.collection("history").get();
 
                 if (snapshot.empty) {
-                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No records tracked yet.</p>";
+                    displayFeed.innerHTML = "<p style='color:#777; font-size:13px;'>No history records tracked yet.</p>";
                     return;
                 }
 
@@ -382,7 +380,7 @@
             }
         }
 
-        // Run engine sequence loops
+        // Run application loop execution sequence
         async function runEngine() {
             await loadMedicineTags();
             await loadPrescriptionHistory();
