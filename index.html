@@ -258,7 +258,7 @@
   let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
   let subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true };
   
-  const ADMIN_EMAIL = "narayanbarma3210@gmail.com";
+  const ADMIN_EMAIL = "narayanbarman3210@gmail.com";
   
   function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
   function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else if(el) el.remove(); }
