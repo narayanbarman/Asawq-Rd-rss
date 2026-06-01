@@ -44,8 +44,8 @@
     .card { background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; }
     .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 12px; border-left: 4px solid #0a7e8c; padding-left: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; color: #1f3b4c; }
     .card-title span { display: flex; align-items: center; gap: 6px; }
-    .expand-icon { background: #eef2ff; border-radius: 30px; padding: 2px 8px; font-size: 0.7rem; cursor: pointer; transition: 0.1s; }
-    .expand-icon:hover { background: #0a7e8c; color: white; }
+    .clickable-title { cursor: pointer; transition: 0.1s; border-radius: 20px; padding: 2px 6px; }
+    .clickable-title:hover { background: #e6f4f5; color: #0a7e8c; }
     .search-bar { background: #f1f5f9; border-radius: 40px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; position: relative; }
     .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.85rem; outline: none; }
     .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 20px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -103,6 +103,7 @@
     .scrollable-picker { max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
     .picker-item { background: #f8fafc; border-radius: 20px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2edf2; }
     .picker-item:hover { background: #e6f4f5; border-color: #0a7e8c; }
+    .editable-hint { font-size: 0.65rem; color: #9ca3af; margin-left: 6px; font-weight: normal; }
     @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
     @media (max-width: 800px) { .right-panel { min-width: auto; } }
     .login-container { text-align: center; padding: 60px 20px; background: white; border-radius: 32px; max-width: 500px; margin: 50px auto; }
@@ -143,20 +144,14 @@
         <div style="font-weight:600; font-size:0.8rem;">🔥 Most Used</div>
         <div id="mostUsedContainer" class="most-used"></div>
         <div class="flex-between">
-          <span style="font-weight:600; font-size:0.8rem;">📚 All Medicines</span>
-          <div style="display: flex; gap: 8px;">
-            <button class="expand-icon" id="expandAllMedsBtn" title="Open full medicine list"><i class="fas fa-expand-alt"></i> Expand</button>
-            <button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button>
-          </div>
+          <span class="clickable-title" id="allMedsButton" style="font-weight:600; font-size:0.8rem; display: flex; align-items: center; gap: 6px;"><i class="fas fa-expand-alt"></i> 📚 All Medicines</span>
+          <button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button>
         </div>
         <div id="medicineListContainer" class="med-grid"></div>
 
         <div class="flex-between" style="margin-top: 16px;">
-          <span class="card-title" style="margin-bottom:0;"><i class="fas fa-comment-dots"></i> Quick Advice</span>
-          <div style="display: flex; gap: 8px;">
-            <button class="expand-icon" id="expandAdviceBtn" title="Open full advice list"><i class="fas fa-expand-alt"></i> Expand</button>
-            <button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button>
-          </div>
+          <span class="clickable-title" id="allAdviceButton" style="font-weight:600; font-size:0.8rem; display: flex; align-items: center; gap: 6px;"><i class="fas fa-expand-alt"></i> <i class="fas fa-comment-dots"></i> Quick Advice</span>
+          <button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button>
         </div>
         <div class="tag-group" id="adviceTagList"></div>
         <div class="flex-between">
@@ -184,7 +179,7 @@
         </div>
 
         <div class="card">
-          <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items</span></div>
+          <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="editable-hint">(click any field to edit)</span></span></div>
           <div style="overflow-x: auto;">
             <table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table>
           </div>
@@ -349,7 +344,7 @@
     document.getElementById("allAdvicePickerModal").style.display = "block";
   }
   
-  // Firestore data load (unchanged except adding auto-suggest load)
+  // Firestore data load
   async function loadUserData() {
     if(!currentUser) return;
     showLoading(true);
@@ -460,7 +455,7 @@
   function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
   function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
   function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
-  function getPreviewHTML(split){ const fn=document.getElementById("firstName").value.trim(), ln=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diag=document.getElementById("diagnosisField").value.trim(); let patient=(fn||ln)?`${fn} ${ln}`.trim():""; let genderShow=gender?`(${gender})`:""; let patientLine=(patient||age||genderShow)?`<div><strong>${patient||"Patient"}</strong> ${age?`, Age: ${age}`:''} ${genderShow}</div>`:""; let diagHtml=diag?`<div><strong>Diagnosis:</strong> ${escapeHtml(diag)}</div>`:""; let medTable=`<table style="width:100%; border-collapse:collapse; margin-top:8px;"><thead><tr style="background:#f1f5f9;"><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th></tr></thead><tbody>`; currentMedicines.forEach(it=>{medTable+=`<tr><td>${escapeHtml(it.name)}</td><td>${it.dosage||"-"}</td><td>${it.frequency||"-"}</td><td>${it.duration||"-"}</td><td>${it.howToTake||"-"}</td></tr>`;}); medTable+=`</tbody></table>`; if(currentMedicines.length===0) medTable="<p><i>No medicines added.</i></p>"; const main=`<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${new Date().toLocaleString()}</span></div>${patientLine}${diagHtml}</div>${medTable}`; if(split){ let leftDisease=diag?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diag)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div style="display:flex; gap:16px;"><div style="width:120px; border-right:1px solid #0a7e8c; padding-right:10px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${main}</div></div>`; } else { let adviceHtml=currentAdvices.length?`<div style="margin-top:12px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return main+adviceHtml; } }
+  function getPreviewHTML(split){ const fn=document.getElementById("firstName").value.trim(), ln=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diag=document.getElementById("diagnosisField").value.trim(); let patient=(fn||ln)?`${fn} ${ln}`.trim():""; let genderShow=gender?`(${gender})`:""; let patientLine=(patient||age||genderShow)?`<div><strong>${patient||"Patient"}</strong> ${age?`, Age: ${age}`:''} ${genderShow}</div>`:""; let diagHtml=diag?`<div><strong>Diagnosis:</strong> ${escapeHtml(diag)}</div>`:""; let medTable=`<table style="width:100%; border-collapse:collapse; margin-top:8px;"><thead><tr style="background:#f1f5f9;"><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th></table></thead><tbody>`; currentMedicines.forEach(it=>{medTable+=`<tr><td>${escapeHtml(it.name)}</td><td>${it.dosage||"-"}</td><td>${it.frequency||"-"}</td><td>${it.duration||"-"}</td><td>${it.howToTake||"-"}</td></table>`;}); medTable+=`</tbody></table>`; if(currentMedicines.length===0) medTable="<p><i>No medicines added.</i></p>"; const main=`<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${new Date().toLocaleString()}</span></div>${patientLine}${diagHtml}</div>${medTable}`; if(split){ let leftDisease=diag?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diag)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div style="display:flex; gap:16px;"><div style="width:120px; border-right:1px solid #0a7e8c; padding-right:10px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${main}</div></div>`; } else { let adviceHtml=currentAdvices.length?`<div style="margin-top:12px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return main+adviceHtml; } }
   function updatePreview(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(split); const cont=document.getElementById("previewContainer"); if(split) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
   function resetCurrentDraft(){ currentMedicines=[]; currentAdvices=[]; document.getElementById("firstName").value=""; document.getElementById("lastName").value=""; document.getElementById("patientAge").value=""; document.getElementById("patientGender").value=""; document.getElementById("diagnosisField").value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial=generateSerial(); }
   async function saveCurrentPrescription(){ if(currentMedicines.length===0&&currentAdvices.length===0){ alert("Add at least one medicine or advice."); return; } const newPresc={ id:Date.now().toString(), serial:currentSerial, createdAt:firebase.firestore.FieldValue.serverTimestamp(), dateTime:new Date().toISOString(), patient:{firstName:document.getElementById("firstName").value.trim(), lastName:document.getElementById("lastName").value.trim(), age:document.getElementById("patientAge").value.trim(), gender:document.getElementById("patientGender").value}, diagnosis:document.getElementById("diagnosisField").value.trim(), medicines:JSON.parse(JSON.stringify(currentMedicines)), advices:[...currentAdvices] }; prescriptions.unshift(newPresc); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('prescriptions').doc(newPresc.id).set(newPresc); resetCurrentDraft(); alert(`Saved ${currentSerial}`); }
@@ -497,7 +492,7 @@
   document.getElementById("lastName")?.addEventListener("change", function(){ addNewLastName(this.value); });
   document.getElementById("diagnosisField")?.addEventListener("change", function(){ addNewDisease(this.value); });
   
-  // Event bindings (added expand buttons and disease picker)
+  // Event bindings
   function bindEvents(){
     document.getElementById("searchMedicine").addEventListener("input",e=>renderMedicineList(e.target.value));
     document.getElementById("clearAllMedicinesBtn").addEventListener("click",()=>{currentMedicines=[]; renderMedicinesTable(); updatePreview();});
@@ -540,9 +535,9 @@
     ["firstName","lastName","patientAge","patientGender","diagnosisField"].forEach(id=>document.getElementById(id)?.addEventListener("input",updatePreview));
     document.querySelectorAll('input[name="paperStyle"]').forEach(r=>r.addEventListener("change",()=>updatePreview()));
     
-    // NEW: Expand buttons and disease picker
-    document.getElementById("expandAllMedsBtn").addEventListener("click", showAllMedsPicker);
-    document.getElementById("expandAdviceBtn").addEventListener("click", showAllAdvicePicker);
+    // Clickable title buttons (no separate expand button)
+    document.getElementById("allMedsButton").addEventListener("click", showAllMedsPicker);
+    document.getElementById("allAdviceButton").addEventListener("click", showAllAdvicePicker);
     document.getElementById("diseasePickerBtn").addEventListener("click", showDiseaseModal);
     document.getElementById("closeDiseaseModal").addEventListener("click", () => document.getElementById("diseaseModal").style.display = "none");
     document.getElementById("addNewDiseaseBtn").addEventListener("click", addNewDiseaseFromModal);
