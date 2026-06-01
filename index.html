@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro – Professional Prescription with Full Header</title>
+  <title>FastRx Pro – Professional Prescription System</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -72,9 +72,17 @@
     .patient-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .name-field, .lastname-field { flex: 2; }
     .age-field, .gender-field { flex: 1; }
-    .disease-wrapper { display: flex; gap: 8px; align-items: center; }
+    .disease-wrapper { position: relative; display: flex; gap: 8px; align-items: center; }
     .disease-wrapper input { flex: 1; }
     .disease-picker-btn { background: #e2e8f0; border: none; border-radius: 30px; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
+    .disease-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 16px; max-height: 200px; overflow-y: auto; z-index: 20; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 4px; }
+    .disease-dropdown-item { padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border-bottom: 1px solid #eef2f7; }
+    .disease-dropdown-item:hover { background: #e6f4f5; }
+    .disease-dropdown-item .delete-icon { color: #dc2626; cursor: pointer; padding: 0 4px; }
+    .disease-dropdown-item .delete-icon:hover { color: #b91c1c; }
+    .add-disease-row { padding: 8px 12px; border-top: 1px solid #e2e8f0; display: flex; gap: 6px; }
+    .add-disease-row input { flex: 1; padding: 4px 8px; font-size: 0.75rem; }
+    .add-disease-row button { padding: 4px 8px; font-size: 0.7rem; }
     .layout-toggle { background: #f8fafc; border-radius: 40px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.7rem; }
     .prescription-preview { background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 16px; }
     .prescription-preview.split-line { border-left: 3px solid #0a7e8c; background: #fffdf7; padding-left: 18px; }
@@ -120,10 +128,26 @@
     .settings-group { margin-bottom: 20px; }
     .settings-group h4 { margin-bottom: 12px; font-size: 0.9rem; color: #0a4c6e; border-left: 3px solid #0a7e8c; padding-left: 8px; }
     .radio-group { display: flex; gap: 16px; margin-top: 8px; }
+    /* Login Modal Styles */
+    .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+    .login-overlay.active { opacity: 1; visibility: visible; }
+    .login-modal { background: white; border-radius: 32px; width: 90%; max-width: 420px; padding: 28px 24px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.3s ease; }
+    .login-overlay.active .login-modal { transform: scale(1); }
+    .login-modal h2 { margin-bottom: 20px; text-align: center; color: #0a4c6e; }
+    .login-modal .input-group { margin-bottom: 16px; }
+    .login-modal .input-group label { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 4px; color: #4b6b87; }
+    .login-modal .input-group input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 0.85rem; }
+    .login-modal .btn-login { width: 100%; margin-top: 8px; }
+    .login-modal .divider { text-align: center; margin: 16px 0; position: relative; font-size: 0.7rem; color: #94a3b8; }
+    .login-modal .divider::before, .login-modal .divider::after { content: ""; position: absolute; top: 50%; width: 45%; height: 1px; background: #e2e8f0; }
+    .login-modal .divider::before { left: 0; }
+    .login-modal .divider::after { right: 0; }
+    .login-modal .footer-links { display: flex; justify-content: space-between; margin-top: 16px; font-size: 0.7rem; }
+    .login-modal .footer-links a { color: #0a7e8c; text-decoration: none; cursor: pointer; }
+    .login-modal .footer-links a:hover { text-decoration: underline; }
+    .error-msg { color: #dc2626; font-size: 0.7rem; margin-top: 8px; text-align: center; }
     @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
     @media (max-width: 800px) { .right-panel { min-width: auto; } }
-    .login-container { text-align: center; padding: 60px 20px; background: white; border-radius: 32px; max-width: 500px; margin: 50px auto; }
-    .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -133,8 +157,8 @@
     <div id="userWidget"></div>
   </div>
 
-  <!-- Main App (hidden until login) -->
-  <div id="mainApp" class="hidden">
+  <!-- Main App (always visible, but data loads after login) -->
+  <div id="mainApp">
     <div class="top-actions">
       <button class="top-btn" id="quickMedicineBtn"><i class="fas fa-plus-circle"></i> Add Medicine</button>
       <button class="top-btn" id="bulkTriggerBtn"><i class="fas fa-upload"></i> Bulk Upload</button>
@@ -189,9 +213,9 @@
             <div class="gender-field"><select id="patientGender"><option value="">Gender</option><option>M</option><option>F</option><option>O</option></select></div>
           </div>
           <div style="margin-top:8px;" class="disease-wrapper">
-            <input type="text" id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis" style="flex:1;">
-            <button id="diseasePickerBtn" class="disease-picker-btn" title="Open disease list"><i class="fas fa-chevron-up"></i><i class="fas fa-chevron-down"></i></button>
-            <datalist id="diseaseSuggestions"></datalist>
+            <input type="text" id="diagnosisField" placeholder="Disease / Diagnosis" autocomplete="off">
+            <button id="diseasePickerBtn" class="disease-picker-btn" title="Open disease list"><i class="fas fa-chevron-down"></i></button>
+            <div id="diseaseDropdown" class="disease-dropdown"></div>
           </div>
         </div>
 
@@ -213,17 +237,31 @@
     </div>
   </div>
 
-  <!-- Login Screen -->
-  <div id="loginScreen" class="login-container">
-    <i class="fas fa-google" style="font-size:48px; color:#DB4437;"></i>
-    <h2>FastRx Pro Cloud</h2>
-    <p style="margin: 15px 0; color:#555;">Sign in with Google to access your prescriptions, medicines & analytics</p>
-    <button id="googleSignInBtn" class="btn-google"><i class="fab fa-google"></i> Sign in with Google</button>
-    <div id="authError" style="color:red; margin-top:15px;"></div>
+  <!-- Login Overlay Modal -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-modal">
+      <h2><i class="fas fa-stethoscope"></i> Welcome to FastRx Pro</h2>
+      <div id="loginErrorMsg" class="error-msg"></div>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="doctor@example.com">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
+      </div>
+      <button id="emailLoginBtn" class="btn-primary btn-login">Sign In</button>
+      <div class="divider">or</div>
+      <button id="googleLoginBtn" class="btn-google" style="width:100%; justify-content: center;"><i class="fab fa-google"></i> Sign in with Google</button>
+      <div class="footer-links">
+        <a id="forgotPasswordLink">Forgot password?</a>
+        <a id="createAccountLink">Create account</a>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- MODALS -->
+<!-- MODALS (rest unchanged) -->
 <div id="settingsModal" class="modal"><div class="modal-content" style="max-width: 900px;"><span class="close-modal" id="closeSettingsModal">&times;</span><h3><i class="fas fa-sliders-h"></i> Prescription Settings</h3>
   <div class="settings-group">
     <h4>Layout & Display</h4>
@@ -261,7 +299,6 @@
   </div>
   <div class="flex-between" style="margin-top: 20px;"><button class="btn-primary" id="applySettingsBtn">Apply Settings</button><button class="btn-sm btn-outline" id="cancelSettingsBtn">Cancel</button></div>
 </div></div>
-<div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases (select / add / delete)</h3><div id="diseaseListContainer" class="scrollable-picker"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="allMedsPickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeMedsPickerModal">&times;</span><h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3><div id="allMedsListContainer" class="scrollable-picker"></div></div></div>
 <div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
 <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
@@ -338,43 +375,51 @@
       await saveAutoCompleteData();
     }
     updateDatalists();
+    renderDiseaseDropdown();
   }
   function updateDatalists() {
     const firstNameDatalist = document.getElementById("firstNamesSuggestions");
     if(firstNameDatalist) firstNameDatalist.innerHTML = savedFirstNames.map(n => `<option>${escapeHtml(n)}</option>`).join("");
     const lastNameDatalist = document.getElementById("lastNamesSuggestions");
     if(lastNameDatalist) lastNameDatalist.innerHTML = savedLastNames.map(n => `<option>${escapeHtml(n)}</option>`).join("");
-    const diseaseDatalist = document.getElementById("diseaseSuggestions");
-    if(diseaseDatalist) diseaseDatalist.innerHTML = savedDiseases.map(d => `<option>${escapeHtml(d)}</option>`).join("");
   }
   async function addNewFirstName(name) { if(name && !savedFirstNames.includes(name)) { savedFirstNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
-  async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
-  async function deleteDisease(disease) { const idx = savedDiseases.indexOf(disease); if(idx !== -1) { savedDiseases.splice(idx,1); await saveAutoCompleteData(); updateDatalists(); showDiseaseModal(); } }
+  async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); renderDiseaseDropdown(); } }
+  async function deleteDisease(disease) { const idx = savedDiseases.indexOf(disease); if(idx !== -1) { savedDiseases.splice(idx,1); await saveAutoCompleteData(); updateDatalists(); renderDiseaseDropdown(); } }
   
-  // Disease picker modal
-  function showDiseaseModal() {
-    const container = document.getElementById("diseaseListContainer");
-    container.innerHTML = savedDiseases.map(d => `<div class="picker-item" data-disease="${escapeHtml(d)}">${escapeHtml(d)} <i class="fas fa-trash-alt" style="color:#dc2626; cursor:pointer;" data-disease-delete="${escapeHtml(d)}"></i></div>`).join("");
-    document.querySelectorAll("#diseaseListContainer .picker-item").forEach(el => {
+  // Disease dropdown (attached to input)
+  function renderDiseaseDropdown() {
+    const dropdown = document.getElementById("diseaseDropdown");
+    dropdown.innerHTML = `
+      ${savedDiseases.map(d => `<div class="disease-dropdown-item" data-disease="${escapeHtml(d)}">${escapeHtml(d)} <span class="delete-icon" data-disease="${escapeHtml(d)}"><i class="fas fa-trash-alt"></i></span></div>`).join("")}
+      <div class="add-disease-row">
+        <input type="text" id="newDiseaseInputDropdown" placeholder="New disease">
+        <button class="btn-sm" id="addDiseaseDropdownBtn">Add</button>
+      </div>
+    `;
+    // Select disease
+    dropdown.querySelectorAll(".disease-dropdown-item").forEach(el => {
       el.addEventListener("click", (e) => {
-        if(e.target.classList.contains("fa-trash-alt")) return;
-        document.getElementById("diagnosisField").value = el.getAttribute("data-disease");
+        if(e.target.closest('.delete-icon')) return;
+        const disease = el.getAttribute("data-disease");
+        document.getElementById("diagnosisField").value = disease;
         updatePreview();
-        document.getElementById("diseaseModal").style.display = "none";
+        dropdown.style.display = "none";
       });
-      const deleteIcon = el.querySelector(".fa-trash-alt");
+      const deleteIcon = el.querySelector(".delete-icon");
       if(deleteIcon) deleteIcon.addEventListener("click", (e) => {
         e.stopPropagation();
-        const disease = deleteIcon.getAttribute("data-disease-delete");
+        const disease = deleteIcon.getAttribute("data-disease");
         if(confirm(`Delete "${disease}"?`)) deleteDisease(disease);
       });
     });
-    document.getElementById("diseaseModal").style.display = "block";
-  }
-  async function addNewDiseaseFromModal() {
-    const val = document.getElementById("newDiseaseInput").value.trim();
-    if(val) { await addNewDisease(val); showDiseaseModal(); document.getElementById("newDiseaseInput").value = ""; }
+    const addBtn = dropdown.querySelector("#addDiseaseDropdownBtn");
+    const newInput = dropdown.querySelector("#newDiseaseInputDropdown");
+    addBtn.addEventListener("click", async () => {
+      const val = newInput.value.trim();
+      if(val) { await addNewDisease(val); newInput.value = ""; renderDiseaseDropdown(); }
+    });
   }
   
   // Expandable pickers
@@ -450,63 +495,16 @@
     finally { showLoading(false); }
   }
   
-  async function saveMedicines() {
-    if(!currentUser) return;
-    const batch = db.batch();
-    for(const med of medicines) {
-      const ref = db.collection('users').doc(currentUser.uid).collection('medicines').doc(med.id);
-      batch.set(ref, { name: med.name, dosage: med.dosage, frequency: med.frequency, duration: med.duration, howToTake: med.howToTake, usageCount: med.usageCount, pinned: med.pinned });
-    }
-    await batch.commit();
-  }
+  async function saveMedicines() { /* ... same as before ... */ if(!currentUser) return; const batch = db.batch(); for(const med of medicines) { const ref = db.collection('users').doc(currentUser.uid).collection('medicines').doc(med.id); batch.set(ref, { name: med.name, dosage: med.dosage, frequency: med.frequency, duration: med.duration, howToTake: med.howToTake, usageCount: med.usageCount, pinned: med.pinned }); } await batch.commit(); }
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({ tags: adviceTags }); }
-  async function saveTags() {
-    if(!currentUser) return;
-    const uid = currentUser.uid;
-    await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({ tags: userFreqTags });
-    await db.collection('users').doc(uid).collection('settings').doc('durTags').set({ tags: userDurTags });
-    await db.collection('users').doc(uid).collection('settings').doc('howTags').set({ tags: userHowTags });
-  }
+  async function saveTags() { if(!currentUser) return; const uid = currentUser.uid; await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({ tags: userFreqTags }); await db.collection('users').doc(uid).collection('settings').doc('durTags').set({ tags: userDurTags }); await db.collection('users').doc(uid).collection('settings').doc('howTags').set({ tags: userHowTags }); }
   
-  async function updateMedicineUsage(medId) {
-    const med = medicines.find(m => m.id === medId);
-    if(med) { med.usageCount = (med.usageCount||0) + 1; await saveMedicines(); renderMostUsed(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); }
-  }
-  async function addNewMedicine(medObj) {
-    const newId = Date.now().toString();
-    const newMed = { id: newId, ...medObj, usageCount: medObj.usageCount||0, pinned: medObj.pinned||false };
-    medicines.push(newMed);
-    if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed);
-    renderMedicineList(); renderMostUsed(); renderPinnedSection();
-  }
+  async function updateMedicineUsage(medId) { const med = medicines.find(m => m.id === medId); if(med) { med.usageCount = (med.usageCount||0) + 1; await saveMedicines(); renderMostUsed(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); } }
+  async function addNewMedicine(medObj) { const newId = Date.now().toString(); const newMed = { id: newId, ...medObj, usageCount: medObj.usageCount||0, pinned: medObj.pinned||false }; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsed(); renderPinnedSection(); }
   
-  function renderMedicineList(search="") {
-    let filtered = medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase()));
-    filtered.sort((a,b)=>b.usageCount - a.usageCount);
-    const container = document.getElementById("medicineListContainer");
-    if(!container) return;
-    container.innerHTML = filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon ${med.pinned ? 'pinned' : ''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join("");
-    document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{
-      el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); });
-    });
-    document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }}));
-  }
-  function renderPinnedSection() {
-    const pinned = medicines.filter(m=>m.pinned===true);
-    const section = document.getElementById("pinnedSection");
-    const container = document.getElementById("pinnedList");
-    if(pinned.length===0) { section.style.display="none"; return; }
-    section.style.display="block";
-    container.innerHTML = pinned.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon pinned" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join("");
-    document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); });
-    document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }}));
-  }
-  function renderMostUsed() {
-    const sorted = [...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5);
-    const container = document.getElementById("mostUsedContainer");
-    if(container) container.innerHTML = `<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")+`</div>`;
-    document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); }));
-  }
+  function renderMedicineList(search="") { let filtered = medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount - a.usageCount); const container = document.getElementById("medicineListContainer"); if(!container) return; container.innerHTML = filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon ${med.pinned ? 'pinned' : ''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
+  function renderPinnedSection() { const pinned = medicines.filter(m=>m.pinned===true); const section = document.getElementById("pinnedSection"); const container = document.getElementById("pinnedList"); if(pinned.length===0) { section.style.display="none"; return; } section.style.display="block"; container.innerHTML = pinned.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon pinned" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
+  function renderMostUsed() { const sorted = [...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5); const container = document.getElementById("mostUsedContainer"); if(container) container.innerHTML = `<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")+`</div>`; document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); })); }
   function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; renderTagGroup("freqTagsContainer", userFreqTags, "freq"); renderTagGroup("durTagsContainer", userDurTags, "dur"); renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("medicineModal").style.display="block"; }
   function renderTagGroup(containerId, tags, type){ const container=document.getElementById(containerId); if(!container) return; container.innerHTML = tags.map(t=>`<span class="tag" data-tag="${escapeHtml(t)}" data-type="${type}">${escapeHtml(t)}</span>`).join(""); container.querySelectorAll(".tag").forEach(el=>el.addEventListener("click",()=>{ if(type==="freq") document.getElementById("modalFrequency").value=el.dataset.tag; else if(type==="dur") document.getElementById("modalDuration").value=el.dataset.tag; else document.getElementById("modalHowToTake").value=el.dataset.tag; })); }
   async function addMedicineFromPopup(){ if(pendingMedicine){ currentMedicines.push({ name:pendingMedicine.name, dosage:document.getElementById("modalDosage").value.trim()||"As directed", frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); await updateMedicineUsage(pendingMedicine.id); renderMedicinesTable(); updatePreview(); closeModal(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); } }
@@ -515,7 +513,7 @@
   function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
   function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
   
-  // Preview generation (signature last, professional header full width)
+  // Preview generation (unchanged from previous version)
   function getPreviewHTML(splitMode) {
     const firstName = document.getElementById("firstName").value.trim();
     const lastName = document.getElementById("lastName").value.trim();
@@ -527,7 +525,6 @@
     const patientLine = (patientName || age || genderShow) ? `<div><strong>${patientName || "Patient"}</strong> ${age ? `, Age: ${age}` : ''} ${genderShow}</div>` : "";
     const diagnosisHtml = diagnosis ? `<div><strong>Diagnosis:</strong> ${escapeHtml(diagnosis)}</div>` : "";
     
-    // Professional header (full width, outside split)
     let headerHtml = "";
     if (settings.prescType === "professional") {
       headerHtml = `<div class="practice-header">
@@ -537,7 +534,6 @@
       </div>`;
     }
     
-    // Date/Time (no seconds)
     let dateTimeHtml = "";
     if (settings.showDate || settings.showTime) {
       let dateStr = settings.showDate ? new Date().toLocaleDateString() : "";
@@ -548,7 +544,6 @@
       dateTimeHtml = `<div><strong>${currentSerial}</strong></div>`;
     }
     
-    // Medicine blocks (2 lines)
     let medBlocks = "";
     if (currentMedicines.length === 0) {
       medBlocks = "<p><i>No medicines added.</i></p>";
@@ -560,110 +555,27 @@
       }).join("");
     }
     
-    // Advice block
     let adviceHtml = currentAdvices.length ? `<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a => `<li>${escapeHtml(a)}</li>`).join("")}</ul></div>` : "";
+    let signatureHtml = settings.showSignature ? `<div class="signature-right">Doctor Signature: ___________________</div>` : "";
     
-    // Signature (always last, after advice)
-    let signatureHtml = "";
-    if (settings.showSignature) {
-      signatureHtml = `<div class="signature-right">Doctor Signature: ___________________</div>`;
-    }
-    
-    const mainContent = `
-      ${dateTimeHtml}
-      ${patientLine}
-      ${diagnosisHtml}
-      ${medBlocks}
-      ${adviceHtml}
-      ${signatureHtml}
-    `;
+    const mainContent = `${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}${adviceHtml}${signatureHtml}`;
     
     if (splitMode) {
       let leftDisease = diagnosis ? `<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>` : "";
       let leftAdvice = currentAdvices.length ? `<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a => `<li>${escapeHtml(a)}</li>`).join("")}</ul></div>` : "";
-      // In split mode, header is placed outside the flex container (full width)
       return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>`;
     } else {
-      // Simple mode: header inside, at top
       return `<div>${headerHtml}</div>${mainContent}`;
     }
   }
-  
-  function updatePreview() {
-    const splitMode = document.querySelector('input[name="paperStyle"]:checked').value === "split";
-    document.getElementById("livePreviewArea").innerHTML = getPreviewHTML(splitMode);
-    const cont = document.getElementById("previewContainer");
-    if(splitMode) cont.classList.add("split-line");
-    else cont.classList.remove("split-line");
-  }
+  function updatePreview() { const splitMode = document.querySelector('input[name="paperStyle"]:checked').value === "split"; document.getElementById("livePreviewArea").innerHTML = getPreviewHTML(splitMode); const cont = document.getElementById("previewContainer"); if(splitMode) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
   
   // Settings persistence
-  async function saveSettingsToFirestore() {
-    if(!currentUser) return;
-    await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').set({ settings, practiceInfo });
-  }
-  async function loadSettingsFromFirestore() {
-    if(!currentUser) return;
-    const doc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').get();
-    if(doc.exists) {
-      const data = doc.data();
-      if(data.settings) settings = { ...settings, ...data.settings };
-      if(data.practiceInfo) practiceInfo = { ...practiceInfo, ...data.practiceInfo };
-    }
-    // Apply to UI
-    document.getElementById("settingShowDate").checked = settings.showDate;
-    document.getElementById("settingShowTime").checked = settings.showTime;
-    document.getElementById("settingShowSignature").checked = settings.showSignature;
-    const styleRadio = document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`);
-    if(styleRadio) styleRadio.checked = true;
-    const typeRadio = document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`);
-    if(typeRadio) typeRadio.checked = true;
-    document.getElementById("doctorName").value = practiceInfo.doctorName || "";
-    document.getElementById("doctorRegNo").value = practiceInfo.regNo || "";
-    document.getElementById("doctorDegree").value = practiceInfo.degree || "";
-    document.getElementById("chamberName").value = practiceInfo.chamberName || "";
-    document.getElementById("doctorAddress").value = practiceInfo.address || "";
-    // Sync style with existing radio buttons
-    const previewStyleRadio = document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`);
-    if(previewStyleRadio) previewStyleRadio.checked = true;
-    updatePreview();
-  }
+  async function saveSettingsToFirestore() { if(!currentUser) return; await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').set({ settings, practiceInfo }); }
+  async function loadSettingsFromFirestore() { if(!currentUser) return; const doc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').get(); if(doc.exists) { const data = doc.data(); if(data.settings) settings = { ...settings, ...data.settings }; if(data.practiceInfo) practiceInfo = { ...practiceInfo, ...data.practiceInfo }; } document.getElementById("settingShowDate").checked = settings.showDate; document.getElementById("settingShowTime").checked = settings.showTime; document.getElementById("settingShowSignature").checked = settings.showSignature; const styleRadio = document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked = true; const typeRadio = document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked = true; document.getElementById("doctorName").value = practiceInfo.doctorName || ""; document.getElementById("doctorRegNo").value = practiceInfo.regNo || ""; document.getElementById("doctorDegree").value = practiceInfo.degree || ""; document.getElementById("chamberName").value = practiceInfo.chamberName || ""; document.getElementById("doctorAddress").value = practiceInfo.address || ""; const previewStyleRadio = document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked = true; updatePreview(); }
   
-  function openSettingsModal() {
-    document.getElementById("settingShowDate").checked = settings.showDate;
-    document.getElementById("settingShowTime").checked = settings.showTime;
-    document.getElementById("settingShowSignature").checked = settings.showSignature;
-    const styleRadio = document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`);
-    if(styleRadio) styleRadio.checked = true;
-    const typeRadio = document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`);
-    if(typeRadio) typeRadio.checked = true;
-    document.getElementById("doctorName").value = practiceInfo.doctorName || "";
-    document.getElementById("doctorRegNo").value = practiceInfo.regNo || "";
-    document.getElementById("doctorDegree").value = practiceInfo.degree || "";
-    document.getElementById("chamberName").value = practiceInfo.chamberName || "";
-    document.getElementById("doctorAddress").value = practiceInfo.address || "";
-    document.getElementById("settingsModal").style.display = "block";
-  }
-  function applySettings() {
-    settings.showDate = document.getElementById("settingShowDate").checked;
-    settings.showTime = document.getElementById("settingShowTime").checked;
-    settings.showSignature = document.getElementById("settingShowSignature").checked;
-    const selectedStyle = document.querySelector('input[name="settingStyle"]:checked');
-    if(selectedStyle) settings.style = selectedStyle.value;
-    const selectedType = document.querySelector('input[name="prescType"]:checked');
-    if(selectedType) settings.prescType = selectedType.value;
-    practiceInfo.doctorName = document.getElementById("doctorName").value;
-    practiceInfo.regNo = document.getElementById("doctorRegNo").value;
-    practiceInfo.degree = document.getElementById("doctorDegree").value;
-    practiceInfo.chamberName = document.getElementById("chamberName").value;
-    practiceInfo.address = document.getElementById("doctorAddress").value;
-    // Sync with preview radio buttons
-    const previewStyleRadio = document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`);
-    if(previewStyleRadio) previewStyleRadio.checked = true;
-    saveSettingsToFirestore();
-    updatePreview();
-    document.getElementById("settingsModal").style.display = "none";
-  }
+  function openSettingsModal() { /* populate and show */ document.getElementById("settingShowDate").checked = settings.showDate; document.getElementById("settingShowTime").checked = settings.showTime; document.getElementById("settingShowSignature").checked = settings.showSignature; const styleRadio = document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked = true; const typeRadio = document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked = true; document.getElementById("doctorName").value = practiceInfo.doctorName || ""; document.getElementById("doctorRegNo").value = practiceInfo.regNo || ""; document.getElementById("doctorDegree").value = practiceInfo.degree || ""; document.getElementById("chamberName").value = practiceInfo.chamberName || ""; document.getElementById("doctorAddress").value = practiceInfo.address || ""; document.getElementById("settingsModal").style.display = "block"; }
+  function applySettings() { settings.showDate = document.getElementById("settingShowDate").checked; settings.showTime = document.getElementById("settingShowTime").checked; settings.showSignature = document.getElementById("settingShowSignature").checked; const selectedStyle = document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style = selectedStyle.value; const selectedType = document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType = selectedType.value; practiceInfo.doctorName = document.getElementById("doctorName").value; practiceInfo.regNo = document.getElementById("doctorRegNo").value; practiceInfo.degree = document.getElementById("doctorDegree").value; practiceInfo.chamberName = document.getElementById("chamberName").value; practiceInfo.address = document.getElementById("doctorAddress").value; const previewStyleRadio = document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked = true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display = "none"; }
   
   function resetCurrentDraft(){ currentMedicines=[]; currentAdvices=[]; document.getElementById("firstName").value=""; document.getElementById("lastName").value=""; document.getElementById("patientAge").value=""; document.getElementById("patientGender").value=""; document.getElementById("diagnosisField").value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial=generateSerial(); }
   async function saveCurrentPrescription(){ if(currentMedicines.length===0&&currentAdvices.length===0){ alert("Add at least one medicine or advice."); return; } const newPresc={ id:Date.now().toString(), serial:currentSerial, createdAt:firebase.firestore.FieldValue.serverTimestamp(), dateTime:new Date().toISOString(), patient:{firstName:document.getElementById("firstName").value.trim(), lastName:document.getElementById("lastName").value.trim(), age:document.getElementById("patientAge").value.trim(), gender:document.getElementById("patientGender").value}, diagnosis:document.getElementById("diagnosisField").value.trim(), medicines:JSON.parse(JSON.stringify(currentMedicines)), advices:[...currentAdvices] }; prescriptions.unshift(newPresc); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('prescriptions').doc(newPresc.id).set(newPresc); resetCurrentDraft(); alert(`Saved ${currentSerial}`); }
@@ -679,7 +591,7 @@
   function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
   async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"As directed", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"", usageCount:0, pinned:false }); } } alert("Imported."); }
-  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM (Cloud)\n\n• Google Sign-in secures your data\n• Pin favourites, track usage\n• History with filters, analytics chart\n• Print with custom top margin\n• Settings: date/time/signature, Professional header with doctor details"); }
+  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM (Cloud)\n\n• Sign in with Google or Email\n• Pin favourites, track usage\n• History with filters, analytics chart\n• Print with custom top margin\n• Settings: date/time/signature, Professional header"); }
   function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
   function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
   function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
@@ -698,7 +610,76 @@
   // Auto-save patient name changes
   document.getElementById("firstName")?.addEventListener("change", function(){ addNewFirstName(this.value); });
   document.getElementById("lastName")?.addEventListener("change", function(){ addNewLastName(this.value); });
-  document.getElementById("diagnosisField")?.addEventListener("change", function(){ addNewDisease(this.value); });
+  
+  // Disease dropdown toggle
+  document.getElementById("diseasePickerBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const dropdown = document.getElementById("diseaseDropdown");
+    if (dropdown.style.display === "block") dropdown.style.display = "none";
+    else { renderDiseaseDropdown(); dropdown.style.display = "block"; }
+  });
+  document.addEventListener("click", function(e) {
+    const wrapper = document.querySelector(".disease-wrapper");
+    const dropdown = document.getElementById("diseaseDropdown");
+    if (wrapper && !wrapper.contains(e.target) && dropdown) dropdown.style.display = "none";
+  });
+  
+  // Auth functions
+  async function handleEmailSignIn() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const errorDiv = document.getElementById("loginErrorMsg");
+    if (!email || !password) { errorDiv.innerText = "Please enter email and password"; return; }
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      closeLoginOverlay();
+    } catch(e) { errorDiv.innerText = e.message; }
+  }
+  async function handleGoogleSignIn() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      await auth.signInWithPopup(provider);
+      closeLoginOverlay();
+    } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
+  }
+  async function handleForgotPassword() {
+    const email = document.getElementById("loginEmail").value.trim();
+    if (!email) { document.getElementById("loginErrorMsg").innerText = "Enter your email address first"; return; }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      alert("Password reset email sent. Check your inbox.");
+    } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
+  }
+  async function handleCreateAccount() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    if (!email || !password) { document.getElementById("loginErrorMsg").innerText = "Enter email and password"; return; }
+    if (password.length < 6) { document.getElementById("loginErrorMsg").innerText = "Password must be at least 6 characters"; return; }
+    try {
+      await auth.createUserWithEmailAndPassword(email, password);
+      closeLoginOverlay();
+    } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
+  }
+  function openLoginOverlay() { document.getElementById("loginOverlay").classList.add("active"); }
+  function closeLoginOverlay() { document.getElementById("loginOverlay").classList.remove("active"); }
+  
+  // Auth state handler
+  function onAuthStateChanged(user) {
+    if (user) {
+      currentUser = user;
+      document.getElementById("userWidget").innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
+      document.getElementById("logoutBtn")?.addEventListener("click", () => auth.signOut());
+      loadUserData();
+      closeLoginOverlay();
+    } else {
+      currentUser = null;
+      medicines = []; adviceTags = []; prescriptions = [];
+      document.getElementById("userWidget").innerHTML = `<button id="showLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
+      document.getElementById("showLoginBtn")?.addEventListener("click", openLoginOverlay);
+      openLoginOverlay();
+    }
+  }
+  auth.onAuthStateChanged(onAuthStateChanged);
   
   // Event bindings
   function bindEvents(){
@@ -728,7 +709,7 @@
     document.getElementById("closeSettingsModal").addEventListener("click",()=>document.getElementById("settingsModal").style.display="none");
     document.getElementById("applySettingsBtn").addEventListener("click",applySettings);
     document.getElementById("cancelSettingsBtn").addEventListener("click",()=>document.getElementById("settingsModal").style.display="none");
-    window.addEventListener("click",e=>{ if(e.target===document.getElementById("historyModal")) document.getElementById("historyModal").style.display="none"; if(e.target===document.getElementById("analysisModal")) document.getElementById("analysisModal").style.display="none"; if(e.target===document.getElementById("medicineInventoryModal")) document.getElementById("medicineInventoryModal").style.display="none"; if(e.target===document.getElementById("adviceInventoryModal")) document.getElementById("adviceInventoryModal").style.display="none"; if(e.target===document.getElementById("tagEditModal")) document.getElementById("tagEditModal").style.display="none"; if(e.target===document.getElementById("diseaseModal")) document.getElementById("diseaseModal").style.display="none"; if(e.target===document.getElementById("allMedsPickerModal")) document.getElementById("allMedsPickerModal").style.display="none"; if(e.target===document.getElementById("allAdvicePickerModal")) document.getElementById("allAdvicePickerModal").style.display="none"; if(e.target===document.getElementById("settingsModal")) document.getElementById("settingsModal").style.display="none"; });
+    window.addEventListener("click",e=>{ if(e.target===document.getElementById("historyModal")) document.getElementById("historyModal").style.display="none"; if(e.target===document.getElementById("analysisModal")) document.getElementById("analysisModal").style.display="none"; if(e.target===document.getElementById("medicineInventoryModal")) document.getElementById("medicineInventoryModal").style.display="none"; if(e.target===document.getElementById("adviceInventoryModal")) document.getElementById("adviceInventoryModal").style.display="none"; if(e.target===document.getElementById("tagEditModal")) document.getElementById("tagEditModal").style.display="none"; if(e.target===document.getElementById("allMedsPickerModal")) document.getElementById("allMedsPickerModal").style.display="none"; if(e.target===document.getElementById("allAdvicePickerModal")) document.getElementById("allAdvicePickerModal").style.display="none"; if(e.target===document.getElementById("settingsModal")) document.getElementById("settingsModal").style.display="none"; });
     document.getElementById("manageMedsBtn").addEventListener("click",openMedicineInventory);
     document.getElementById("closeInventoryModal").addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
     document.getElementById("closeInventoryBtn").addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
@@ -747,43 +728,17 @@
     ["firstName","lastName","patientAge","patientGender","diagnosisField"].forEach(id=>document.getElementById(id)?.addEventListener("input",updatePreview));
     document.querySelectorAll('input[name="paperStyle"]').forEach(r=>r.addEventListener("change",()=>updatePreview()));
     
-    // Clickable title buttons
     document.getElementById("allMedsButton").addEventListener("click", showAllMedsPicker);
     document.getElementById("allAdviceButton").addEventListener("click", showAllAdvicePicker);
-    document.getElementById("diseasePickerBtn").addEventListener("click", showDiseaseModal);
-    document.getElementById("closeDiseaseModal").addEventListener("click", () => document.getElementById("diseaseModal").style.display = "none");
-    document.getElementById("addNewDiseaseBtn").addEventListener("click", addNewDiseaseFromModal);
     document.getElementById("closeMedsPickerModal").addEventListener("click", () => document.getElementById("allMedsPickerModal").style.display = "none");
     document.getElementById("closeAdvicePickerModal").addEventListener("click", () => document.getElementById("allAdvicePickerModal").style.display = "none");
+    
+    // Login buttons
+    document.getElementById("emailLoginBtn")?.addEventListener("click", handleEmailSignIn);
+    document.getElementById("googleLoginBtn")?.addEventListener("click", handleGoogleSignIn);
+    document.getElementById("forgotPasswordLink")?.addEventListener("click", handleForgotPassword);
+    document.getElementById("createAccountLink")?.addEventListener("click", handleCreateAccount);
   }
-  
-  // Auth
-  function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(error => {
-      if(error.code === 'auth/popup-blocked') auth.signInWithRedirect(provider);
-      else document.getElementById("authError").innerText = error.message;
-    });
-  }
-  auth.getRedirectResult().catch(console.error);
-  function updateUIBasedOnAuth(user) {
-    if(user) {
-      currentUser = user;
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("mainApp").classList.remove("hidden");
-      document.getElementById("userWidget").innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
-      document.getElementById("logoutBtn")?.addEventListener("click", () => auth.signOut());
-      loadUserData();
-    } else {
-      currentUser = null;
-      document.getElementById("loginScreen").style.display = "block";
-      document.getElementById("mainApp").classList.add("hidden");
-      document.getElementById("userWidget").innerHTML = `<button id="googleSignInBtn2" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
-      document.getElementById("googleSignInBtn2")?.addEventListener("click", signInWithGoogle);
-      document.getElementById("googleSignInBtn")?.addEventListener("click", signInWithGoogle);
-    }
-  }
-  auth.onAuthStateChanged(user => updateUIBasedOnAuth(user));
   
   document.addEventListener("DOMContentLoaded", () => { bindEvents(); setupSearchSuggestions(); });
 </script>
