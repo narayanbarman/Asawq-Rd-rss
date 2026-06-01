@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro – Professional Prescription with Subscription</title>
+  <title>FastRx Pro – Subscription & Admin Approval</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -11,20 +11,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
+    /* === All previous styles remain unchanged === */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
-    .header {
-      background: #0a4c6e;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 28px;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    .header { background: #0a4c6e; color: white; padding: 10px 20px; border-radius: 28px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
     .logo h1 { font-size: 1.3rem; font-weight: 600; }
     .logo p { font-size: 0.65rem; opacity: 0.8; }
     .user-area { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.15); padding: 5px 14px 5px 10px; border-radius: 60px; }
@@ -142,7 +133,7 @@
 <body>
 <div class="dashboard" id="app">
   <div class="header">
-    <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Cloud + Professional Prescriptions</p></div>
+    <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Subscription + Admin Approval</p></div>
     <div id="userWidget"></div>
   </div>
 
@@ -154,6 +145,7 @@
       <button class="top-btn" id="analysisBtn"><i class="fas fa-chart-line"></i> Analysis</button>
       <button class="top-btn" id="helpBtn"><i class="fas fa-question-circle"></i> Help</button>
       <button class="top-btn" id="settingsBtn"><i class="fas fa-cog"></i> Settings</button>
+      <button class="top-btn" id="adminPanelBtn" style="display:none; background:#dc2626; color:white;"><i class="fas fa-user-shield"></i> Admin Panel</button>
       <input type="file" id="bulkMedFile" accept=".json,.csv" style="display:none">
     </div>
 
@@ -189,7 +181,7 @@
 
         <div class="card">
           <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="editable-hint">(click any field to edit)</span></span></div>
-          <div style="overflow-x: auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table></div>
+          <div style="overflow-x: auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody><table></div>
           <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
         </div>
 
@@ -219,19 +211,15 @@
 
 <!-- MODALS -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin: 16px 0; max-height: 300px; overflow-y: auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
-<div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached</h3><p style="margin: 10px 0;">You have created 10 prescriptions in the last 24 hours. Upgrade to continue unlimited prescriptions.</p>
-  <div style="text-align:center; margin: 15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div>
-  <div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div>
-  <div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div>
-  <div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div>
-</div></div>
-<div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin: 10px 0;"></p><div style="text-align:center; margin: 15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
+<div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin: 10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
+<div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
 <div id="settingsModal" class="modal"><div class="modal-content" style="max-width: 900px;"><span class="close-modal" id="closeSettingsModal">&times;</span><h3><i class="fas fa-sliders-h"></i> Prescription Settings</h3>
   <div class="settings-group"><h4>Layout & Display</h4><div class="settings-row"><label class="settings-row-item"><input type="checkbox" id="settingShowDate" checked> Show Date</label><label class="settings-row-item"><input type="checkbox" id="settingShowTime" checked> Show Time</label><label class="settings-row-item"><input type="checkbox" id="settingShowSignature" checked> Doctor Signature</label></div><div class="settings-row"><span style="margin-right:12px;">Preview Style:</span><div class="radio-group"><label><input type="radio" name="settingStyle" value="plain" checked> Simple</label><label><input type="radio" name="settingStyle" value="split"> Left line</label></div></div></div>
   <div class="settings-group"><h4>Prescription Type</h4><div class="radio-group"><label><input type="radio" name="prescType" value="standard" checked> Standard (no header)</label><label><input type="radio" name="prescType" value="professional"> Professional (with practice header)</label></div></div>
   <div class="settings-group" id="practiceInfoCard"><h4>Practice Information</h4><div class="settings-row" style="flex-wrap:wrap; gap:16px;"><div style="flex:1; min-width:180px;"><label>Doctor Name</label><input type="text" id="doctorName" placeholder="Dr. John Doe"></div><div style="flex:1; min-width:180px;"><label>Registration No.</label><input type="text" id="doctorRegNo" placeholder="MCI/12345"></div><div style="flex:1; min-width:180px;"><label>Degree(s)</label><input type="text" id="doctorDegree" placeholder="MBBS, MD"></div></div><div class="settings-row" style="flex-wrap:wrap; gap:16px; margin-top:12px;"><div style="flex:1; min-width:200px;"><label>Chamber / Clinic Name</label><input type="text" id="chamberName" placeholder="City Hospital"></div><div style="flex:2; min-width:250px;"><label>Address</label><input type="text" id="doctorAddress" placeholder="123 Main Street, City"></div></div></div>
   <div class="flex-between" style="margin-top:20px;"><button class="btn-primary" id="applySettingsBtn">Apply Settings</button><button class="btn-sm btn-outline" id="cancelSettingsBtn">Cancel</button></div>
 </div></div>
+<div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel - Pending Approvals</h3><div id="pendingTransactionsList" style="max-height: 400px; overflow-y: auto; margin: 16px 0;"></div><div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div></div></div>
 <div id="allMedsPickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeMedsPickerModal">&times;</span><h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3><div id="allMedsListContainer" class="scrollable-picker"></div></div></div>
 <div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
 <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
@@ -241,7 +229,6 @@
 <div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
 <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
 <div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin:16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
-<div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel - Pending Approvals</h3><div id="pendingTransactionsList" style="max-height: 400px; overflow-y: auto; margin: 16px 0;"></div><div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div></div></div>
 
 <script>
   // Firebase Config
@@ -271,6 +258,9 @@
   let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
   let subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true };
   
+  // Admin email (set your email here)
+  const ADMIN_EMAIL = "narayanbarma3210@gmail.com";
+  
   function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
   function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else if(el) el.remove(); }
   function showError(msg) { alert(msg); }
@@ -283,14 +273,11 @@
     const subDoc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').get();
     if(subDoc.exists) subscription = subDoc.data();
     else { subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true }; await saveSubscriptionData(); }
-    // Reset daily count if date changed
     const today = new Date().toDateString();
     if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; await saveSubscriptionData(); }
-    // Check expiry
     if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) subscription.isActive = false;
     else if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) subscription.isActive = true;
     await saveSubscriptionData();
-    // Show reminder if 2 days left
     if(subscription.expiryDate) {
       const daysLeft = Math.ceil((new Date(subscription.expiryDate) - new Date()) / (1000*60*60*24));
       if(daysLeft <= 2 && daysLeft > 0) showRenewalModal(daysLeft);
@@ -339,9 +326,9 @@
     else document.getElementById("subscriptionModal").style.display = "none";
     showLoading(false);
   }
-  // Admin functions (visible only for admin@fastrxpro.com)
+  // Admin functions
   async function loadPendingTransactions() {
-    if(!currentUser || currentUser.email !== "admin@fastrxpro.com") return;
+    if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
     const usersSnap = await db.collection('users').get();
     let pending = [];
     for(const userDoc of usersSnap.docs) {
@@ -374,9 +361,9 @@
       });
     });
   }
-  function showAdminPanel() { if(currentUser && currentUser.email === "admin@fastrxpro.com") { loadPendingTransactions(); document.getElementById("adminPanelModal").style.display = "block"; } }
+  function showAdminPanel() { if(currentUser && currentUser.email === ADMIN_EMAIL) { loadPendingTransactions(); document.getElementById("adminPanelModal").style.display = "block"; } }
   
-  // Disease modal (popup with tags)
+  // Disease modal
   function showDiseaseModal() {
     const container = document.getElementById("diseaseListContainer");
     container.innerHTML = savedDiseases.map(d => `<span class="tag" data-disease="${escapeHtml(d)}" style="display:inline-flex; align-items:center; gap:6px;">${escapeHtml(d)} <i class="fas fa-trash-alt" style="color:#dc2626; cursor:pointer;" data-disease="${escapeHtml(d)}"></i></span>`).join("");
@@ -425,11 +412,7 @@
   async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   
-  // All other functions (renderMedicineList, renderMostUsed, openPopup, renderMedicinesTable, getPreviewHTML, etc.) remain identical to previous working version.
-  // For brevity, the core logic is included; the full code continues with all original render functions.
-  // (The complete script continues below with all original rendering functions preserved.)
-  // --- All original rendering functions are included here (same as previous working code) ---
-  
+  // Core data load (same as before)
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving","Review after 3 days"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const freqDoc=await db.collection('users').doc(uid).collection('settings').doc('freqTags').get(); if(freqDoc.exists) userFreqTags=freqDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); const durDoc=await db.collection('users').doc(uid).collection('settings').doc('durTags').get(); if(durDoc.exists) userDurTags=durDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); const howDoc=await db.collection('users').doc(uid).collection('settings').doc('howTags').get(); if(howDoc.exists) userHowTags=howDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
   async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
@@ -481,7 +464,7 @@
   function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
   async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"As directed", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"", usageCount:0, pinned:false }); } } alert("Imported."); }
-  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM (Cloud)\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
+  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required (login as narayanbarma3210@gmail.com)\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
   function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
   function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
   function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
@@ -558,10 +541,11 @@
     document.getElementById("closeRenewalBtn")?.addEventListener("click",()=>document.getElementById("renewalModal").style.display="none");
     document.getElementById("closeSubModal")?.addEventListener("click",()=>document.getElementById("subscriptionModal").style.display="none");
     document.getElementById("cancelSubBtn")?.addEventListener("click",()=>document.getElementById("subscriptionModal").style.display="none");
+    document.getElementById("adminPanelBtn")?.addEventListener("click",showAdminPanel);
+    document.getElementById("closeAdminModal")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
+    document.getElementById("closeAdminBtn")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
+    document.getElementById("refreshPendingBtn")?.addEventListener("click",loadPendingTransactions);
     window.addEventListener("click",e=>{ if(e.target.classList.contains("modal")) e.target.style.display="none"; });
-    // Admin panel hidden trigger (double-click settings icon)
-    let adminClickCount=0;
-    document.getElementById("settingsBtn")?.addEventListener("dblclick",()=>{ if(currentUser && currentUser.email==="admin@fastrxpro.com") showAdminPanel(); });
   }
   
   function showAllMedsPicker(){ const container=document.getElementById("allMedsListContainer"); container.innerHTML=medicines.map(med=>`<div class="picker-item" data-med-id="${med.id}">${escapeHtml(med.name)} <span style="color:#6b7280; font-size:0.7rem;">${med.dosage}</span></div>`).join(""); document.querySelectorAll("#allMedsListContainer .picker-item").forEach(el=>{ el.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); document.getElementById("allMedsPickerModal").style.display="none"; }); }); document.getElementById("allMedsPickerModal").style.display="block"; }
@@ -580,6 +564,8 @@
       currentUser=user;
       document.getElementById("userWidget").innerHTML=`<div class="user-area"><div class="user-avatar"><img src="${user.photoURL||'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName||user.email}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
       document.getElementById("logoutBtn")?.addEventListener("click",()=>auth.signOut());
+      if(user.email === ADMIN_EMAIL) document.getElementById("adminPanelBtn").style.display = "inline-flex";
+      else document.getElementById("adminPanelBtn").style.display = "none";
       loadUserData();
       closeLoginOverlay();
     } else {
