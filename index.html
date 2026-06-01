@@ -44,6 +44,8 @@
     .card { background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; }
     .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 12px; border-left: 4px solid #0a7e8c; padding-left: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; color: #1f3b4c; }
     .card-title span { display: flex; align-items: center; gap: 6px; }
+    .expandable-btn { background: none; border: none; color: #0a7e8c; cursor: pointer; font-weight: 600; padding: 2px 8px; border-radius: 30px; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; }
+    .expandable-btn:hover { background: #e6f4f5; }
     .search-bar { background: #f1f5f9; border-radius: 40px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; position: relative; }
     .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.85rem; outline: none; }
     .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 20px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -134,14 +136,21 @@
         </div>
         <div style="font-weight:600; font-size:0.8rem;">🔥 Most Used</div>
         <div id="mostUsedContainer" class="most-used"></div>
+        
+        <!-- MODIFIED: "All Medicines" text is now a clickable expand button -->
         <div class="flex-between">
-          <span style="font-weight:600; font-size:0.8rem;">📚 All Medicines</span>
+          <button class="expandable-btn" id="expandAllMedsBtn" style="font-weight:600; font-size:0.8rem; padding-left:0;">
+            <i class="fas fa-expand-alt"></i> 📚 All Medicines
+          </button>
           <button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button>
         </div>
         <div id="medicineListContainer" class="med-grid"></div>
 
+        <!-- MODIFIED: "Quick Advice" text is now a clickable expand button -->
         <div class="flex-between" style="margin-top: 16px;">
-          <span class="card-title" style="margin-bottom:0;"><i class="fas fa-comment-dots"></i> Quick Advice</span>
+          <button class="expandable-btn" id="expandAdviceBtn" style="font-size:1rem; font-weight:600; padding-left:0;">
+            <i class="fas fa-expand-alt"></i> <i class="fas fa-comment-dots"></i> Quick Advice
+          </button>
           <button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button>
         </div>
         <div class="tag-group" id="adviceTagList"></div>
@@ -444,6 +453,10 @@
     document.getElementById("cancelTagEditBtn").addEventListener("click",()=>document.getElementById("tagEditModal").style.display="none");
     ["firstName","lastName","patientAge","patientGender","diagnosisField"].forEach(id=>document.getElementById(id)?.addEventListener("input",updatePreview));
     document.querySelectorAll('input[name="paperStyle"]').forEach(r=>r.addEventListener("change",()=>updatePreview()));
+    
+    // NEW: attach expand buttons to open the modals
+    document.getElementById("expandAllMedsBtn").addEventListener("click", openMedicineInventory);
+    document.getElementById("expandAdviceBtn").addEventListener("click", openAdviceInventory);
   }
   
   // Auth
