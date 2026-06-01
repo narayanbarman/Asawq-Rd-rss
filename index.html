@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro – Cloud Prescription with Google Login</title>
+  <title>FastRx Pro – Cloud Prescription with Quick Select & Auto‑Suggest</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -44,8 +44,8 @@
     .card { background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; }
     .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 12px; border-left: 4px solid #0a7e8c; padding-left: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; color: #1f3b4c; }
     .card-title span { display: flex; align-items: center; gap: 6px; }
-    .expandable-btn { background: none; border: none; color: #0a7e8c; cursor: pointer; font-weight: 600; padding: 2px 8px; border-radius: 30px; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; }
-    .expandable-btn:hover { background: #e6f4f5; }
+    .expand-icon { background: #eef2ff; border-radius: 30px; padding: 2px 8px; font-size: 0.7rem; cursor: pointer; transition: 0.1s; }
+    .expand-icon:hover { background: #0a7e8c; color: white; }
     .search-bar { background: #f1f5f9; border-radius: 40px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; position: relative; }
     .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.85rem; outline: none; }
     .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 20px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -72,6 +72,9 @@
     .patient-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .name-field, .lastname-field { flex: 2; }
     .age-field, .gender-field { flex: 1; }
+    .disease-wrapper { display: flex; gap: 8px; align-items: center; }
+    .disease-wrapper input { flex: 1; }
+    .disease-picker-btn { background: #e2e8f0; border: none; border-radius: 30px; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
     .layout-toggle { background: #f8fafc; border-radius: 40px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.7rem; }
     .prescription-preview { background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 16px; }
     .prescription-preview.split-line { border-left: 3px solid #0a7e8c; background: #fffdf7; padding-left: 18px; }
@@ -97,6 +100,9 @@
     .analytics-card { background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 24px; padding: 16px; flex: 1; min-width: 120px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
     .analytics-card .number { font-size: 2rem; font-weight: 700; color: #0a7e8c; }
     .analytics-card .label { font-size: 0.7rem; color: #4b6b87; margin-top: 6px; }
+    .scrollable-picker { max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+    .picker-item { background: #f8fafc; border-radius: 20px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2edf2; }
+    .picker-item:hover { background: #e6f4f5; border-color: #0a7e8c; }
     @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
     @media (max-width: 800px) { .right-panel { min-width: auto; } }
     .login-container { text-align: center; padding: 60px 20px; background: white; border-radius: 32px; max-width: 500px; margin: 50px auto; }
@@ -106,7 +112,7 @@
 <body>
 <div class="dashboard" id="app">
   <div class="header">
-    <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Cloud + Google Sign-in</p></div>
+    <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Cloud + Smart Selectors</p></div>
     <div id="userWidget"></div>
   </div>
 
@@ -136,22 +142,21 @@
         </div>
         <div style="font-weight:600; font-size:0.8rem;">🔥 Most Used</div>
         <div id="mostUsedContainer" class="most-used"></div>
-        
-        <!-- MODIFIED: "All Medicines" text is now a clickable expand button -->
         <div class="flex-between">
-          <button class="expandable-btn" id="expandAllMedsBtn" style="font-weight:600; font-size:0.8rem; padding-left:0;">
-            <i class="fas fa-expand-alt"></i> 📚 All Medicines
-          </button>
-          <button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button>
+          <span style="font-weight:600; font-size:0.8rem;">📚 All Medicines</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="expand-icon" id="expandAllMedsBtn" title="Open full medicine list"><i class="fas fa-expand-alt"></i> Expand</button>
+            <button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button>
+          </div>
         </div>
         <div id="medicineListContainer" class="med-grid"></div>
 
-        <!-- MODIFIED: "Quick Advice" text is now a clickable expand button -->
         <div class="flex-between" style="margin-top: 16px;">
-          <button class="expandable-btn" id="expandAdviceBtn" style="font-size:1rem; font-weight:600; padding-left:0;">
-            <i class="fas fa-expand-alt"></i> <i class="fas fa-comment-dots"></i> Quick Advice
-          </button>
-          <button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button>
+          <span class="card-title" style="margin-bottom:0;"><i class="fas fa-comment-dots"></i> Quick Advice</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="expand-icon" id="expandAdviceBtn" title="Open full advice list"><i class="fas fa-expand-alt"></i> Expand</button>
+            <button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button>
+          </div>
         </div>
         <div class="tag-group" id="adviceTagList"></div>
         <div class="flex-between">
@@ -166,17 +171,16 @@
         <div class="card">
           <div class="card-title"><span><i class="fas fa-user"></i> Patient (optional)</span></div>
           <div class="patient-row">
-            <div class="name-field"><input type="text" id="firstName" list="firstNames" placeholder="First name"></div>
-            <div class="lastname-field"><input type="text" id="lastName" list="lastNames" placeholder="Last name"></div>
+            <div class="name-field"><input type="text" id="firstName" placeholder="First name" list="firstNamesSuggestions"><datalist id="firstNamesSuggestions"></datalist></div>
+            <div class="lastname-field"><input type="text" id="lastName" placeholder="Last name" list="lastNamesSuggestions"><datalist id="lastNamesSuggestions"></datalist></div>
             <div class="age-field"><input type="text" id="patientAge" placeholder="Age"></div>
             <div class="gender-field"><select id="patientGender"><option value="">Gender</option><option>M</option><option>F</option><option>O</option></select></div>
           </div>
-          <div style="margin-top:8px;">
-            <input type="text" id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis">
-            <datalist id="diseaseSuggestions"><option>Hypertension</option><option>Diabetes Type 2</option><option>URTI</option><option>UTI</option><option>Malaria</option></datalist>
+          <div style="margin-top:8px;" class="disease-wrapper">
+            <input type="text" id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis" style="flex:1;">
+            <button id="diseasePickerBtn" class="disease-picker-btn" title="Open disease list"><i class="fas fa-chevron-up"></i><i class="fas fa-chevron-down"></i></button>
+            <datalist id="diseaseSuggestions"></datalist>
           </div>
-          <datalist id="firstNames"><option>Rajesh</option><option>Suresh</option><option>Priya</option></datalist>
-          <datalist id="lastNames"><option>Sharma</option><option>Verma</option><option>Patel</option></datalist>
         </div>
 
         <div class="card">
@@ -207,7 +211,10 @@
   </div>
 </div>
 
-<!-- All modals (same as original) -->
+<!-- MODALS -->
+<div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases (select / add / delete)</h3><div id="diseaseListContainer" class="scrollable-picker"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
+<div id="allMedsPickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeMedsPickerModal">&times;</span><h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3><div id="allMedsListContainer" class="scrollable-picker"></div></div></div>
+<div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
 <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
 <div id="analysisModal" class="modal"><div class="modal-content" style="max-width: 900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height: 250px; width: 100%;"></canvas><div id="analysisStats" style="margin-top: 16px;"></div></div></div>
 <div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory (Name & Dosage)</h3><div style="overflow-x: auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
@@ -219,44 +226,135 @@
 <script>
   // Firebase Config
   const firebaseConfig = {
-  apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
-  authDomain: "test-website-22778.firebaseapp.com",
-  databaseURL: "https://test-website-22778-default-rtdb.firebaseio.com",
-  projectId: "test-website-22778",
-  storageBucket: "test-website-22778.firebasestorage.app",
-  messagingSenderId: "862083661951",
-  appId: "1:862083661951:web:838f650debb207a2fe7f4a",
-  measurementId: "G-9E5RYBBKJS"
-};
+    apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
+    authDomain: "test-website-22778.firebaseapp.com",
+    databaseURL: "https://test-website-22778-default-rtdb.firebaseio.com",
+    projectId: "test-website-22778",
+    storageBucket: "test-website-22778.firebasestorage.app",
+    messagingSenderId: "862083661951",
+    appId: "1:862083661951:web:838f650debb207a2fe7f4a",
+    measurementId: "G-9E5RYBBKJS"
+  };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
   
   let currentUser = null;
-  let medicines = [];        // will hold user's medicines from firestore
+  let medicines = [];
   let adviceTags = [];
   let prescriptions = [];
   let userFreqTags = ["1-1-1","1-0-0","0-1-0","0-0-1","BD","TID","OD"];
   let userDurTags = ["3 days","5 days","7 days","10 days","14 days","30 days"];
   let userHowTags = ["After meals","Empty stomach","With water","At bedtime"];
   
-  // Current draft
+  // Auto-suggest data
+  let savedFirstNames = [];
+  let savedLastNames = [];
+  let savedDiseases = [];
+  
   let currentMedicines = [], currentAdvices = [], currentDiagnosis = "", currentSerial = "";
   let pendingMedicine = null, currentTagType = "";
   
-  // Helper
+  // Helper functions
   function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
   function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else if(el) el.remove(); }
   function showError(msg) { alert(msg); }
   function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
   
-  // Firestore data load
+  // --- Auto-suggest storage ---
+  async function saveAutoCompleteData() {
+    if(!currentUser) return;
+    await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({
+      firstNames: savedFirstNames,
+      lastNames: savedLastNames,
+      diseases: savedDiseases
+    });
+  }
+  async function loadAutoCompleteData() {
+    if(!currentUser) return;
+    const doc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').get();
+    if(doc.exists) {
+      savedFirstNames = doc.data().firstNames || [];
+      savedLastNames = doc.data().lastNames || [];
+      savedDiseases = doc.data().diseases || [];
+    } else {
+      savedFirstNames = ["Rajesh", "Priya", "Anjali", "Suresh", "Meera"];
+      savedLastNames = ["Sharma", "Verma", "Patel", "Kumar", "Singh"];
+      savedDiseases = ["Hypertension", "Diabetes Type 2", "URTI", "UTI", "Malaria", "Asthma", "COPD", "Gastroenteritis"];
+      await saveAutoCompleteData();
+    }
+    updateDatalists();
+  }
+  function updateDatalists() {
+    const firstNameDatalist = document.getElementById("firstNamesSuggestions");
+    if(firstNameDatalist) firstNameDatalist.innerHTML = savedFirstNames.map(n => `<option>${escapeHtml(n)}</option>`).join("");
+    const lastNameDatalist = document.getElementById("lastNamesSuggestions");
+    if(lastNameDatalist) lastNameDatalist.innerHTML = savedLastNames.map(n => `<option>${escapeHtml(n)}</option>`).join("");
+    const diseaseDatalist = document.getElementById("diseaseSuggestions");
+    if(diseaseDatalist) diseaseDatalist.innerHTML = savedDiseases.map(d => `<option>${escapeHtml(d)}</option>`).join("");
+  }
+  async function addNewFirstName(name) { if(name && !savedFirstNames.includes(name)) { savedFirstNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
+  async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
+  async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
+  async function deleteDisease(disease) { const idx = savedDiseases.indexOf(disease); if(idx !== -1) { savedDiseases.splice(idx,1); await saveAutoCompleteData(); updateDatalists(); showDiseaseModal(); } }
+  
+  // Disease picker modal
+  function showDiseaseModal() {
+    const container = document.getElementById("diseaseListContainer");
+    container.innerHTML = savedDiseases.map(d => `<div class="picker-item" data-disease="${escapeHtml(d)}">${escapeHtml(d)} <i class="fas fa-trash-alt" style="color:#dc2626; cursor:pointer;" data-disease-delete="${escapeHtml(d)}"></i></div>`).join("");
+    document.querySelectorAll("#diseaseListContainer .picker-item").forEach(el => {
+      el.addEventListener("click", (e) => {
+        if(e.target.classList.contains("fa-trash-alt")) return;
+        document.getElementById("diagnosisField").value = el.getAttribute("data-disease");
+        updatePreview();
+        document.getElementById("diseaseModal").style.display = "none";
+      });
+      const deleteIcon = el.querySelector(".fa-trash-alt");
+      if(deleteIcon) deleteIcon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const disease = deleteIcon.getAttribute("data-disease-delete");
+        if(confirm(`Delete "${disease}"?`)) deleteDisease(disease);
+      });
+    });
+    document.getElementById("diseaseModal").style.display = "block";
+  }
+  async function addNewDiseaseFromModal() {
+    const val = document.getElementById("newDiseaseInput").value.trim();
+    if(val) { await addNewDisease(val); showDiseaseModal(); document.getElementById("newDiseaseInput").value = ""; }
+  }
+  
+  // Expandable pickers: All Medicines
+  function showAllMedsPicker() {
+    const container = document.getElementById("allMedsListContainer");
+    container.innerHTML = medicines.map(med => `<div class="picker-item" data-med-id="${med.id}">${escapeHtml(med.name)} <span style="color:#6b7280; font-size:0.7rem;">${med.dosage}</span></div>`).join("");
+    document.querySelectorAll("#allMedsListContainer .picker-item").forEach(el => {
+      el.addEventListener("click", () => {
+        const med = medicines.find(m => m.id === el.dataset.medId);
+        if(med) openPopup(med);
+        document.getElementById("allMedsPickerModal").style.display = "none";
+      });
+    });
+    document.getElementById("allMedsPickerModal").style.display = "block";
+  }
+  // Expandable pickers: All Advice
+  function showAllAdvicePicker() {
+    const container = document.getElementById("allAdviceListContainer");
+    container.innerHTML = adviceTags.map(tag => `<div class="picker-item" data-advice="${escapeHtml(tag)}">${escapeHtml(tag)}</div>`).join("");
+    document.querySelectorAll("#allAdviceListContainer .picker-item").forEach(el => {
+      el.addEventListener("click", () => {
+        addAdvice(el.dataset.advice);
+        document.getElementById("allAdvicePickerModal").style.display = "none";
+      });
+    });
+    document.getElementById("allAdvicePickerModal").style.display = "block";
+  }
+  
+  // Firestore data load (unchanged except adding auto-suggest load)
   async function loadUserData() {
     if(!currentUser) return;
     showLoading(true);
     try {
       const uid = currentUser.uid;
-      // Medicines
       const medSnap = await db.collection('users').doc(uid).collection('medicines').get();
       if(medSnap.empty) {
         const defaultMeds = [
@@ -266,19 +364,15 @@
           { name: "Losartan", dosage: "50mg", frequency: "OD", duration: "30 days", howToTake: "Morning", usageCount: 5, pinned: false },
           { name: "Cetirizine", dosage: "10mg", frequency: "HS", duration: "5 days", howToTake: "Night", usageCount: 7, pinned: false }
         ];
-        for(const med of defaultMeds) {
-          await db.collection('users').doc(uid).collection('medicines').add({ ...med, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        }
+        for(const med of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add({ ...med, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
         const newSnap = await db.collection('users').doc(uid).collection('medicines').get();
         medicines = newSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       } else {
         medicines = medSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       }
-      // Advice tags
       const advDoc = await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get();
       if(advDoc.exists) adviceTags = advDoc.data().tags || ["Take plenty of fluids", "Avoid driving", "Review after 3 days"];
       else { adviceTags = ["Take plenty of fluids", "Avoid driving", "Review after 3 days"]; await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({ tags: adviceTags }); }
-      // Tag preferences
       const freqDoc = await db.collection('users').doc(uid).collection('settings').doc('freqTags').get();
       if(freqDoc.exists) userFreqTags = freqDoc.data().tags;
       else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({ tags: userFreqTags });
@@ -288,11 +382,10 @@
       const howDoc = await db.collection('users').doc(uid).collection('settings').doc('howTags').get();
       if(howDoc.exists) userHowTags = howDoc.data().tags;
       else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({ tags: userHowTags });
-      // Prescriptions
-      const prescSnap = await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt', 'desc').get();
+      const prescSnap = await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get();
       prescriptions = prescSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      // Render UI
+      await loadAutoCompleteData();
       renderMedicineList();
       renderMostUsed();
       renderPinnedSection();
@@ -303,28 +396,16 @@
     finally { showLoading(false); }
   }
   
-  // Save helpers
   async function saveMedicines() {
     if(!currentUser) return;
-    const uid = currentUser.uid;
     const batch = db.batch();
     for(const med of medicines) {
-      const ref = db.collection('users').doc(uid).collection('medicines').doc(med.id);
+      const ref = db.collection('users').doc(currentUser.uid).collection('medicines').doc(med.id);
       batch.set(ref, { name: med.name, dosage: med.dosage, frequency: med.frequency, duration: med.duration, howToTake: med.howToTake, usageCount: med.usageCount, pinned: med.pinned });
     }
     await batch.commit();
   }
-  async function saveAdviceTags() {
-    if(!currentUser) return;
-    await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({ tags: adviceTags });
-  }
-  async function savePrescriptions() {
-    if(!currentUser) return;
-    const uid = currentUser.uid;
-    for(const p of prescriptions) {
-      await db.collection('users').doc(uid).collection('prescriptions').doc(p.id).set(p);
-    }
-  }
+  async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({ tags: adviceTags }); }
   async function saveTags() {
     if(!currentUser) return;
     const uid = currentUser.uid;
@@ -333,7 +414,6 @@
     await db.collection('users').doc(uid).collection('settings').doc('howTags').set({ tags: userHowTags });
   }
   
-  // UI functions (adapted to use async saves)
   async function updateMedicineUsage(medId) {
     const med = medicines.find(m => m.id === medId);
     if(med) { med.usageCount = (med.usageCount||0) + 1; await saveMedicines(); renderMostUsed(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); }
@@ -345,7 +425,6 @@
     if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed);
     renderMedicineList(); renderMostUsed(); renderPinnedSection();
   }
-  async function deleteMedicineById(idx) { medicines.splice(idx,1); await saveMedicines(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); }
   
   function renderMedicineList(search="") {
     let filtered = medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase()));
@@ -412,6 +491,13 @@
   function renderTagEditList(){ const container=document.getElementById("tagEditList"); let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); container.innerHTML=""; tags.forEach((tag,idx)=>{ const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.gap="8px"; div.style.marginBottom="6px"; const inp=document.createElement("input"); inp.value=tag; inp.style.flex="1"; inp.addEventListener("change",(e)=>{ tags[idx]=e.target.value; saveTags(); renderTagEditList(); }); const del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="btn-sm btn-danger"; del.onclick=()=>{ tags.splice(idx,1); saveTags(); renderTagEditList(); }; div.appendChild(inp); div.appendChild(del); container.appendChild(div); }); }
   function addNewTag(){ const newTag=document.getElementById("newTagInput").value.trim(); if(!newTag) return; let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); if(!tags.includes(newTag)) tags.push(newTag); saveTags(); renderTagEditList(); document.getElementById("newTagInput").value=""; }
   function saveTagEditAndClose(){ saveTags(); if(currentTagType==="freq") renderTagGroup("freqTagsContainer", userFreqTags, "freq"); else if(currentTagType==="dur") renderTagGroup("durTagsContainer", userDurTags, "dur"); else renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("tagEditModal").style.display="none"; }
+  
+  // Auto-save patient name changes
+  document.getElementById("firstName")?.addEventListener("change", function(){ addNewFirstName(this.value); });
+  document.getElementById("lastName")?.addEventListener("change", function(){ addNewLastName(this.value); });
+  document.getElementById("diagnosisField")?.addEventListener("change", function(){ addNewDisease(this.value); });
+  
+  // Event bindings (added expand buttons and disease picker)
   function bindEvents(){
     document.getElementById("searchMedicine").addEventListener("input",e=>renderMedicineList(e.target.value));
     document.getElementById("clearAllMedicinesBtn").addEventListener("click",()=>{currentMedicines=[]; renderMedicinesTable(); updatePreview();});
@@ -435,7 +521,7 @@
     document.getElementById("closeAnalysisModal").addEventListener("click",()=>document.getElementById("analysisModal").style.display="none");
     document.getElementById("applyAnalysisFilter").addEventListener("click",updateAnalysisDashboard);
     document.getElementById("resetAnalysisFilter").addEventListener("click",resetAnalysisFilters);
-    window.addEventListener("click",e=>{ if(e.target===document.getElementById("historyModal")) document.getElementById("historyModal").style.display="none"; if(e.target===document.getElementById("analysisModal")) document.getElementById("analysisModal").style.display="none"; if(e.target===document.getElementById("medicineInventoryModal")) document.getElementById("medicineInventoryModal").style.display="none"; if(e.target===document.getElementById("adviceInventoryModal")) document.getElementById("adviceInventoryModal").style.display="none"; if(e.target===document.getElementById("tagEditModal")) document.getElementById("tagEditModal").style.display="none"; });
+    window.addEventListener("click",e=>{ if(e.target===document.getElementById("historyModal")) document.getElementById("historyModal").style.display="none"; if(e.target===document.getElementById("analysisModal")) document.getElementById("analysisModal").style.display="none"; if(e.target===document.getElementById("medicineInventoryModal")) document.getElementById("medicineInventoryModal").style.display="none"; if(e.target===document.getElementById("adviceInventoryModal")) document.getElementById("adviceInventoryModal").style.display="none"; if(e.target===document.getElementById("tagEditModal")) document.getElementById("tagEditModal").style.display="none"; if(e.target===document.getElementById("diseaseModal")) document.getElementById("diseaseModal").style.display="none"; if(e.target===document.getElementById("allMedsPickerModal")) document.getElementById("allMedsPickerModal").style.display="none"; if(e.target===document.getElementById("allAdvicePickerModal")) document.getElementById("allAdvicePickerModal").style.display="none"; });
     document.getElementById("manageMedsBtn").addEventListener("click",openMedicineInventory);
     document.getElementById("closeInventoryModal").addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
     document.getElementById("closeInventoryBtn").addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
@@ -454,9 +540,14 @@
     ["firstName","lastName","patientAge","patientGender","diagnosisField"].forEach(id=>document.getElementById(id)?.addEventListener("input",updatePreview));
     document.querySelectorAll('input[name="paperStyle"]').forEach(r=>r.addEventListener("change",()=>updatePreview()));
     
-    // NEW: attach expand buttons to open the modals
-    document.getElementById("expandAllMedsBtn").addEventListener("click", openMedicineInventory);
-    document.getElementById("expandAdviceBtn").addEventListener("click", openAdviceInventory);
+    // NEW: Expand buttons and disease picker
+    document.getElementById("expandAllMedsBtn").addEventListener("click", showAllMedsPicker);
+    document.getElementById("expandAdviceBtn").addEventListener("click", showAllAdvicePicker);
+    document.getElementById("diseasePickerBtn").addEventListener("click", showDiseaseModal);
+    document.getElementById("closeDiseaseModal").addEventListener("click", () => document.getElementById("diseaseModal").style.display = "none");
+    document.getElementById("addNewDiseaseBtn").addEventListener("click", addNewDiseaseFromModal);
+    document.getElementById("closeMedsPickerModal").addEventListener("click", () => document.getElementById("allMedsPickerModal").style.display = "none");
+    document.getElementById("closeAdvicePickerModal").addEventListener("click", () => document.getElementById("allAdvicePickerModal").style.display = "none");
   }
   
   // Auth
