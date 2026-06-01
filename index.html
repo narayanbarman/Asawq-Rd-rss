@@ -119,7 +119,7 @@
     .login-modal .divider::before, .login-modal .divider::after { content: ""; position: absolute; top: 50%; width: 45%; height: 1px; background: #e2e8f0; }
     .login-modal .divider::before { left: 0; }
     .login-modal .divider::after { right: 0; }
-    .login-modal .footer-links { display: flex; justify-content: center; margin-top: 16px; font-size: 0.7rem; }
+    .login-modal .footer-links { display: flex; justify-content: space-between; margin-top: 16px; font-size: 0.7rem; }
     .login-modal .footer-links a { color: #0a7e8c; text-decoration: none; cursor: pointer; }
     .login-modal .footer-links a:hover { text-decoration: underline; }
     .error-msg { color: #dc2626; font-size: 0.7rem; margin-top: 8px; text-align: center; }
@@ -137,7 +137,7 @@
     <div id="userWidget"></div>
   </div>
 
-  <div id="mainApp">
+  <div id="mainApp" style="display: none;">
     <div class="top-actions">
       <button class="top-btn" id="quickMedicineBtn"><i class="fas fa-plus-circle"></i> Add Medicine</button>
       <button class="top-btn" id="bulkTriggerBtn"><i class="fas fa-upload"></i> Bulk Upload</button>
@@ -204,12 +204,15 @@
       <button id="emailLoginBtn" class="btn-primary btn-login">Sign In</button>
       <div class="divider">or</div>
       <button id="googleLoginBtn" class="btn-google" style="width:100%; justify-content: center;"><i class="fab fa-google"></i> Sign in with Google</button>
-      <div class="footer-links"><a id="forgotPasswordLink">Forgot password?</a></div>
+      <div class="footer-links">
+        <a id="createAccountLink">Create account</a>
+        <a id="forgotPasswordLink">Forgot password?</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- MODALS -->
+<!-- MODALS (same as before) -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin: 16px 0; max-height: 300px; overflow-y: auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin: 10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
 <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
@@ -224,7 +227,7 @@
 <div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
 <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
 <div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
-<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
+<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th><tr></thead><tbody id="inventoryMedBody"></tbody>}</div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
 <div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
 <div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
 <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
@@ -360,6 +363,7 @@
   }
   function showAdminPanel() { if(currentUser && currentUser.email === ADMIN_EMAIL) { loadPendingTransactions(); document.getElementById("adminPanelModal").style.display = "block"; } }
   
+  // Disease modal (same as before)
   function showDiseaseModal() {
     const container = document.getElementById("diseaseListContainer");
     container.innerHTML = savedDiseases.map(d => `<span class="tag" data-disease="${escapeHtml(d)}" style="display:inline-flex; align-items:center; gap:6px;">${escapeHtml(d)} <i class="fas fa-trash-alt" style="color:#dc2626; cursor:pointer;" data-disease="${escapeHtml(d)}"></i></span>`).join("");
@@ -458,7 +462,7 @@
   function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
   async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"As directed", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"", usageCount:0, pinned:false }); } } alert("Imported."); }
-  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required (login as narayanbarma3210@gmail.com)\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
+  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
   function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
   function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
   function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
@@ -474,11 +478,74 @@
   function addNewTag(){ const newTag=document.getElementById("newTagInput").value.trim(); if(!newTag) return; let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); if(!tags.includes(newTag)) tags.push(newTag); saveTags(); renderTagEditList(); document.getElementById("newTagInput").value=""; }
   function saveTagEditAndClose(){ saveTags(); if(currentTagType==="freq") renderTagGroup("freqTagsContainer", userFreqTags, "freq"); else if(currentTagType==="dur") renderTagGroup("durTagsContainer", userDurTags, "dur"); else renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("tagEditModal").style.display="none"; }
   
+  // Auth event handlers
+  async function handleEmailSignIn() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const errorDiv = document.getElementById("loginErrorMsg");
+    if (!email || !password) { errorDiv.innerText = "Enter email and password"; return; }
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      closeLoginOverlay();
+    } catch(e) { errorDiv.innerText = e.message; }
+  }
+  async function handleCreateAccount() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const errorDiv = document.getElementById("loginErrorMsg");
+    if (!email || !password) { errorDiv.innerText = "Enter email and password"; return; }
+    if (password.length < 6) { errorDiv.innerText = "Password must be at least 6 characters"; return; }
+    try {
+      await auth.createUserWithEmailAndPassword(email, password);
+      closeLoginOverlay();
+    } catch(e) { errorDiv.innerText = e.message; }
+  }
+  async function handleGoogleSignIn() {
+    try {
+      await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+      closeLoginOverlay();
+    } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
+  }
+  async function handleForgotPassword() {
+    const email = document.getElementById("loginEmail").value.trim();
+    if (!email) { document.getElementById("loginErrorMsg").innerText = "Enter your email address"; return; }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      alert("Password reset email sent. Check your inbox.");
+    } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
+  }
+  function openLoginOverlay(){ document.getElementById("loginOverlay").classList.add("active"); }
+  function closeLoginOverlay(){ document.getElementById("loginOverlay").classList.remove("active"); }
+  
+  function onAuthStateChanged(user) {
+    if (user) {
+      currentUser = user;
+      document.getElementById("mainApp").style.display = "block";
+      document.getElementById("userWidget").innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
+      document.getElementById("logoutBtn")?.addEventListener("click", () => auth.signOut());
+      if (user.email === ADMIN_EMAIL) document.getElementById("adminPanelBtn").style.display = "inline-flex";
+      else document.getElementById("adminPanelBtn").style.display = "none";
+      loadUserData();
+      closeLoginOverlay();
+    } else {
+      currentUser = null;
+      document.getElementById("mainApp").style.display = "none";
+      document.getElementById("userWidget").innerHTML = `<button id="showLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
+      document.getElementById("showLoginBtn")?.addEventListener("click", openLoginOverlay);
+      openLoginOverlay();
+      // Clear any stale data
+      medicines = []; adviceTags = []; prescriptions = [];
+      renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview();
+    }
+  }
+  auth.onAuthStateChanged(onAuthStateChanged);
+  
+  // Auto-save patient data
   document.getElementById("firstName")?.addEventListener("change", function(){ addNewFirstName(this.value); });
   document.getElementById("lastName")?.addEventListener("change", function(){ addNewLastName(this.value); });
   document.getElementById("diagnosisField")?.addEventListener("change", function(){ addNewDisease(this.value); });
   
-  function bindEvents(){
+  function bindEvents() {
     document.getElementById("searchMedicine").addEventListener("input",e=>renderMedicineList(e.target.value));
     document.getElementById("clearAllMedicinesBtn").addEventListener("click",()=>{currentMedicines=[]; renderMedicinesTable(); updatePreview();});
     document.getElementById("quickMedicineBtn").addEventListener("click",openQuickPopup);
@@ -547,31 +614,14 @@
   function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
   function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); }
   
-  // Auth
-  async function handleEmailSignIn() { const email=document.getElementById("loginEmail").value.trim(); const password=document.getElementById("loginPassword").value; const errorDiv=document.getElementById("loginErrorMsg"); if(!email||!password){ errorDiv.innerText="Enter email and password"; return; } try{ await auth.signInWithEmailAndPassword(email,password); closeLoginOverlay(); }catch(e){ errorDiv.innerText=e.message; } }
-  async function handleGoogleSignIn() { try{ await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); closeLoginOverlay(); }catch(e){ document.getElementById("loginErrorMsg").innerText=e.message; } }
-  async function handleForgotPassword() { const email=document.getElementById("loginEmail").value.trim(); if(!email){ document.getElementById("loginErrorMsg").innerText="Enter your email address"; return; } try{ await auth.sendPasswordResetEmail(email); alert("Password reset email sent. Check your inbox."); }catch(e){ document.getElementById("loginErrorMsg").innerText=e.message; } }
-  function openLoginOverlay(){ document.getElementById("loginOverlay").classList.add("active"); }
-  function closeLoginOverlay(){ document.getElementById("loginOverlay").classList.remove("active"); }
-  function onAuthStateChanged(user) {
-    if(user) {
-      currentUser=user;
-      document.getElementById("userWidget").innerHTML=`<div class="user-area"><div class="user-avatar"><img src="${user.photoURL||'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName||user.email}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
-      document.getElementById("logoutBtn")?.addEventListener("click",()=>auth.signOut());
-      if(user.email === ADMIN_EMAIL) document.getElementById("adminPanelBtn").style.display = "inline-flex";
-      else document.getElementById("adminPanelBtn").style.display = "none";
-      loadUserData();
-      closeLoginOverlay();
-    } else {
-      currentUser=null;
-      document.getElementById("userWidget").innerHTML=`<button id="showLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
-      document.getElementById("showLoginBtn")?.addEventListener("click",openLoginOverlay);
-      openLoginOverlay();
-    }
-  }
-  auth.onAuthStateChanged(onAuthStateChanged);
-  
-  document.addEventListener("DOMContentLoaded",()=>{ bindEvents(); setupSearchSuggestions(); document.getElementById("emailLoginBtn")?.addEventListener("click",handleEmailSignIn); document.getElementById("googleLoginBtn")?.addEventListener("click",handleGoogleSignIn); document.getElementById("forgotPasswordLink")?.addEventListener("click",handleForgotPassword); });
+  document.addEventListener("DOMContentLoaded", () => {
+    bindEvents();
+    setupSearchSuggestions();
+    document.getElementById("emailLoginBtn")?.addEventListener("click", handleEmailSignIn);
+    document.getElementById("googleLoginBtn")?.addEventListener("click", handleGoogleSignIn);
+    document.getElementById("forgotPasswordLink")?.addEventListener("click", handleForgotPassword);
+    document.getElementById("createAccountLink")?.addEventListener("click", handleCreateAccount);
+  });
 </script>
 </body>
 </html>
