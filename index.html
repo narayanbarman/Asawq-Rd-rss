@@ -7,12 +7,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ALL STYLES ========== */
+    /* ========== ALL STYLES (same as before) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -212,7 +211,7 @@
   </div>
 </div>
 
-<!-- MODALS -->
+<!-- MODALS (keep existing, same as before) -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
 <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
@@ -234,7 +233,7 @@
 <div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin:16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
 
 <script>
-  // Firebase Config
+  // ========== FIREBASE CONFIG ==========
   const firebaseConfig = {
     apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
     authDomain: "test-website-22778.firebaseapp.com",
@@ -268,6 +267,7 @@
   function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
   function formatTimeNoSeconds() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
   
+  // ========== AUTO-SUGGEST STORAGE ==========
   async function saveAutoCompleteData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({ firstNames: savedFirstNames, lastNames: savedLastNames, diseases: savedDiseases }); }
   async function loadAutoCompleteData() {
     if(!currentUser) return;
@@ -285,6 +285,7 @@
   async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   
+  // ========== SUBSCRIPTION FUNCTIONS ==========
   async function loadSubscriptionData() {
     if(!currentUser) return;
     const subDoc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').get();
@@ -328,51 +329,64 @@
       widget.insertAdjacentHTML('beforeend', badge);
     }
   }
-  function showSubscriptionModal() { document.getElementById("subscriptionModal").style.display = "block"; }
   function showRenewalModal(daysLeft) {
     document.getElementById("renewalMsg").innerText = `Your plan expires in ${daysLeft} day(s). Please recharge to continue.`;
     document.getElementById("renewalModal").style.display = "block";
   }
+  
+  // ========== TRANSACTION & ADMIN FUNCTIONS ==========
   async function submitTransaction(plan, transactionId, isRenewal=false) {
     if(!transactionId || transactionId.length!==12 || isNaN(transactionId)) { alert("Enter valid 12-digit transaction ID"); return; }
     showLoading(true);
     await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').update({
       pendingTransaction: { plan, transactionId, timestamp: new Date().toISOString(), approved: false }
     });
+    // Also save to global pending collection for admin visibility
+    await db.collection('pendingTransactions').doc(Date.now().toString()).set({
+      userId: currentUser.uid,
+      userEmail: currentUser.email,
+      plan: plan,
+      transactionId: transactionId,
+      timestamp: new Date().toISOString(),
+      approved: false
+    });
     alert("Transaction submitted. Awaiting admin approval.");
     if(isRenewal) document.getElementById("renewalModal").style.display = "none";
     else document.getElementById("subscriptionModal").style.display = "none";
     showLoading(false);
   }
+  
   async function loadPendingTransactions() {
     if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
-    const usersSnap = await db.collection('users').get();
-    let pending = [];
-    for(const userDoc of usersSnap.docs) {
-      const subDoc = await db.collection('users').doc(userDoc.id).collection('settings').doc('subscription').get();
-      if(subDoc.exists && subDoc.data().pendingTransaction && !subDoc.data().pendingTransaction.approved) {
-        pending.push({ userId: userDoc.id, email: userDoc.data()?.email || userDoc.id, ...subDoc.data().pendingTransaction });
-      }
-    }
+    const pendingSnap = await db.collection('pendingTransactions').where('approved', '==', false).get();
+    const pending = pendingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const container = document.getElementById("pendingTransactionsList");
     if(pending.length===0) { container.innerHTML = "<p>No pending approvals.</p>"; return; }
-    container.innerHTML = pending.map(p => `<div style="background:#f8fafc; padding:12px; border-radius:16px; margin-bottom:10px;"><div><strong>${escapeHtml(p.email)}</strong></div><div>Plan: ${p.plan} | TXN: ${p.transactionId}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-user="${p.userId}" data-approve="true">Approve</button><button class="btn-sm btn-danger" data-user="${p.userId}" data-approve="false">Reject</button></div></div>`).join("");
-    container.querySelectorAll("button[data-user]").forEach(btn => {
+    container.innerHTML = pending.map(p => `<div style="background:#f8fafc; padding:12px; border-radius:16px; margin-bottom:10px;"><div><strong>${escapeHtml(p.userEmail)}</strong></div><div>Plan: ${p.plan} | TXN: ${p.transactionId}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-id="${p.id}" data-approve="true">Approve</button><button class="btn-sm btn-danger" data-id="${p.id}" data-approve="false">Reject</button></div></div>`).join("");
+    container.querySelectorAll("button[data-id]").forEach(btn => {
       btn.addEventListener("click", async () => {
-        const userId = btn.dataset.user;
+        const id = btn.dataset.id;
         const approve = btn.dataset.approve === "true";
-        const userSubRef = db.collection('users').doc(userId).collection('settings').doc('subscription');
-        const subDoc = await userSubRef.get();
-        if(subDoc.exists && subDoc.data().pendingTransaction) {
+        const pendingDoc = await db.collection('pendingTransactions').doc(id).get();
+        const data = pendingDoc.data();
+        if(data) {
           if(approve) {
             const expiryDate = new Date();
-            if(subDoc.data().pendingTransaction.plan === "monthly") expiryDate.setMonth(expiryDate.getMonth()+1);
+            if(data.plan === "monthly") expiryDate.setMonth(expiryDate.getMonth()+1);
             else expiryDate.setFullYear(expiryDate.getFullYear()+1);
-            await userSubRef.update({ isActive: true, expiryDate: expiryDate.toISOString(), pendingTransaction: null, dailyCount: 0 });
+            await db.collection('users').doc(data.userId).collection('settings').doc('subscription').update({
+              isActive: true,
+              expiryDate: expiryDate.toISOString(),
+              pendingTransaction: null,
+              dailyCount: 0
+            });
+            await db.collection('pendingTransactions').doc(id).update({ approved: true });
+            alert("Approved!");
           } else {
-            await userSubRef.update({ pendingTransaction: null });
+            await db.collection('users').doc(data.userId).collection('settings').doc('subscription').update({ pendingTransaction: null });
+            await db.collection('pendingTransactions').doc(id).update({ approved: true });
+            alert("Rejected");
           }
-          alert(approve ? "Approved!" : "Rejected");
           loadPendingTransactions();
         }
       });
@@ -380,6 +394,7 @@
   }
   function showAdminPanel() { if(currentUser && currentUser.email === ADMIN_EMAIL) { loadPendingTransactions(); document.getElementById("adminPanelModal").style.display = "block"; } }
   
+  // ========== DISEASE MODAL ==========
   function showDiseaseModal() {
     const container = document.getElementById("diseaseListContainer");
     container.innerHTML = savedDiseases.map(d => `<span class="tag" data-disease="${escapeHtml(d)}" style="display:inline-flex; align-items:center; gap:6px;">${escapeHtml(d)} <i class="fas fa-trash-alt" style="color:#dc2626; cursor:pointer;" data-disease="${escapeHtml(d)}"></i></span>`).join("");
@@ -410,6 +425,7 @@
     if(val && !savedDiseases.includes(val)) { savedDiseases.push(val); await saveAutoCompleteData(); updateDatalists(); showDiseaseModal(); document.getElementById("newDiseaseInput").value = ""; }
   }
   
+  // ========== CORE DATA LOAD FUNCTIONS ==========
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving","Review after 3 days"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const freqDoc=await db.collection('users').doc(uid).collection('settings').doc('freqTags').get(); if(freqDoc.exists) userFreqTags=freqDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); const durDoc=await db.collection('users').doc(uid).collection('settings').doc('durTags').get(); if(durDoc.exists) userDurTags=durDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); const howDoc=await db.collection('users').doc(uid).collection('settings').doc('howTags').get(); if(howDoc.exists) userHowTags=howDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
   async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
@@ -539,7 +555,7 @@
   }
   auth.onAuthStateChanged(onAuthStateChanged);
   
-  // Event listeners
+  // ========== EVENT BINDINGS ==========
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("emailLoginBtn")?.addEventListener("click", handleEmailSignIn);
     document.getElementById("googleLoginBtn")?.addEventListener("click", handleGoogleSignIn);
