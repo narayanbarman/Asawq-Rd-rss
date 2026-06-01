@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* === All previous styles remain unchanged === */
+    /* === All styles remain unchanged from previous working version === */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -181,7 +181,7 @@
 
         <div class="card">
           <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="editable-hint">(click any field to edit)</span></span></div>
-          <div style="overflow-x: auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody><table></div>
+          <div style="overflow-x: auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table></div>
           <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
         </div>
 
@@ -258,7 +258,6 @@
   let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
   let subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true };
   
-  // Admin email (set your email here)
   const ADMIN_EMAIL = "narayanbarma3210@gmail.com";
   
   function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
@@ -267,7 +266,6 @@
   function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
   function formatTimeNoSeconds() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
   
-  // Subscription & daily limit functions
   async function loadSubscriptionData() {
     if(!currentUser) return;
     const subDoc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').get();
@@ -326,7 +324,6 @@
     else document.getElementById("subscriptionModal").style.display = "none";
     showLoading(false);
   }
-  // Admin functions
   async function loadPendingTransactions() {
     if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
     const usersSnap = await db.collection('users').get();
@@ -363,7 +360,6 @@
   }
   function showAdminPanel() { if(currentUser && currentUser.email === ADMIN_EMAIL) { loadPendingTransactions(); document.getElementById("adminPanelModal").style.display = "block"; } }
   
-  // Disease modal
   function showDiseaseModal() {
     const container = document.getElementById("diseaseListContainer");
     container.innerHTML = savedDiseases.map(d => `<span class="tag" data-disease="${escapeHtml(d)}" style="display:inline-flex; align-items:center; gap:6px;">${escapeHtml(d)} <i class="fas fa-trash-alt" style="color:#dc2626; cursor:pointer;" data-disease="${escapeHtml(d)}"></i></span>`).join("");
@@ -394,7 +390,6 @@
     if(val && !savedDiseases.includes(val)) { savedDiseases.push(val); await saveAutoCompleteData(); updateDatalists(); showDiseaseModal(); document.getElementById("newDiseaseInput").value = ""; }
   }
   
-  // Auto-suggest storage
   async function saveAutoCompleteData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({ firstNames: savedFirstNames, lastNames: savedLastNames, diseases: savedDiseases }); }
   async function loadAutoCompleteData() {
     if(!currentUser) return;
@@ -412,7 +407,6 @@
   async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   
-  // Core data load (same as before)
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving","Review after 3 days"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const freqDoc=await db.collection('users').doc(uid).collection('settings').doc('freqTags').get(); if(freqDoc.exists) userFreqTags=freqDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); const durDoc=await db.collection('users').doc(uid).collection('settings').doc('durTags').get(); if(durDoc.exists) userDurTags=durDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); const howDoc=await db.collection('users').doc(uid).collection('settings').doc('howTags').get(); if(howDoc.exists) userHowTags=howDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
   async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
@@ -556,7 +550,7 @@
   // Auth
   async function handleEmailSignIn() { const email=document.getElementById("loginEmail").value.trim(); const password=document.getElementById("loginPassword").value; const errorDiv=document.getElementById("loginErrorMsg"); if(!email||!password){ errorDiv.innerText="Enter email and password"; return; } try{ await auth.signInWithEmailAndPassword(email,password); closeLoginOverlay(); }catch(e){ errorDiv.innerText=e.message; } }
   async function handleGoogleSignIn() { try{ await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); closeLoginOverlay(); }catch(e){ document.getElementById("loginErrorMsg").innerText=e.message; } }
-  async function handleForgotPassword() { const email=document.getElementById("loginEmail").value.trim(); if(!email){ document.getElementById("loginErrorMsg").innerText="Enter your email"; return; } try{ await auth.sendPasswordResetEmail(email); alert("Reset email sent"); }catch(e){ document.getElementById("loginErrorMsg").innerText=e.message; } }
+  async function handleForgotPassword() { const email=document.getElementById("loginEmail").value.trim(); if(!email){ document.getElementById("loginErrorMsg").innerText="Enter your email address"; return; } try{ await auth.sendPasswordResetEmail(email); alert("Password reset email sent. Check your inbox."); }catch(e){ document.getElementById("loginErrorMsg").innerText=e.message; } }
   function openLoginOverlay(){ document.getElementById("loginOverlay").classList.add("active"); }
   function closeLoginOverlay(){ document.getElementById("loginOverlay").classList.remove("active"); }
   function onAuthStateChanged(user) {
