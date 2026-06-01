@@ -7,9 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 font-sans antialiased min-h-screen flex items-center justify-center gray-900">
+<body class="bg-slate-50 font-sans antialiased min-h-screen flex items-center justify-center text-slate-900">
 
-    <div class="w-full max-w-md p-4">
+    <div id="loadingFallback" class="p-6 text-center max-w-sm bg-white rounded-xl shadow-md border border-slate-200">
+        <p class="text-slate-600 font-medium">Loading Application UI...</p>
+        <p class="text-xs text-slate-400 mt-2">If this screen stays blank or stuck, please check your internet connection or console log rules.</p>
+    </div>
+
+    <div id="mainAppWrapper" class="hidden w-full max-w-md p-4">
         
         <div id="authCard" class="bg-white rounded-2xl shadow-xl p-8 border border-slate-100 transition-all duration-300">
             <div class="text-center mb-8">
@@ -116,6 +121,7 @@
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+        // Firebase configuration profile
         const firebaseConfig = {
             apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDFZkdcd8s59o",
             authDomain: "test-website-22778.firebaseapp.com",
@@ -127,97 +133,116 @@
             measurementId: "G-9E6RYDKSJS"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
-
-        const authCard = document.getElementById('authCard');
-        const dashboardCard = document.getElementById('dashboardCard');
-        const loginForm = document.getElementById('loginForm');
-        const forgotForm = document.getElementById('forgotForm');
-        const formTitle = document.getElementById('formTitle');
-        const formSubtitle = document.getElementById('formSubtitle');
-        const socialDivider = document.getElementById('socialDivider');
-        const googleSignInBtn = document.getElementById('googleSignInBtn');
-        const alertBox = document.getElementById('alertBox');
-        const userDisplayEmail = document.getElementById('userDisplayEmail');
-
-        function showAlert(message, isSuccess = false) {
-            alertBox.textContent = message;
-            alertBox.className = `mb-4 p-3 rounded-lg text-sm font-medium border text-center ${
-                isSuccess ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'
-            }`;
-        }
-
-        function clearAlert() {
-            alertBox.className = 'hidden';
-            alertBox.textContent = '';
-        }
-
-        document.getElementById('goToForgotBtn').addEventListener('click', () => {
-            clearAlert();
-            loginForm.classList.add('hidden');
-            socialDivider.classList.add('hidden');
-            googleSignInBtn.classList.add('hidden');
-            forgotForm.classList.remove('hidden');
-            formTitle.textContent = "Reset Password";
-            formSubtitle.textContent = "Enter your email to receive a recovery link";
-        });
-
-        document.getElementById('backToLoginBtn').addEventListener('click', () => {
-            clearAlert();
-            forgotForm.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-            socialDivider.classList.remove('hidden');
-            googleSignInBtn.classList.remove('hidden');
-            formTitle.textContent = "Welcome Back";
-            formSubtitle.textContent = "Please enter your details to sign in";
-        });
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearAlert();
+        // Standard initialization fallback check
+        document.addEventListener("DOMContentLoaded", () => {
             try {
-                await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
-            } catch (error) {
-                showAlert(error.message.replace("Firebase: ", ""));
-            }
-        });
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const googleProvider = new GoogleAuthProvider();
 
-        googleSignInBtn.addEventListener('click', async () => {
-            clearAlert();
-            try {
-                await signInWithPopup(auth, googleProvider);
-            } catch (error) {
-                showAlert(error.message.replace("Firebase: ", ""));
-            }
-        });
+                // Interface management targets
+                const loadingFallback = document.getElementById('loadingFallback');
+                const mainAppWrapper = document.getElementById('mainAppWrapper');
+                const authCard = document.getElementById('authCard');
+                const dashboardCard = document.getElementById('dashboardCard');
+                const loginForm = document.getElementById('loginForm');
+                const forgotForm = document.getElementById('forgotForm');
+                const formTitle = document.getElementById('formTitle');
+                const formSubtitle = document.getElementById('formSubtitle');
+                const socialDivider = document.getElementById('socialDivider');
+                const googleSignInBtn = document.getElementById('googleSignInBtn');
+                const alertBox = document.getElementById('alertBox');
+                const userDisplayEmail = document.getElementById('userDisplayEmail');
 
-        forgotForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearAlert();
-            try {
-                await sendPasswordResetEmail(auth, document.getElementById('forgotEmail').value);
-                showAlert("Reset link sent to your email!", true);
-                document.getElementById('forgotEmail').value = "";
-            } catch (error) {
-                showAlert(error.message.replace("Firebase: ", ""));
-            }
-        });
+                // Reveal interface safely once modules compile
+                loadingFallback.classList.add('hidden');
+                mainAppWrapper.classList.remove('hidden');
 
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try { await signOut(auth); } catch (error) { alert(error.message); }
-        });
+                function showAlert(message, isSuccess = false) {
+                    alertBox.textContent = message;
+                    alertBox.className = `mb-4 p-3 rounded-lg text-sm font-medium border text-center ${
+                        isSuccess ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'
+                    }`;
+                }
 
-        onAuthStateChanged(auth, (user) => {
-            clearAlert();
-            if (user) {
-                authCard.classList.add('hidden');
-                dashboardCard.classList.remove('hidden');
-                userDisplayEmail.textContent = user.email;
-            } else {
-                dashboardCard.classList.add('hidden');
-                authCard.classList.remove('hidden');
+                function clearAlert() {
+                    alertBox.className = 'hidden';
+                    alertBox.textContent = '';
+                }
+
+                // Interaction routes
+                document.getElementById('goToForgotBtn').addEventListener('click', () => {
+                    clearAlert();
+                    loginForm.classList.add('hidden');
+                    socialDivider.classList.add('hidden');
+                    googleSignInBtn.classList.add('hidden');
+                    forgotForm.classList.remove('hidden');
+                    formTitle.textContent = "Reset Password";
+                    formSubtitle.textContent = "Enter your email to receive a recovery link";
+                });
+
+                document.getElementById('backToLoginBtn').addEventListener('click', () => {
+                    clearAlert();
+                    forgotForm.classList.add('hidden');
+                    loginForm.classList.remove('hidden');
+                    socialDivider.classList.remove('hidden');
+                    googleSignInBtn.classList.remove('hidden');
+                    formTitle.textContent = "Welcome Back";
+                    formSubtitle.textContent = "Please enter your details to sign in";
+                });
+
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    clearAlert();
+                    try {
+                        await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+                    } catch (error) {
+                        showAlert(error.message.replace("Firebase: ", ""));
+                    }
+                });
+
+                googleSignInBtn.addEventListener('click', async () => {
+                    clearAlert();
+                    try {
+                        await signInWithPopup(auth, googleProvider);
+                    } catch (error) {
+                        showAlert(error.message.replace("Firebase: ", ""));
+                    }
+                });
+
+                forgotForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    clearAlert();
+                    try {
+                        await sendPasswordResetEmail(auth, document.getElementById('forgotEmail').value);
+                        showAlert("Reset link sent to your email!", true);
+                        document.getElementById('forgotEmail').value = "";
+                    } catch (error) {
+                        showAlert(error.message.replace("Firebase: ", ""));
+                    }
+                });
+
+                document.getElementById('logoutBtn').addEventListener('click', async () => {
+                    try { await signOut(auth); } catch (error) { alert(error.message); }
+                });
+
+                onAuthStateChanged(auth, (user) => {
+                    clearAlert();
+                    if (user) {
+                        authCard.classList.add('hidden');
+                        dashboardCard.classList.remove('hidden');
+                        userDisplayEmail.textContent = user.email;
+                    } else {
+                        dashboardCard.classList.add('hidden');
+                        authCard.classList.remove('hidden');
+                    }
+                });
+
+            } catch (globalError) {
+                document.getElementById('loadingFallback').innerHTML = `
+                    <p class="text-rose-600 font-bold">Initialization Error</p>
+                    <p class="text-xs text-slate-500 mt-2">${globalError.message}</p>
+                `;
             }
         });
     </script>
