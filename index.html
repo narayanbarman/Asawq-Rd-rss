@@ -104,6 +104,11 @@
     .picker-item { background: #f8fafc; border-radius: 20px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2edf2; }
     .picker-item:hover { background: #e6f4f5; border-color: #0a7e8c; }
     .editable-hint { font-size: 0.65rem; color: #9ca3af; margin-left: 6px; font-weight: normal; }
+    /* New preview styles: compact block layout */
+    .preview-med-item { margin-bottom: 1rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.5rem; }
+    .preview-med-name { font-weight: 700; color: #0c4e6e; font-size: 0.9rem; }
+    .preview-med-detail { font-size: 0.75rem; color: #334155; margin-top: 2px; }
+    .preview-med-instruction { font-size: 0.7rem; color: #4b6b87; margin-top: 2px; }
     @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
     @media (max-width: 800px) { .right-panel { min-width: auto; } }
     .login-container { text-align: center; padding: 60px 20px; background: white; border-radius: 32px; max-width: 500px; margin: 50px auto; }
@@ -455,7 +460,57 @@
   function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
   function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
   function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
-  function getPreviewHTML(split){ const fn=document.getElementById("firstName").value.trim(), ln=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diag=document.getElementById("diagnosisField").value.trim(); let patient=(fn||ln)?`${fn} ${ln}`.trim():""; let genderShow=gender?`(${gender})`:""; let patientLine=(patient||age||genderShow)?`<div><strong>${patient||"Patient"}</strong> ${age?`, Age: ${age}`:''} ${genderShow}</div>`:""; let diagHtml=diag?`<div><strong>Diagnosis:</strong> ${escapeHtml(diag)}</div>`:""; let medTable=`<table style="width:100%; border-collapse:collapse; margin-top:8px;"><thead><tr style="background:#f1f5f9;"><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th></table></thead><tbody>`; currentMedicines.forEach(it=>{medTable+=`<tr><td>${escapeHtml(it.name)}</td><td>${it.dosage||"-"}</td><td>${it.frequency||"-"}</td><td>${it.duration||"-"}</td><td>${it.howToTake||"-"}</td></table>`;}); medTable+=`</tbody></table>`; if(currentMedicines.length===0) medTable="<p><i>No medicines added.</i></p>"; const main=`<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${new Date().toLocaleString()}</span></div>${patientLine}${diagHtml}</div>${medTable}`; if(split){ let leftDisease=diag?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diag)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div style="display:flex; gap:16px;"><div style="width:120px; border-right:1px solid #0a7e8c; padding-right:10px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${main}</div></div>`; } else { let adviceHtml=currentAdvices.length?`<div style="margin-top:12px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return main+adviceHtml; } }
+  
+  // NEW: Compact preview without table headers
+  function getPreviewHTML(splitMode) {
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const age = document.getElementById("patientAge").value.trim();
+    const gender = document.getElementById("patientGender").value;
+    const diagnosis = document.getElementById("diagnosisField").value.trim();
+    const patientName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : "";
+    const genderShow = gender ? `(${gender})` : "";
+    const patientLine = (patientName || age || genderShow) ? `<div><strong>${patientName || "Patient"}</strong> ${age ? `, Age: ${age}` : ''} ${genderShow}</div>` : "";
+    const diagnosisHtml = diagnosis ? `<div><strong>Diagnosis:</strong> ${escapeHtml(diagnosis)}</div>` : "";
+    
+    // Build medicine list as compact blocks (no table headers)
+    let medBlocks = "";
+    if (currentMedicines.length === 0) {
+      medBlocks = "<p><i>No medicines added.</i></p>";
+    } else {
+      medBlocks = currentMedicines.map(item => {
+        let line1 = `<div class="preview-med-name">${escapeHtml(item.name)} ${escapeHtml(item.dosage)}</div>`;
+        let line2 = `<div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}</div>`;
+        let line3 = item.howToTake ? `<div class="preview-med-instruction">${escapeHtml(item.howToTake)}</div>` : "";
+        return `<div class="preview-med-item">${line1}${line2}${line3}</div>`;
+      }).join("");
+    }
+    
+    const mainContent = `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+          <span><strong>${currentSerial}</strong></span>
+          <span>${new Date().toLocaleString()}</span>
+        </div>
+        ${patientLine}
+        ${diagnosisHtml}
+      </div>
+      <div>${medBlocks}</div>
+      <div style="margin-top:16px; border-top:1px dashed #ccc; padding-top:12px;">
+        <em>Doctor Signature: ___________________</em>
+      </div>
+    `;
+    
+    if (splitMode) {
+      let leftDisease = diagnosis ? `<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>` : "";
+      let leftAdvice = currentAdvices.length ? `<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a => `<li>${escapeHtml(a)}</li>`).join("")}</ul></div>` : "";
+      return `<div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>`;
+    } else {
+      let adviceHtml = currentAdvices.length ? `<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a => `<li>${escapeHtml(a)}</li>`).join("")}</ul></div>` : "";
+      return mainContent + adviceHtml;
+    }
+  }
+  
   function updatePreview(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(split); const cont=document.getElementById("previewContainer"); if(split) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
   function resetCurrentDraft(){ currentMedicines=[]; currentAdvices=[]; document.getElementById("firstName").value=""; document.getElementById("lastName").value=""; document.getElementById("patientAge").value=""; document.getElementById("patientGender").value=""; document.getElementById("diagnosisField").value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial=generateSerial(); }
   async function saveCurrentPrescription(){ if(currentMedicines.length===0&&currentAdvices.length===0){ alert("Add at least one medicine or advice."); return; } const newPresc={ id:Date.now().toString(), serial:currentSerial, createdAt:firebase.firestore.FieldValue.serverTimestamp(), dateTime:new Date().toISOString(), patient:{firstName:document.getElementById("firstName").value.trim(), lastName:document.getElementById("lastName").value.trim(), age:document.getElementById("patientAge").value.trim(), gender:document.getElementById("patientGender").value}, diagnosis:document.getElementById("diagnosisField").value.trim(), medicines:JSON.parse(JSON.stringify(currentMedicines)), advices:[...currentAdvices] }; prescriptions.unshift(newPresc); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('prescriptions').doc(newPresc.id).set(newPresc); resetCurrentDraft(); alert(`Saved ${currentSerial}`); }
@@ -467,7 +522,7 @@
   async function addQuickMedicine(){ let name=document.getElementById("quickName").value.trim(); let dosage=document.getElementById("quickDosage").value.trim(); if(!name){alert("Enter medicine name"); return;} if(!dosage) dosage="As directed"; currentMedicines.push({name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed"}); let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing) await updateMedicineUsage(existing.id); else { await addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed", usageCount:1, pinned:false }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
   function closeModal(){ document.getElementById("medicineModal").style.display="none"; pendingMedicine=null; }
   function closeQuickPopup(){ document.getElementById("quickModal").style.display="none"; }
-  function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=parseInt(document.getElementById("printTopMargin").value)||0; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.prescription-content{max-width:800px;margin:0 auto;}@media print{body{padding:${margin}mm 10mm 10mm 10mm;}}</style></head><body><div class="prescription-content">${html}</div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
+  function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=parseInt(document.getElementById("printTopMargin").value)||0; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.prescription-content{max-width:800px;margin:0 auto;}.preview-med-item{margin-bottom:1rem; border-bottom:1px dashed #e2e8f0; padding-bottom:0.5rem;}.preview-med-name{font-weight:700; color:#0c4e6e; font-size:0.9rem;}.preview-med-detail{font-size:0.75rem; color:#334155; margin-top:2px;}.preview-med-instruction{font-size:0.7rem; color:#4b6b87; margin-top:2px;}@media print{body{padding:${margin}mm 10mm 10mm 10mm;}}</style></head><body><div class="prescription-content">${html}</div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
   function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
   async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"As directed", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"", usageCount:0, pinned:false }); } } alert("Imported."); }
