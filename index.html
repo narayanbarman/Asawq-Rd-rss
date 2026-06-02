@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ALL STYLES (same as before) ========== */
+    /* ========== ALL STYLES ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -74,7 +74,7 @@
     .advice-tag { background: #e6f4f5; padding: 3px 10px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 3px; font-size: 0.7rem; }
     .advice-tag:hover { background: #0a7e8c; color: white; }
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); overflow-y: auto; }
-    .modal-content { background: white; margin: 3% auto; padding: 20px; border-radius: 28px; width: 95%; max-width: 800px; }
+    .modal-content { background: white; margin: 3% auto; padding: 20px; border-radius: 28px; width: 95%; max-width: 900px; }
     .bottom-buttons { display: flex; gap: 12px; margin-top: 15px; justify-content: flex-end; flex-wrap: wrap; }
     .margin-control { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
     .history-filters, .analysis-filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; }
@@ -125,6 +125,11 @@
     .subscription-badge { background: #fef9e3; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; }
     .subscription-badge.expired { background: #fee2e2; color: #b91c1c; }
     .subscription-badge.active { background: #d1fae5; color: #065f46; }
+    .admin-tabs { display: flex; gap: 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
+    .admin-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; transition: 0.1s; }
+    .admin-tab:hover { background: #e6f4f5; }
+    .admin-tab.active { background: #0a7e8c; color: white; }
+    .subscription-user-card { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
     @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
     @media (max-width: 800px) { .right-panel { min-width: auto; } }
   </style>
@@ -211,7 +216,7 @@
   </div>
 </div>
 
-<!-- MODALS (keep existing, same as before) -->
+<!-- MODALS -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
 <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
@@ -221,12 +226,20 @@
   <div class="settings-group" id="practiceInfoCard"><h4>Practice Information</h4><div class="settings-row" style="flex-wrap:wrap; gap:16px;"><div style="flex:1; min-width:180px;"><label>Doctor Name</label><input type="text" id="doctorName" placeholder="Dr. John Doe"></div><div style="flex:1; min-width:180px;"><label>Registration No.</label><input type="text" id="doctorRegNo" placeholder="MCI/12345"></div><div style="flex:1; min-width:180px;"><label>Degree(s)</label><input type="text" id="doctorDegree" placeholder="MBBS, MD"></div></div><div class="settings-row" style="flex-wrap:wrap; gap:16px; margin-top:12px;"><div style="flex:1; min-width:200px;"><label>Chamber / Clinic Name</label><input type="text" id="chamberName" placeholder="City Hospital"></div><div style="flex:2; min-width:250px;"><label>Address</label><input type="text" id="doctorAddress" placeholder="123 Main Street, City"></div></div></div>
   <div class="flex-between" style="margin-top:20px;"><button class="btn-primary" id="applySettingsBtn">Apply Settings</button><button class="btn-sm btn-outline" id="cancelSettingsBtn">Cancel</button></div>
 </div></div>
-<div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel - Pending Approvals</h3><div id="pendingTransactionsList" style="max-height:400px; overflow-y:auto; margin:16px 0;"></div><div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div></div></div>
+<div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
+  <div class="admin-tabs">
+    <div class="admin-tab active" data-tab="pending">Pending Approvals</div>
+    <div class="admin-tab" data-tab="users">All Users & Subscriptions</div>
+  </div>
+  <div id="pendingTransactionsList" style="max-height:400px; overflow-y:auto; margin:16px 0;"></div>
+  <div id="allUsersList" style="max-height:400px; overflow-y:auto; margin:16px 0; display:none;"></div>
+  <div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div>
+</div></div>
 <div id="allMedsPickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeMedsPickerModal">&times;</span><h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3><div id="allMedsListContainer" class="scrollable-picker"></div></div></div>
 <div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
 <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
 <div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
-<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
+<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody><tr></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
 <div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
 <div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
 <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
@@ -341,7 +354,6 @@
     await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').update({
       pendingTransaction: { plan, transactionId, timestamp: new Date().toISOString(), approved: false }
     });
-    // Also save to global pending collection for admin visibility
     await db.collection('pendingTransactions').doc(Date.now().toString()).set({
       userId: currentUser.uid,
       userEmail: currentUser.email,
@@ -376,23 +388,93 @@
             else expiryDate.setFullYear(expiryDate.getFullYear()+1);
             await db.collection('users').doc(data.userId).collection('settings').doc('subscription').update({
               isActive: true,
+              plan: data.plan,
               expiryDate: expiryDate.toISOString(),
               pendingTransaction: null,
               dailyCount: 0
             });
             await db.collection('pendingTransactions').doc(id).update({ approved: true });
-            alert("Approved!");
+            alert("Approved! User can now use unlimited prescriptions.");
           } else {
             await db.collection('users').doc(data.userId).collection('settings').doc('subscription').update({ pendingTransaction: null });
             await db.collection('pendingTransactions').doc(id).update({ approved: true });
             alert("Rejected");
           }
           loadPendingTransactions();
+          loadAllUsers(); // Refresh user list
         }
       });
     });
   }
-  function showAdminPanel() { if(currentUser && currentUser.email === ADMIN_EMAIL) { loadPendingTransactions(); document.getElementById("adminPanelModal").style.display = "block"; } }
+  
+  async function loadAllUsers() {
+    if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+    const usersSnap = await db.collection('users').get();
+    const usersList = [];
+    for(const userDoc of usersSnap.docs) {
+      const subDoc = await db.collection('users').doc(userDoc.id).collection('settings').doc('subscription').get();
+      const userData = { email: userDoc.data()?.email || userDoc.id, uid: userDoc.id };
+      if(subDoc.exists) userData.subscription = subDoc.data();
+      else userData.subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0 };
+      usersList.push(userData);
+    }
+    const container = document.getElementById("allUsersList");
+    if(usersList.length===0) { container.innerHTML = "<p>No users found.</p>"; return; }
+    container.innerHTML = usersList.map(u => {
+      const expiry = u.subscription.expiryDate ? new Date(u.subscription.expiryDate).toLocaleDateString() : 'Never';
+      const status = u.subscription.expiryDate && new Date(u.subscription.expiryDate) >= new Date() ? 'Active' : (u.subscription.expiryDate ? 'Expired' : 'Free');
+      const planBadge = u.subscription.plan === 'monthly' ? '📅 Monthly' : (u.subscription.plan === 'yearly' ? '📆 Yearly' : 'Free');
+      return `<div class="subscription-user-card"><div><strong>${escapeHtml(u.email)}</strong></div><div>Plan: ${planBadge} | Status: ${status} | Expires: ${expiry}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-uid="${u.uid}" data-action="extend_monthly">+1 Month</button><button class="btn-sm" data-uid="${u.uid}" data-action="extend_yearly">+1 Year</button><button class="btn-sm btn-danger" data-uid="${u.uid}" data-action="cancel">Cancel Subscription</button></div></div>`;
+    }).join("");
+    container.querySelectorAll("button[data-uid]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.dataset.uid;
+        const action = btn.dataset.action;
+        const subRef = db.collection('users').doc(uid).collection('settings').doc('subscription');
+        const subDoc = await subRef.get();
+        let currentExpiry = subDoc.exists ? (subDoc.data().expiryDate ? new Date(subDoc.data().expiryDate) : new Date()) : new Date();
+        if(currentExpiry < new Date()) currentExpiry = new Date();
+        if(action === 'extend_monthly') {
+          currentExpiry.setMonth(currentExpiry.getMonth() + 1);
+          await subRef.update({ isActive: true, plan: 'monthly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 });
+          alert("Extended by 1 month!");
+        } else if(action === 'extend_yearly') {
+          currentExpiry.setFullYear(currentExpiry.getFullYear() + 1);
+          await subRef.update({ isActive: true, plan: 'yearly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 });
+          alert("Extended by 1 year!");
+        } else if(action === 'cancel') {
+          await subRef.update({ isActive: false, expiryDate: null, plan: null });
+          alert("Subscription cancelled.");
+        }
+        loadAllUsers();
+      });
+    });
+  }
+  
+  function showAdminPanel() { 
+    if(currentUser && currentUser.email === ADMIN_EMAIL) { 
+      loadPendingTransactions(); 
+      loadAllUsers();
+      document.getElementById("adminPanelModal").style.display = "block"; 
+      // Tab switching
+      document.querySelectorAll(".admin-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+          const tabName = tab.dataset.tab;
+          if(tabName === "pending") {
+            document.getElementById("pendingTransactionsList").style.display = "block";
+            document.getElementById("allUsersList").style.display = "none";
+            loadPendingTransactions();
+          } else {
+            document.getElementById("pendingTransactionsList").style.display = "none";
+            document.getElementById("allUsersList").style.display = "block";
+            loadAllUsers();
+          }
+        });
+      });
+    } 
+  }
   
   // ========== DISEASE MODAL ==========
   function showDiseaseModal() {
@@ -443,6 +525,7 @@
   function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); if(!container) return; container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
   function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
   function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(!container) return; container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
+  
   function getPreviewHTML(splitMode) {
     const firstName=document.getElementById("firstName").value.trim(), lastName=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diagnosis=document.getElementById("diagnosisField").value.trim();
     const patientName=(firstName||lastName)?`${firstName} ${lastName}`.trim():"";
@@ -457,10 +540,16 @@
     else medBlocks=currentMedicines.map(item=>`<div class="preview-med-item"><div class="preview-med-name">${escapeHtml(item.name)} ${escapeHtml(item.dosage)}</div><div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}${item.howToTake?` • ${escapeHtml(item.howToTake)}`:''}</div></div>`).join("");
     let adviceHtml=currentAdvices.length?`<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:"";
     let signatureHtml=settings.showSignature?`<div class="signature-right">Doctor Signature: ___________________</div>`:"";
-    const mainContent=`${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}${adviceHtml}${signatureHtml}`;
-    if(splitMode){ let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>`; }
-    else return `<div>${headerHtml}</div>${mainContent}`;
+    const mainContent=`${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}${signatureHtml}`;
+    
+    if(splitMode){ 
+      let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; 
+      let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; 
+      return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>`; 
+    }
+    else return `<div>${headerHtml}</div>${mainContent}${adviceHtml}`;
   }
+  
   function updatePreview(){ const splitMode=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(splitMode); const cont=document.getElementById("previewContainer"); if(splitMode) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
   async function saveSettingsToFirestore() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').set({ settings, practiceInfo }); }
   async function loadSettingsFromFirestore() { if(!currentUser) return; const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').get(); if(doc.exists){ const data=doc.data(); if(data.settings) settings={...settings,...data.settings}; if(data.practiceInfo) practiceInfo={...practiceInfo,...data.practiceInfo}; } document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; updatePreview(); }
@@ -516,12 +605,17 @@
     if (password.length < 6) { errorDiv.innerText = "Password must be at least 6 characters"; return; }
     try {
       await auth.createUserWithEmailAndPassword(email, password);
+      // Also create user document in Firestore
+      await db.collection('users').doc(auth.currentUser.uid).set({ email: email, createdAt: new Date().toISOString() });
+      alert("Account created successfully! You are now logged in.");
     } catch(e) { errorDiv.innerText = e.message; }
   }
   async function handleGoogleSignIn() {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
-      await auth.signInWithPopup(provider);
+      const result = await auth.signInWithPopup(provider);
+      // Ensure user document exists
+      await db.collection('users').doc(result.user.uid).set({ email: result.user.email, name: result.user.displayName, createdAt: new Date().toISOString() }, { merge: true });
     } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
   }
   async function handleForgotPassword() {
@@ -625,7 +719,7 @@
     document.getElementById("adminPanelBtn")?.addEventListener("click",showAdminPanel);
     document.getElementById("closeAdminModal")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
     document.getElementById("closeAdminBtn")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
-    document.getElementById("refreshPendingBtn")?.addEventListener("click",loadPendingTransactions);
+    document.getElementById("refreshPendingBtn")?.addEventListener("click",()=>{ if(document.querySelector(".admin-tab.active").dataset.tab === "pending") loadPendingTransactions(); else loadAllUsers(); });
     window.addEventListener("click",e=>{ if(e.target.classList.contains("modal")) e.target.style.display="none"; });
   }
 </script>
