@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ALL STYLES ========== */
+    /* ========== ALL STYLES (same as before) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -185,7 +185,7 @@
 
         <div class="card">
           <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="editable-hint">(click any field to edit)</span></span></div>
-          <div style="overflow-x:auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table></div>
+          <div style="overflow-x:auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></td></thead><tbody id="medicinesTableBody"></tbody></table></div>
           <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
         </div>
 
@@ -216,7 +216,7 @@
   </div>
 </div>
 
-<!-- MODALS -->
+<!-- MODALS (same as before) -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
 <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
@@ -239,7 +239,7 @@
 <div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
 <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
 <div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
-<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody><tr></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
+<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
 <div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
 <div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
 <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
@@ -401,7 +401,7 @@
             alert("Rejected");
           }
           loadPendingTransactions();
-          loadAllUsers(); // Refresh user list
+          loadAllUsers();
         }
       });
     });
@@ -456,7 +456,6 @@
       loadPendingTransactions(); 
       loadAllUsers();
       document.getElementById("adminPanelModal").style.display = "block"; 
-      // Tab switching
       document.querySelectorAll(".admin-tab").forEach(tab => {
         tab.addEventListener("click", () => {
           document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
@@ -587,7 +586,7 @@
   function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
   function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
   
-  // ========== AUTHENTICATION ==========
+  // ========== AUTHENTICATION (FIXED SIGNUP) ==========
   async function handleEmailSignIn() {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
@@ -597,6 +596,7 @@
       await auth.signInWithEmailAndPassword(email, password);
     } catch(e) { errorDiv.innerText = e.message; }
   }
+  
   async function handleCreateAccount() {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
@@ -604,20 +604,33 @@
     if (!email || !password) { errorDiv.innerText = "Enter email and password"; return; }
     if (password.length < 6) { errorDiv.innerText = "Password must be at least 6 characters"; return; }
     try {
-      await auth.createUserWithEmailAndPassword(email, password);
-      // Also create user document in Firestore
-      await db.collection('users').doc(auth.currentUser.uid).set({ email: email, createdAt: new Date().toISOString() });
+      // Create user in Firebase Auth
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+      // Create user document in Firestore
+      await db.collection('users').doc(user.uid).set({
+        email: email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      // Automatically sign in (already signed in after creation)
       alert("Account created successfully! You are now logged in.");
+      // Close overlay - will be handled by onAuthStateChanged
     } catch(e) { errorDiv.innerText = e.message; }
   }
+  
   async function handleGoogleSignIn() {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
       const result = await auth.signInWithPopup(provider);
       // Ensure user document exists
-      await db.collection('users').doc(result.user.uid).set({ email: result.user.email, name: result.user.displayName, createdAt: new Date().toISOString() }, { merge: true });
+      await db.collection('users').doc(result.user.uid).set({
+        email: result.user.email,
+        name: result.user.displayName,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
     } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
   }
+  
   async function handleForgotPassword() {
     const email = document.getElementById("loginEmail").value.trim();
     if (!email) { document.getElementById("loginErrorMsg").innerText = "Enter your email address"; return; }
@@ -626,6 +639,7 @@
       alert("Password reset email sent. Check your inbox.");
     } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
   }
+  
   function openLoginOverlay(){ document.getElementById("loginOverlay").classList.remove("hidden"); }
   function closeLoginOverlay(){ document.getElementById("loginOverlay").classList.add("hidden"); }
   
