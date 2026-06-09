@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ALL STYLES (unchanged except subscription badge) ========== */
+    /* ========== ALL STYLES (unchanged) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -369,7 +369,6 @@
         const left = 10 - (subscription.dailyCount || 0);
         badgeHtml = `<span class="subscription-badge"><i class="fas fa-prescription-bottle"></i> Free: ${left} left today</span>`;
       }
-      // Add premium button
       const premiumBtn = `<button id="premiumUpgradeBtn" class="premium-btn"><i class="fas fa-gem"></i> ⭐ Best Choice</button>`;
       const existingBadge = widget.querySelector('.subscription-badge');
       const existingBtn = widget.querySelector('#premiumUpgradeBtn');
@@ -624,19 +623,36 @@
   function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
   function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
   
-  // ========== SIMPLIFIED AUTHENTICATION (Auto create if not exists) ==========
+  // ========== SIMPLIFIED AUTHENTICATION (Auto create if not exists) - FIXED ==========
   async function handleEmailSignInOrSignUp() {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
     const errorDiv = document.getElementById("loginErrorMsg");
-    if (!email || !password) { errorDiv.innerText = "Enter email and password"; return; }
-    if (password.length < 6) { errorDiv.innerText = "Password must be at least 6 characters"; return; }
+    
+    // Basic validation
+    if (!email || !password) {
+      errorDiv.innerText = "Enter email and password";
+      return;
+    }
+    if (password.length < 6) {
+      errorDiv.innerText = "Password must be at least 6 characters";
+      return;
+    }
+    if (!email.includes('@') || !email.includes('.')) {
+      errorDiv.innerText = "Enter a valid email address";
+      return;
+    }
+    
+    errorDiv.innerText = ""; // clear previous errors
+    showLoading(true);
+    
     try {
-      // First try to sign in
+      // First, try to sign in
       await auth.signInWithEmailAndPassword(email, password);
+      // Success: user exists and password correct
     } catch (signInError) {
       if (signInError.code === 'auth/user-not-found') {
-        // User doesn't exist – create new account
+        // User does not exist – create a new account
         try {
           const userCredential = await auth.createUserWithEmailAndPassword(email, password);
           const user = userCredential.user;
@@ -645,17 +661,29 @@
             email: email,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          // User is now signed in automatically by Firebase
-          alert("Account created successfully! You are now logged in.");
+          // Also create a default subscription document (handled by loadSubscriptionData later)
+          console.log("New account created for", email);
+          // No need to alert – user will be logged in automatically
         } catch (createError) {
-          errorDiv.innerText = createError.message;
+          console.error("Create error:", createError);
+          errorDiv.innerText = "Account creation failed: " + createError.message;
+          showLoading(false);
+          return;
         }
       } else if (signInError.code === 'auth/wrong-password') {
-        errorDiv.innerText = "Incorrect password. Try again or reset password.";
+        errorDiv.innerText = "Incorrect password. Please try again or reset password.";
+        showLoading(false);
+        return;
       } else {
+        // Other errors (network, invalid-email, etc.)
         errorDiv.innerText = signInError.message;
+        showLoading(false);
+        return;
       }
     }
+    // If we reach here, either sign-in succeeded or account was created.
+    // The onAuthStateChanged handler will take over and load the dashboard.
+    showLoading(false);
   }
   
   async function handleGoogleSignIn() {
