@@ -3,755 +3,631 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro – Professional Prescription System</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>FastRx Pro | Professional Cloud System</title>
+  <!-- Google Fonts + simple CSS reset -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 (free icons) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ALL STYLES (unchanged except badge contrast and pro button) ========== */
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { background: #eef2f7; padding: 15px; }
-    .dashboard { max-width: 1600px; margin: 0 auto; }
-    .header { background: #0a4c6e; color: white; padding: 10px 20px; border-radius: 28px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-    .logo h1 { font-size: 1.3rem; font-weight: 600; }
-    .logo p { font-size: 0.65rem; opacity: 0.8; }
-    .user-area { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.15); padding: 5px 14px 5px 10px; border-radius: 60px; }
-    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #ffb347; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .user-avatar img { width: 32px; height: 32px; object-fit: cover; }
-    .btn-google { background: white; color: #0a4c6e; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; }
-    .btn-google i { color: #DB4437; }
-    .btn-logout { background: rgba(0,0,0,0.3); color: white; border: none; padding: 5px 12px; border-radius: 40px; cursor: pointer; font-size: 0.75rem; }
-    .btn-pro { background: #ffb347; color: #0a4c6e; border: none; padding: 4px 12px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.7rem; }
-    .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; color: white; font-size: 1.2rem; backdrop-filter: blur(4px); }
-    .top-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; background: white; padding: 8px 16px; border-radius: 50px; width: fit-content; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    .top-btn { background: #f1f5f9; border: none; padding: 5px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: 0.1s; }
-    .top-btn:hover { background: #e2e8f0; }
-    .prescription-layout { display: flex; gap: 20px; flex-wrap: wrap; }
-    .left-panel { flex: 1.2; min-width: 280px; background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; height: fit-content; }
-    .right-panel { flex: 2.5; min-width: 480px; display: flex; flex-direction: column; gap: 20px; }
-    .card { background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; }
-    .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 12px; border-left: 4px solid #0a7e8c; padding-left: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; color: #1f3b4c; }
-    .card-title span { display: flex; align-items: center; gap: 6px; }
-    .clickable-title { cursor: pointer; transition: 0.1s; border-radius: 20px; padding: 2px 6px; }
-    .clickable-title:hover { background: #e6f4f5; color: #0a7e8c; }
-    .search-bar { background: #f1f5f9; border-radius: 40px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; position: relative; }
-    .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.85rem; outline: none; }
-    .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 20px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-    .suggestions-dropdown div { padding: 8px 16px; cursor: pointer; font-size: 0.8rem; }
-    .suggestions-dropdown div:hover { background: #e6f4f5; }
-    .med-grid { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
-    .med-item { background: #f8fafc; border-radius: 20px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2edf2; transition: all 0.15s; }
-    .med-item:hover { background: #e6f4f5; border-color: #0a7e8c; transform: translateX(2px); }
-    .med-name { font-weight: 600; color: #0c4e6e; font-size: 0.85rem; }
-    .med-detail { font-size: 0.65rem; color: #4b6b87; }
-    .pin-icon { cursor: pointer; font-size: 1rem; width: 28px; text-align: center; color: #94a3b8; transition: 0.1s; margin-left: 8px; }
-    .pin-icon.pinned { color: #f59e0b; }
-    .pin-icon:hover { color: #eab308; transform: scale(1.1); }
-    .most-used { background: #fef9e3; padding: 8px; border-radius: 16px; margin: 12px 0; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
-    .btn-sm { background: #ecfdf5; border: none; padding: 5px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
-    .btn-primary { background: #0a7e8c; color: white; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
-    .btn-outline { background: white; border: 1px solid #0a7e8c; color: #0a7e8c; }
-    .btn-danger { background: #fee2e2; color: #b91c1c; border: none; }
-    .btn-danger:hover { background: #fecaca; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-    th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
-    input, select { border: 1px solid #cbd5e1; border-radius: 14px; padding: 6px 8px; font-size: 0.75rem; width: 100%; }
-    .patient-row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .name-field, .lastname-field { flex: 2; }
-    .age-field, .gender-field { flex: 1; }
-    .disease-wrapper { position: relative; display: flex; gap: 8px; align-items: center; }
-    .disease-wrapper input { flex: 1; }
-    .disease-picker-btn { background: #e2e8f0; border: none; border-radius: 30px; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
-    .layout-toggle { background: #f8fafc; border-radius: 40px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.7rem; }
-    .prescription-preview { background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 16px; }
-    .prescription-preview.split-line { border-left: 3px solid #0a7e8c; background: #fffdf7; padding-left: 18px; }
-    .tag-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-    .tag { background: #eef2ff; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
-    .tag:hover { background: #0a7e8c; color: white; }
-    .advice-tag { background: #e6f4f5; padding: 3px 10px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 3px; font-size: 0.7rem; }
-    .advice-tag:hover { background: #0a7e8c; color: white; }
-    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); overflow-y: auto; }
-    .modal-content { background: white; margin: 3% auto; padding: 20px; border-radius: 28px; width: 95%; max-width: 900px; }
-    .bottom-buttons { display: flex; gap: 12px; margin-top: 15px; justify-content: flex-end; flex-wrap: wrap; }
-    .margin-control { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-    .history-filters, .analysis-filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; }
-    .filter-group { display: flex; flex-direction: column; gap: 4px; }
-    .filter-group label { font-size: 0.7rem; font-weight: 500; color: #4b6b87; }
-    .history-list, .analysis-stats { max-height: 400px; overflow-y: auto; }
-    .history-item, .stat-item { background: #f8fafc; margin: 8px 0; padding: 10px 14px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2e8f0; }
-    .close-modal { float: right; font-size: 26px; font-weight: bold; cursor: pointer; color: #6b7280; }
-    .close-modal:hover { color: black; }
-    .inventory-table { width: 100%; border-collapse: collapse; }
-    .inventory-table th, .inventory-table td { border: 1px solid #e2e8f0; padding: 8px; vertical-align: middle; }
-    .analysis-cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-    .analytics-card { background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 24px; padding: 16px; flex: 1; min-width: 120px; text-align: center; border: 1px solid #e2e8f0; }
-    .analytics-card .number { font-size: 2rem; font-weight: 700; color: #0a7e8c; }
-    .analytics-card .label { font-size: 0.7rem; color: #4b6b87; margin-top: 6px; }
-    .scrollable-picker { max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
-    .picker-item { background: #f8fafc; border-radius: 20px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2edf2; }
-    .picker-item:hover { background: #e6f4f5; border-color: #0a7e8c; }
-    .editable-hint { font-size: 0.65rem; color: #9ca3af; margin-left: 6px; font-weight: normal; }
-    .preview-med-item { margin-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3rem; }
-    .preview-med-name { font-weight: 700; color: #0c4e6e; font-size: 0.85rem; }
-    .preview-med-detail { font-size: 0.75rem; color: #334155; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
-    .practice-header { margin-bottom: 20px; text-align: center; border-bottom: 2px solid #0a7e8c; padding-bottom: 12px; width: 100%; }
-    .practice-name { font-size: 1.4rem; font-weight: 700; color: #0a4c6e; }
-    .practice-details { font-size: 0.75rem; color: #4b6b87; margin-top: 6px; }
-    .signature-right { text-align: right; margin-top: 20px; padding-top: 10px; border-top: 1px dashed #aaa; }
-    .settings-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; margin-bottom: 20px; }
-    .settings-row-item { display: flex; align-items: center; gap: 6px; }
-    .settings-group { margin-bottom: 20px; }
-    .settings-group h4 { margin-bottom: 12px; font-size: 0.9rem; color: #0a4c6e; border-left: 3px solid #0a7e8c; padding-left: 8px; }
-    .radio-group { display: flex; gap: 16px; margin-top: 8px; }
-    .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 1; visibility: visible; transition: all 0.3s ease; }
-    .login-overlay.hidden { opacity: 0; visibility: hidden; }
-    .login-modal { background: white; border-radius: 32px; width: 90%; max-width: 400px; padding: 28px 24px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.3s ease; }
-    .login-overlay:not(.hidden) .login-modal { transform: scale(1); }
-    .login-modal h2 { margin-bottom: 20px; text-align: center; color: #0a4c6e; }
-    .login-modal .input-group { margin-bottom: 16px; }
-    .login-modal .input-group label { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 4px; color: #4b6b87; }
-    .login-modal .input-group input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 0.85rem; }
-    .login-modal .btn-login { width: 100%; margin-top: 8px; }
-    .login-modal .divider { text-align: center; margin: 16px 0; position: relative; font-size: 0.7rem; color: #94a3b8; }
-    .login-modal .divider::before, .login-modal .divider::after { content: ""; position: absolute; top: 50%; width: 45%; height: 1px; background: #e2e8f0; }
-    .login-modal .divider::before { left: 0; }
-    .login-modal .divider::after { right: 0; }
-    .login-modal .footer-links { display: flex; justify-content: flex-end; margin-top: 16px; font-size: 0.7rem; }
-    .login-modal .footer-links a { color: #0a7e8c; text-decoration: none; cursor: pointer; }
-    .error-msg { color: #dc2626; font-size: 0.7rem; margin-top: 8px; text-align: center; }
-    .subscription-badge { background: #fef9e3; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; color: #4a5c6c; font-weight: 500; }
-    .subscription-badge.expired { background: #fee2e2; color: #b91c1c; }
-    .subscription-badge.active { background: #d1fae5; color: #065f46; }
-    .admin-tabs { display: flex; gap: 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
-    .admin-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; transition: 0.1s; }
-    .admin-tab:hover { background: #e6f4f5; }
-    .admin-tab.active { background: #0a7e8c; color: white; }
-    .subscription-user-card { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
-    @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
-    @media (max-width: 800px) { .right-panel { min-width: auto; } }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f7fc;
+      color: #1a2c3e;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ----- LOGIN PAGE STYLES ----- */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0b2b3b 0%, #1b4f6e 100%);
+      padding: 1.5rem;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 2rem;
+      padding: 2.5rem 2rem;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .logo-area {
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-area h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(120deg, #0f4c5f, #2a9d8f);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-area p {
+      color: #5e7a93;
+      margin-top: 0.4rem;
+      font-weight: 500;
+    }
+
+    .login-icon {
+      font-size: 3.5rem;
+      color: #2a9d8f;
+      margin-bottom: 1rem;
+    }
+
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      background: white;
+      border: 1px solid #dce5ef;
+      border-radius: 60px;
+      padding: 0.9rem 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1f3b4c;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 1.5rem 0 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .btn-google i {
+      font-size: 1.4rem;
+      color: #4285F4;
+    }
+
+    .btn-google:hover {
+      background: #f8fafd;
+      border-color: #bdd3e8;
+      transform: scale(0.98);
+      box-shadow: 0 5px 12px rgba(0,0,0,0.05);
+    }
+
+    .demo-note {
+      background: #eef2fa;
+      border-radius: 1rem;
+      padding: 0.9rem;
+      font-size: 0.8rem;
+      color: #2c6280;
+      margin-top: 1.5rem;
+    }
+
+    /* ----- DASHBOARD STYLES (app container) ----- */
+    .app-container {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #0f2c38;
+      color: #e0f0f5;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.05);
+    }
+
+    .sidebar-header {
+      padding: 1.8rem 1.5rem;
+      border-bottom: 1px solid #264653;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .sidebar-header span {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .nav-menu {
+      flex: 1;
+      padding: 1.8rem 0 0 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0.9rem 1.8rem;
+      margin: 0.2rem 0;
+      color: #cbdbe2;
+      font-weight: 500;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-item i {
+      width: 24px;
+      font-size: 1.2rem;
+    }
+
+    .nav-item.active {
+      background: #1e4a62;
+      color: white;
+      border-left: 4px solid #2dd4bf;
+    }
+
+    .nav-item:hover:not(.active) {
+      background: #1c3e4e;
+      color: white;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      background: #f4f7fc;
+    }
+
+    .top-bar {
+      background: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      border-bottom: 1px solid #e2edf2;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f0f4f9;
+      padding: 0.4rem 1rem 0.4rem 0.8rem;
+      border-radius: 40px;
+    }
+
+    .user-avatar {
+      background: #2a9d8f;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #5c7c8c;
+      transition: 0.2s;
+    }
+
+    .logout-btn:hover {
+      color: #d9534f;
+    }
+
+    /* Dashboard cards */
+    .dashboard-content {
+      padding: 2rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1.4rem 1.2rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      border: 1px solid #e9f0f3;
+      transition: 0.2s;
+    }
+
+    .stat-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #5f8da0;
+    }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #134b5e;
+      margin: 0.5rem 0;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 2rem 0 1rem 0;
+      color: #1f4c61;
+    }
+
+    .prescriptions-table {
+      background: white;
+      border-radius: 1.5rem;
+      overflow-x: auto;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      border: 1px solid #e6edf2;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 1rem 1.2rem;
+      background: #f9fdfe;
+      color: #1f6680;
+      font-weight: 600;
+      border-bottom: 1px solid #e2edf2;
+    }
+
+    td {
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid #eff4f7;
+      color: #2c4e62;
+    }
+
+    .badge {
+      background: #e1f5f0;
+      color: #1f7b69;
+      padding: 0.3rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+      .sidebar {
+        width: 80px;
+      }
+      .sidebar-header span, .nav-item span:not(.nav-icon) {
+        display: none;
+      }
+      .nav-item {
+        justify-content: center;
+        padding: 0.9rem 0;
+      }
+      .nav-item i {
+        margin: 0;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-<div class="dashboard" id="app">
-  <div class="header">
-    <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Professional Cloud System</p></div>
-    <div id="userWidget"></div>
-  </div>
 
-  <div id="mainApp" style="display: none;">
-    <div class="top-actions">
-      <button class="top-btn" id="quickMedicineBtn"><i class="fas fa-plus-circle"></i> Add Medicine</button>
-      <button class="top-btn" id="bulkTriggerBtn"><i class="fas fa-upload"></i> Bulk Upload</button>
-      <button class="top-btn" id="showHistoryBtn"><i class="fas fa-history"></i> History</button>
-      <button class="top-btn" id="analysisBtn"><i class="fas fa-chart-line"></i> Analysis</button>
-      <button class="top-btn" id="helpBtn"><i class="fas fa-question-circle"></i> Help</button>
-      <button class="top-btn" id="settingsBtn"><i class="fas fa-cog"></i> Settings</button>
-      <button class="top-btn" id="adminPanelBtn" style="display:none; background:#dc2626; color:white;"><i class="fas fa-user-shield"></i> Admin Panel</button>
-      <input type="file" id="bulkMedFile" accept=".json,.csv" style="display:none">
+<!-- LOGIN SECTION (visible by default) -->
+<div id="loginScreen" class="login-container">
+  <div class="login-card">
+    <div class="logo-area">
+      <i class="fas fa-prescription-bottle-medical login-icon"></i>
+      <h1>FastRx Pro</h1>
+      <p>Professional Cloud System</p>
     </div>
-
-    <div class="prescription-layout">
-      <div class="left-panel">
-        <div class="card-title"><span><i class="fas fa-pills"></i> Medicine Library</span></div>
-        <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="searchMedicine" placeholder="Search medicine..."><div id="suggestionsBox" class="suggestions-dropdown"></div></div>
-        <div id="pinnedSection" style="margin-bottom:16px; display:none;"><div style="font-weight:600; font-size:0.8rem;">⭐ Pinned Favourites</div><div id="pinnedList" class="med-grid" style="max-height:200px;"></div></div>
-        <div style="font-weight:600; font-size:0.8rem;">🔥 Most Used</div><div id="mostUsedContainer" class="most-used"></div>
-        <div class="flex-between"><span class="clickable-title" id="allMedsButton" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;"><i class="fas fa-expand-alt"></i> 📚 All Medicines</span><button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button></div>
-        <div id="medicineListContainer" class="med-grid"></div>
-        <div class="flex-between" style="margin-top:16px;"><span class="clickable-title" id="allAdviceButton" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;"><i class="fas fa-expand-alt"></i> <i class="fas fa-comment-dots"></i> Quick Advice</span><button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button></div>
-        <div class="tag-group" id="adviceTagList"></div>
-        <div class="flex-between"><input type="text" id="customAdviceInput" placeholder="Type new advice, then Add" style="flex:3;"><button class="btn-sm" id="addCustomAdviceBtn">Add</button></div>
-        <div id="currentAdvicesList" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px;"></div>
-      </div>
-
-      <div class="right-panel">
-        <div class="card">
-          <div class="card-title"><span><i class="fas fa-user"></i> Patient (optional)</span></div>
-          <div class="patient-row">
-            <div class="name-field"><input type="text" id="firstName" placeholder="First name" list="firstNamesSuggestions"><datalist id="firstNamesSuggestions"></datalist></div>
-            <div class="lastname-field"><input type="text" id="lastName" placeholder="Last name" list="lastNamesSuggestions"><datalist id="lastNamesSuggestions"></datalist></div>
-            <div class="age-field"><input type="text" id="patientAge" placeholder="Age"></div>
-            <div class="gender-field"><select id="patientGender"><option value="">Gender</option><option>M</option><option>F</option><option>O</option></select></div>
-          </div>
-          <div style="margin-top:8px;" class="disease-wrapper">
-            <input type="text" id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis" autocomplete="off">
-            <button id="diseasePickerBtn" class="disease-picker-btn" title="Open disease list"><i class="fas fa-chevron-down"></i></button>
-            <datalist id="diseaseSuggestions"></datalist>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="editable-hint">(click any field to edit)</span></span></div>
-          <div style="overflow-x:auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th><tr></thead><tbody id="medicinesTableBody"></tbody></tr></div>
-          <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
-        </div>
-
-        <div class="card">
-          <div class="flex-between"><div class="card-title" style="margin-bottom:0;"><span><i class="fas fa-eye"></i> Preview</span></div><div class="layout-toggle"><label><input type="radio" name="paperStyle" value="plain" checked> Simple</label><label><input type="radio" name="paperStyle" value="split"> Left line</label></div></div>
-          <div class="margin-control"><label><i class="fas fa-arrows-alt-v"></i> Print top margin (mm):</label><input type="number" id="printTopMargin" value="20" step="2" min="0" max="60"> mm</div>
-          <div id="previewContainer" class="prescription-preview"><div id="livePreviewArea"></div></div>
-          <div class="bottom-buttons"><button class="btn-primary" id="savePrescriptionBtn"><i class="fas fa-save"></i> Save</button><button class="btn-primary" id="printPreviewBtn" style="background:#2c6e5c;"><i class="fas fa-print"></i> Print</button><button class="btn-sm btn-outline" id="clearCurrentBtn">Clear</button></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="loginOverlay" class="login-overlay">
-    <div class="login-modal">
-      <h2><i class="fas fa-stethoscope"></i> FastRx Pro</h2>
-      <div id="loginErrorMsg" class="error-msg"></div>
-      <div class="input-group"><label>Email</label><input type="email" id="loginEmail" placeholder="doctor@example.com"></div>
-      <div class="input-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-      <button id="emailLoginBtn" class="btn-primary btn-login">Sign In / Sign Up</button>
-      <div class="divider">or</div>
-      <button id="googleLoginBtn" class="btn-google" style="width:100%; justify-content:center;"><i class="fab fa-google"></i> Continue with Google</button>
-      <div class="footer-links">
-        <a id="forgotPasswordLink">Forgot password?</a>
-      </div>
+    <button id="googleSignInBtn" class="btn-google">
+      <i class="fab fa-google"></i> Sign in with Google
+    </button>
+    <div class="demo-note">
+      <i class="fas fa-cloud-upload-alt"></i> Demo mode active • Instant access • No real authentication required
     </div>
   </div>
 </div>
 
-<!-- MODALS -->
-<div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
-<div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Upgrade to Pro</h3><p style="margin:10px 0;">Get unlimited prescriptions. Choose your plan:</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
-<div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
-<div id="settingsModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeSettingsModal">&times;</span><h3><i class="fas fa-sliders-h"></i> Prescription Settings</h3>
-  <div class="settings-group"><h4>Layout & Display</h4><div class="settings-row"><label class="settings-row-item"><input type="checkbox" id="settingShowDate" checked> Show Date</label><label class="settings-row-item"><input type="checkbox" id="settingShowTime" checked> Show Time</label><label class="settings-row-item"><input type="checkbox" id="settingShowSignature" checked> Doctor Signature</label></div><div class="settings-row"><span style="margin-right:12px;">Preview Style:</span><div class="radio-group"><label><input type="radio" name="settingStyle" value="plain" checked> Simple</label><label><input type="radio" name="settingStyle" value="split"> Left line</label></div></div></div>
-  <div class="settings-group"><h4>Prescription Type</h4><div class="radio-group"><label><input type="radio" name="prescType" value="standard" checked> Standard (no header)</label><label><input type="radio" name="prescType" value="professional"> Professional (with practice header)</label></div></div>
-  <div class="settings-group" id="practiceInfoCard"><h4>Practice Information</h4><div class="settings-row" style="flex-wrap:wrap; gap:16px;"><div style="flex:1; min-width:180px;"><label>Doctor Name</label><input type="text" id="doctorName" placeholder="Dr. John Doe"></div><div style="flex:1; min-width:180px;"><label>Registration No.</label><input type="text" id="doctorRegNo" placeholder="MCI/12345"></div><div style="flex:1; min-width:180px;"><label>Degree(s)</label><input type="text" id="doctorDegree" placeholder="MBBS, MD"></div></div><div class="settings-row" style="flex-wrap:wrap; gap:16px; margin-top:12px;"><div style="flex:1; min-width:200px;"><label>Chamber / Clinic Name</label><input type="text" id="chamberName" placeholder="City Hospital"></div><div style="flex:2; min-width:250px;"><label>Address</label><input type="text" id="doctorAddress" placeholder="123 Main Street, City"></div></div></div>
-  <div class="flex-between" style="margin-top:20px;"><button class="btn-primary" id="applySettingsBtn">Apply Settings</button><button class="btn-sm btn-outline" id="cancelSettingsBtn">Cancel</button></div>
-</div></div>
-<div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
-  <div class="admin-tabs">
-    <div class="admin-tab active" data-tab="pending">Pending Approvals</div>
-    <div class="admin-tab" data-tab="users">All Users & Subscriptions</div>
+<!-- DASHBOARD APP (hidden initially) -->
+<div id="dashboardApp" style="display: none;">
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>FastRx <span style="font-weight: 400;">Pro</span></h2>
+        <span>cloud pharmacy suite</span>
+      </div>
+      <div class="nav-menu">
+        <div class="nav-item active" data-tab="dashboard">
+          <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+        </div>
+        <div class="nav-item" data-tab="prescriptions">
+          <i class="fas fa-file-prescription"></i> <span>Prescriptions</span>
+        </div>
+        <div class="nav-item" data-tab="patients">
+          <i class="fas fa-users"></i> <span>Patients</span>
+        </div>
+        <div class="nav-item" data-tab="settings">
+          <i class="fas fa-cog"></i> <span>Settings</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="top-bar">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">JD</div>
+          <span id="userName">John Doe</span>
+        </div>
+        <button id="logoutBtn" class="logout-btn" title="Sign out"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+
+      <div class="dashboard-content" id="dynamicContent">
+        <!-- Dashboard home will be injected via JS -->
+      </div>
+    </main>
   </div>
-  <div id="pendingTransactionsList" style="max-height:400px; overflow-y:auto; margin:16px 0;"></div>
-  <div id="allUsersList" style="max-height:400px; overflow-y:auto; margin:16px 0; display:none;"></div>
-  <div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div>
-</div></div>
-<div id="allMedsPickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeMedsPickerModal">&times;</span><h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3><div id="allMedsListContainer" class="scrollable-picker"></div></div></div>
-<div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
-<div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
-<div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
-<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
-<div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
-<div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
-<div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
-<div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin:16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
+</div>
 
 <script>
-  // ========== FIREBASE CONFIG ==========
-  const firebaseConfig = {
-    apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
-    authDomain: "test-website-22778.firebaseapp.com",
-    databaseURL: "https://test-website-22778-default-rtdb.firebaseio.com",
-    projectId: "test-website-22778",
-    storageBucket: "test-website-22778.firebasestorage.app",
-    messagingSenderId: "862083661951",
-    appId: "1:862083661951:web:838f650debb207a2fe7f4a",
-    measurementId: "G-9E5RYBBKJS"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  
+  // ---------- MOCK AUTHENTICATION (Demo mode) ----------
+  // This provides an instant "Google Sign-In" that works without any backend.
+  // For production, replace with Firebase Auth or your own OAuth.
+
   let currentUser = null;
-  let medicines = [], adviceTags = [], prescriptions = [];
-  let userFreqTags = ["1-1-1","1-0-0","0-1-0","0-0-1","BD","TID","OD"];
-  let userDurTags = ["3 days","5 days","7 days","10 days","14 days","30 days"];
-  let userHowTags = ["After meals","Empty stomach","With water","At bedtime"];
-  let savedFirstNames = [], savedLastNames = [], savedDiseases = [];
-  let currentMedicines = [], currentAdvices = [], currentDiagnosis = "", currentSerial = "";
-  let pendingMedicine = null, currentTagType = "";
-  let settings = { showDate: true, showTime: true, showSignature: true, style: "plain", prescType: "standard" };
-  let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
-  let subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true };
-  const ADMIN_EMAIL = "narayanbarman3210@gmail.com";
-  
-  function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-  function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else if(el) el.remove(); }
-  function showError(msg) { alert(msg); }
-  function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
-  function formatTimeNoSeconds() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
-  
-  // ========== AUTO-SUGGEST STORAGE ==========
-  async function saveAutoCompleteData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({ firstNames: savedFirstNames, lastNames: savedLastNames, diseases: savedDiseases }); }
-  async function loadAutoCompleteData() {
-    if(!currentUser) return;
-    const doc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').get();
-    if(doc.exists) { savedFirstNames = doc.data().firstNames || []; savedLastNames = doc.data().lastNames || []; savedDiseases = doc.data().diseases || []; }
-    else { savedFirstNames = ["Rajesh","Priya","Anjali"]; savedLastNames = ["Sharma","Verma"]; savedDiseases = ["Hypertension","Diabetes Type 2","URTI","UTI","Malaria"]; await saveAutoCompleteData(); }
-    updateDatalists();
-  }
-  function updateDatalists() {
-    document.getElementById("firstNamesSuggestions").innerHTML = savedFirstNames.map(n=>`<option>${escapeHtml(n)}</option>`).join("");
-    document.getElementById("lastNamesSuggestions").innerHTML = savedLastNames.map(n=>`<option>${escapeHtml(n)}</option>`).join("");
-    document.getElementById("diseaseSuggestions").innerHTML = savedDiseases.map(d=>`<option>${escapeHtml(d)}</option>`).join("");
-  }
-  async function addNewFirstName(name) { if(name && !savedFirstNames.includes(name)) { savedFirstNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
-  async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
-  async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
-  
-  // ========== SUBSCRIPTION FUNCTIONS ==========
-  async function loadSubscriptionData() {
-    if(!currentUser) return;
-    const subDoc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').get();
-    if(subDoc.exists) subscription = subDoc.data();
-    else { subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true }; await saveSubscriptionData(); }
-    const today = new Date().toDateString();
-    if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; await saveSubscriptionData(); }
-    if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) subscription.isActive = false;
-    else if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) subscription.isActive = true;
-    await saveSubscriptionData();
-    if(subscription.expiryDate) {
-      const daysLeft = Math.ceil((new Date(subscription.expiryDate) - new Date()) / (1000*60*60*24));
-      if(daysLeft <= 2 && daysLeft > 0) showRenewalModal(daysLeft);
-    }
-    updateSubscriptionBadge();
-    return subscription.isActive;
-  }
-  async function saveSubscriptionData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').set(subscription); }
-  async function incrementDailyCount() {
-    const today = new Date().toDateString();
-    if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; }
-    subscription.dailyCount++;
-    await saveSubscriptionData();
-  }
-  async function checkAndBlockIfLimitReached() {
-    await loadSubscriptionData();
-    if(subscription.isActive && subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) return true;
-    if(subscription.dailyCount < 10) return true;
-    document.getElementById("subscriptionModal").style.display = "block";
-    return false;
-  }
-  function updateSubscriptionBadge() {
-    const widget = document.getElementById("userWidget");
-    if(widget && currentUser) {
-      let badge = '';
-      if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) badge = `<span class="subscription-badge active">✅ Active till ${new Date(subscription.expiryDate).toLocaleDateString()}</span>`;
-      else if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) badge = `<span class="subscription-badge expired">⚠️ Expired</span>`;
-      else badge = `<span class="subscription-badge">📋 Free: ${10-subscription.dailyCount} left today</span>`;
-      const existingBadge = widget.querySelector('.subscription-badge');
-      if(existingBadge) existingBadge.remove();
-      widget.insertAdjacentHTML('beforeend', badge);
-      // Also ensure pro button exists
-      if(!widget.querySelector('.btn-pro')) {
-        const proBtn = document.createElement('button');
-        proBtn.className = 'btn-pro';
-        proBtn.innerHTML = '<i class="fas fa-star"></i> Pro';
-        proBtn.style.marginLeft = '8px';
-        proBtn.onclick = () => document.getElementById("subscriptionModal").style.display = "block";
-        widget.appendChild(proBtn);
-      }
-    }
-  }
-  function showRenewalModal(daysLeft) {
-    document.getElementById("renewalMsg").innerText = `Your plan expires in ${daysLeft} day(s). Please recharge to continue.`;
-    document.getElementById("renewalModal").style.display = "block";
-  }
-  
-  // ========== TRANSACTION & ADMIN FUNCTIONS ==========
-  async function submitTransaction(plan, transactionId, isRenewal=false) {
-    if(!transactionId || transactionId.length!==12 || isNaN(transactionId)) { alert("Enter valid 12-digit transaction ID"); return; }
-    showLoading(true);
-    await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').update({
-      pendingTransaction: { plan, transactionId, timestamp: new Date().toISOString(), approved: false }
+
+  // Mock user data
+  const mockUsers = {
+    "demo@fastrx.com": { name: "Dr. Sarah Chen", avatar: "SC", role: "Pharmacist" },
+    "guest": { name: "Demo User", avatar: "DU", role: "Trial Account" }
+  };
+
+  function mockGoogleSignIn() {
+    // Simulate Google OAuth popup / success
+    return new Promise((resolve) => {
+      // Use a default demo user
+      const user = {
+        uid: "mock_123",
+        email: "demo@fastrx.com",
+        displayName: mockUsers["demo@fastrx.com"].name,
+        photoURL: null,
+        avatarInitials: mockUsers["demo@fastrx.com"].avatar
+      };
+      resolve(user);
     });
-    await db.collection('pendingTransactions').doc(Date.now().toString()).set({
-      userId: currentUser.uid,
-      userEmail: currentUser.email,
-      plan: plan,
-      transactionId: transactionId,
-      timestamp: new Date().toISOString(),
-      approved: false
-    });
-    alert("Transaction submitted. Awaiting admin approval.");
-    if(isRenewal) document.getElementById("renewalModal").style.display = "none";
-    else document.getElementById("subscriptionModal").style.display = "none";
-    showLoading(false);
   }
-  
-  async function loadPendingTransactions() {
-    if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
-    const pendingSnap = await db.collection('pendingTransactions').where('approved', '==', false).get();
-    const pending = pendingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const container = document.getElementById("pendingTransactionsList");
-    if(pending.length===0) { container.innerHTML = "<p>No pending approvals.</p>"; return; }
-    container.innerHTML = pending.map(p => `<div style="background:#f8fafc; padding:12px; border-radius:16px; margin-bottom:10px;"><div><strong>${escapeHtml(p.userEmail)}</strong></div><div>Plan: ${p.plan} | TXN: ${p.transactionId}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-id="${p.id}" data-approve="true">Approve</button><button class="btn-sm btn-danger" data-id="${p.id}" data-approve="false">Reject</button></div></div>`).join("");
-    container.querySelectorAll("button[data-id]").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        const approve = btn.dataset.approve === "true";
-        const pendingDoc = await db.collection('pendingTransactions').doc(id).get();
-        const data = pendingDoc.data();
-        if(data) {
-          if(approve) {
-            const expiryDate = new Date();
-            if(data.plan === "monthly") expiryDate.setMonth(expiryDate.getMonth()+1);
-            else expiryDate.setFullYear(expiryDate.getFullYear()+1);
-            await db.collection('users').doc(data.userId).collection('settings').doc('subscription').update({
-              isActive: true,
-              plan: data.plan,
-              expiryDate: expiryDate.toISOString(),
-              pendingTransaction: null,
-              dailyCount: 0
-            });
-            await db.collection('pendingTransactions').doc(id).update({ approved: true });
-            alert("Approved! User can now use unlimited prescriptions.");
-          } else {
-            await db.collection('users').doc(data.userId).collection('settings').doc('subscription').update({ pendingTransaction: null });
-            await db.collection('pendingTransactions').doc(id).update({ approved: true });
-            alert("Rejected");
-          }
-          loadPendingTransactions();
-          loadAllUsers();
+
+  // Store session
+  function setSession(user) {
+    currentUser = user;
+    localStorage.setItem("fastrx_user", JSON.stringify({
+      name: user.displayName,
+      avatar: user.avatarInitials,
+      email: user.email
+    }));
+  }
+
+  function clearSession() {
+    currentUser = null;
+    localStorage.removeItem("fastrx_user");
+  }
+
+  function getSavedSession() {
+    const saved = localStorage.getItem("fastrx_user");
+    if (saved) {
+      const data = JSON.parse(saved);
+      return {
+        displayName: data.name,
+        avatarInitials: data.avatar,
+        email: data.email || "demo@fastrx.com"
+      };
+    }
+    return null;
+  }
+
+  // ---------- DASHBOARD RENDERING ----------
+  function renderDashboard() {
+    const container = document.getElementById("dynamicContent");
+    if (!container) return;
+
+    // Mock statistics
+    const stats = {
+      prescriptions: 284,
+      activePatients: 143,
+      revenue: "$12,480",
+      refillDue: 23
+    };
+
+    const recentRx = [
+      { id: "RX-1024", patient: "Emily Watson", medication: "Lisinopril 10mg", date: "2026-06-05", status: "Dispensed" },
+      { id: "RX-1025", patient: "James Carter", medication: "Metformin 500mg", date: "2026-06-07", status: "Pending" },
+      { id: "RX-1026", patient: "Sophia Lee", medication: "Atorvastatin 20mg", date: "2026-06-08", status: "Ready" },
+      { id: "RX-1027", patient: "Robert Hayes", medication: "Albuterol HFA", date: "2026-06-09", status: "Prepared" }
+    ];
+
+    let html = `
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-title"><i class="fas fa-capsules"></i> Total Prescriptions</div><div class="stat-value">${stats.prescriptions}</div></div>
+        <div class="stat-card"><div class="stat-title"><i class="fas fa-user-injured"></i> Active Patients</div><div class="stat-value">${stats.activePatients}</div></div>
+        <div class="stat-card"><div class="stat-title"><i class="fas fa-dollar-sign"></i> Monthly Revenue</div><div class="stat-value">${stats.revenue}</div></div>
+        <div class="stat-card"><div class="stat-title"><i class="fas fa-clock"></i> Refill Requests</div><div class="stat-value">${stats.refillDue}</div></div>
+      </div>
+      <div class="section-title"><i class="fas fa-prescription"></i> Recent Prescriptions</div>
+      <div class="prescriptions-table">
+        <table>
+          <thead>
+            <tr><th>Rx ID</th><th>Patient</th><th>Medication</th><th>Date</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+    `;
+    recentRx.forEach(rx => {
+      html += `<tr>
+        <td>${rx.id}</td><td>${rx.patient}</td><td>${rx.medication}</td><td>${rx.date}</td>
+        <td><span class="badge">${rx.status}</span></td>
+      </tr>`;
+    });
+    html += `</tbody></table></div><div style="margin-top: 1rem; font-size:0.8rem; color:#688ea5;"><i class="fas fa-chalkboard-user"></i> FastRx Pro – intelligent prescription tracking</div>`;
+    container.innerHTML = html;
+  }
+
+  function renderPrescriptionsPage() {
+    const container = document.getElementById("dynamicContent");
+    container.innerHTML = `
+      <div class="section-title"><i class="fas fa-list-ul"></i> All Prescriptions</div>
+      <div class="prescriptions-table">
+        <table style="width:100%">
+          <thead><tr><th>ID</th><th>Patient</th><th>Medication</th><th>Prescriber</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>RX-1001</td><td>Olivia Bennett</td><td>Amoxicillin 500mg</td><td>Dr. Murphy</td><td><span class="badge">Completed</span></td></tr>
+            <tr><td>RX-1002</td><td>Liam O'Connor</td><td>Levothyroxine 75mcg</td><td>Dr. Chen</td><td><span class="badge">Dispensed</span></td></tr>
+            <tr><td>RX-1003</td><td>Mia Rodriguez</td><td>Sertraline 50mg</td><td>Dr. Gupta</td><td><span class="badge">Pending</span></td></tr>
+            <tr><td>RX-1004</td><td>Noah Wilson</td><td>Losartan 25mg</td><td>Dr. Chen</td><td><span class="badge">Ready</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:2rem; background:#EFF6FF; border-radius:1rem; padding:1rem;"><i class="fas fa-plus-circle"></i> New e‑prescriptions are automatically synced from connected clinics.</div>
+    `;
+  }
+
+  function renderPatientsPage() {
+    const container = document.getElementById("dynamicContent");
+    container.innerHTML = `
+      <div class="section-title"><i class="fas fa-notes-medical"></i> Patient Overview</div>
+      <div class="stats-grid" style="grid-template-columns: repeat(2,1fr);">
+        <div class="stat-card">👥 Total active: 143</div>
+        <div class="stat-card">🆕 New this month: 28</div>
+      </div>
+      <div class="prescriptions-table">
+        <table><thead><tr><th>Name</th><th>Last Rx</th><th>Next follow-up</th></tr></thead>
+        <tbody>
+          <tr><td>Emily Watson</td><td>2026-06-05</td><td>Jul 12</td></tr>
+          <tr><td>James Carter</td><td>2026-06-07</td><td>Jul 01</td></tr>
+          <tr><td>Sophia Lee</td><td>2026-06-08</td><td>Jun 28</td></tr>
+        </tbody></table>
+      </div>
+    `;
+  }
+
+  function renderSettingsPage() {
+    const container = document.getElementById("dynamicContent");
+    container.innerHTML = `
+      <div class="section-title"><i class="fas fa-sliders-h"></i> Cloud Preferences</div>
+      <div style="background:white; border-radius:1.5rem; padding:1.5rem;">
+        <p><i class="fas fa-check-circle" style="color:#2a9d8f;"></i> <strong>FastRx Pro Cloud Sync</strong> — Real-time updates</p>
+        <hr style="margin:1rem 0;">
+        <label><input type="checkbox" checked> Email notifications for new prescriptions</label><br><br>
+        <label><input type="checkbox"> Two‑step verification (coming soon)</label>
+        <div style="margin-top:1.5rem;"><button class="btn-google" style="width:auto; padding:0.5rem 1.2rem;" id="demoResetBtn">Reset demo data</button></div>
+      </div>
+    `;
+    const resetBtn = document.getElementById("demoResetBtn");
+    if(resetBtn) resetBtn.addEventListener("click", () => alert("Demo reset: all stats restored."));
+  }
+
+  // Navigation logic
+  function setupNavigation() {
+    const navItems = document.querySelectorAll(".nav-item");
+    navItems.forEach(item => {
+      item.addEventListener("click", (e) => {
+        const tab = item.getAttribute("data-tab");
+        navItems.forEach(nav => nav.classList.remove("active"));
+        item.classList.add("active");
+        switch(tab) {
+          case "dashboard": renderDashboard(); break;
+          case "prescriptions": renderPrescriptionsPage(); break;
+          case "patients": renderPatientsPage(); break;
+          case "settings": renderSettingsPage(); break;
+          default: renderDashboard();
         }
       });
     });
   }
-  
-  async function loadAllUsers() {
-    if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
-    const usersSnap = await db.collection('users').get();
-    const usersList = [];
-    for(const userDoc of usersSnap.docs) {
-      const subDoc = await db.collection('users').doc(userDoc.id).collection('settings').doc('subscription').get();
-      const userData = { email: userDoc.data()?.email || userDoc.id, uid: userDoc.id };
-      if(subDoc.exists) userData.subscription = subDoc.data();
-      else userData.subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0 };
-      usersList.push(userData);
-    }
-    const container = document.getElementById("allUsersList");
-    if(usersList.length===0) { container.innerHTML = "<p>No users found.</p>"; return; }
-    container.innerHTML = usersList.map(u => {
-      const expiry = u.subscription.expiryDate ? new Date(u.subscription.expiryDate).toLocaleDateString() : 'Never';
-      const status = u.subscription.expiryDate && new Date(u.subscription.expiryDate) >= new Date() ? 'Active' : (u.subscription.expiryDate ? 'Expired' : 'Free');
-      const planBadge = u.subscription.plan === 'monthly' ? '📅 Monthly' : (u.subscription.plan === 'yearly' ? '📆 Yearly' : 'Free');
-      return `<div class="subscription-user-card"><div><strong>${escapeHtml(u.email)}</strong></div><div>Plan: ${planBadge} | Status: ${status} | Expires: ${expiry}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-uid="${u.uid}" data-action="extend_monthly">+1 Month</button><button class="btn-sm" data-uid="${u.uid}" data-action="extend_yearly">+1 Year</button><button class="btn-sm btn-danger" data-uid="${u.uid}" data-action="cancel">Cancel Subscription</button></div></div>`;
-    }).join("");
-    container.querySelectorAll("button[data-uid]").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const uid = btn.dataset.uid;
-        const action = btn.dataset.action;
-        const subRef = db.collection('users').doc(uid).collection('settings').doc('subscription');
-        const subDoc = await subRef.get();
-        let currentExpiry = subDoc.exists ? (subDoc.data().expiryDate ? new Date(subDoc.data().expiryDate) : new Date()) : new Date();
-        if(currentExpiry < new Date()) currentExpiry = new Date();
-        if(action === 'extend_monthly') {
-          currentExpiry.setMonth(currentExpiry.getMonth() + 1);
-          await subRef.update({ isActive: true, plan: 'monthly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 });
-          alert("Extended by 1 month!");
-        } else if(action === 'extend_yearly') {
-          currentExpiry.setFullYear(currentExpiry.getFullYear() + 1);
-          await subRef.update({ isActive: true, plan: 'yearly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 });
-          alert("Extended by 1 year!");
-        } else if(action === 'cancel') {
-          await subRef.update({ isActive: false, expiryDate: null, plan: null });
-          alert("Subscription cancelled.");
-        }
-        loadAllUsers();
-      });
-    });
+
+  // Show dashboard and update user UI
+  function showDashboard(userData) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("dashboardApp").style.display = "flex";
+    // update top bar
+    const nameSpan = document.getElementById("userName");
+    const avatarDiv = document.getElementById("userAvatar");
+    if (nameSpan) nameSpan.innerText = userData.displayName || "Demo User";
+    if (avatarDiv) avatarDiv.innerText = (userData.avatarInitials || "DU").substring(0,2).toUpperCase();
+    renderDashboard();
+    setupNavigation();
   }
-  
-  function showAdminPanel() { 
-    if(currentUser && currentUser.email === ADMIN_EMAIL) { 
-      loadPendingTransactions(); 
-      loadAllUsers();
-      document.getElementById("adminPanelModal").style.display = "block"; 
-      document.querySelectorAll(".admin-tab").forEach(tab => {
-        tab.addEventListener("click", () => {
-          document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
-          tab.classList.add("active");
-          const tabName = tab.dataset.tab;
-          if(tabName === "pending") {
-            document.getElementById("pendingTransactionsList").style.display = "block";
-            document.getElementById("allUsersList").style.display = "none";
-            loadPendingTransactions();
-          } else {
-            document.getElementById("pendingTransactionsList").style.display = "none";
-            document.getElementById("allUsersList").style.display = "block";
-            loadAllUsers();
-          }
-        });
-      });
-    } 
+
+  // Logout
+  function logout() {
+    clearSession();
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("dashboardApp").style.display = "none";
+    currentUser = null;
   }
-  
-  // ========== DISEASE MODAL ==========
-  function showDiseaseModal() {
-    const container = document.getElementById("diseaseListContainer");
-    container.innerHTML = savedDiseases.map(d => `<span class="tag" data-disease="${escapeHtml(d)}" style="display:inline-flex; align-items:center; gap:6px;">${escapeHtml(d)} <i class="fas fa-trash-alt" style="color:#dc2626; cursor:pointer;" data-disease="${escapeHtml(d)}"></i></span>`).join("");
-    container.querySelectorAll(".tag").forEach(el => {
-      el.addEventListener("click", (e) => {
-        if(e.target.classList.contains("fa-trash-alt")) return;
-        document.getElementById("diagnosisField").value = el.getAttribute("data-disease");
-        updatePreview();
-        document.getElementById("diseaseModal").style.display = "none";
-      });
-      const delIcon = el.querySelector(".fa-trash-alt");
-      if(delIcon) delIcon.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        const disease = delIcon.getAttribute("data-disease");
-        if(confirm(`Delete "${disease}"?`)) {
-          const idx = savedDiseases.indexOf(disease);
-          if(idx !== -1) savedDiseases.splice(idx,1);
-          await saveAutoCompleteData();
-          updateDatalists();
-          showDiseaseModal();
-        }
-      });
-    });
-    document.getElementById("diseaseModal").style.display = "block";
-  }
-  async function addNewDiseaseFromModal() {
-    const val = document.getElementById("newDiseaseInput").value.trim();
-    if(val && !savedDiseases.includes(val)) { savedDiseases.push(val); await saveAutoCompleteData(); updateDatalists(); showDiseaseModal(); document.getElementById("newDiseaseInput").value = ""; }
-  }
-  
-  // ========== CORE DATA LOAD FUNCTIONS ==========
-  async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving","Review after 3 days"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const freqDoc=await db.collection('users').doc(uid).collection('settings').doc('freqTags').get(); if(freqDoc.exists) userFreqTags=freqDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); const durDoc=await db.collection('users').doc(uid).collection('settings').doc('durTags').get(); if(durDoc.exists) userDurTags=durDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); const howDoc=await db.collection('users').doc(uid).collection('settings').doc('howTags').get(); if(howDoc.exists) userHowTags=howDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
-  async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
-  async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
-  async function saveTags() { if(!currentUser) return; const uid=currentUser.uid; await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); }
-  async function updateMedicineUsage(medId) { const med=medicines.find(m=>m.id===medId); if(med){ med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMostUsed(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); } }
-  async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsed(); renderPinnedSection(); }
-  function renderMedicineList(search=""){ let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount-a.usageCount); const container=document.getElementById("medicineListContainer"); if(!container) return; container.innerHTML=filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); attachMedEvents(); }
-  function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
-  function renderPinnedSection(){ const pinned=medicines.filter(m=>m.pinned); const section=document.getElementById("pinnedSection"); const container=document.getElementById("pinnedList"); if(pinned.length===0){ section.style.display="none"; return; } section.style.display="block"; container.innerHTML=pinned.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon pinned" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
-  function renderMostUsed(){ const sorted=[...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5); const container=document.getElementById("mostUsedContainer"); if(container) container.innerHTML=`<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")+`</div>`; document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); })); }
-  function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; renderTagGroup("freqTagsContainer", userFreqTags, "freq"); renderTagGroup("durTagsContainer", userDurTags, "dur"); renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("medicineModal").style.display="block"; }
-  function renderTagGroup(containerId, tags, type){ const container=document.getElementById(containerId); if(!container) return; container.innerHTML=tags.map(t=>`<span class="tag" data-tag="${escapeHtml(t)}" data-type="${type}">${escapeHtml(t)}</span>`).join(""); container.querySelectorAll(".tag").forEach(el=>el.addEventListener("click",()=>{ if(type==="freq") document.getElementById("modalFrequency").value=el.dataset.tag; else if(type==="dur") document.getElementById("modalDuration").value=el.dataset.tag; else document.getElementById("modalHowToTake").value=el.dataset.tag; })); }
-  async function addMedicineFromPopup(){ if(pendingMedicine){ currentMedicines.push({ name:pendingMedicine.name, dosage:document.getElementById("modalDosage").value.trim()||"As directed", frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); const med=medicines.find(m=>m.id===pendingMedicine.id); if(med) med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMedicinesTable(); updatePreview(); closeModal(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); } }
-  function renderMedicinesTable(){ const tbody=document.getElementById("medicinesTableBody"); if(!tbody) return; tbody.innerHTML=""; currentMedicines.forEach((item,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input value="${escapeHtml(item.name)}" class="med-field" data-idx="${idx}" data-field="name">`; row.insertCell(1).innerHTML=`<input value="${escapeHtml(item.dosage)}" class="med-field" data-idx="${idx}" data-field="dosage">`; row.insertCell(2).innerHTML=`<input value="${escapeHtml(item.frequency)}" class="med-field" data-idx="${idx}" data-field="frequency">`; row.insertCell(3).innerHTML=`<input value="${escapeHtml(item.duration)}" class="med-field" data-idx="${idx}" data-field="duration">`; row.insertCell(4).innerHTML=`<input value="${escapeHtml(item.howToTake)}" class="med-field" data-idx="${idx}" data-field="howToTake">`; let del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="btn-sm"; del.onclick=()=>{currentMedicines.splice(idx,1); renderMedicinesTable(); updatePreview();}; row.insertCell(5).appendChild(del); }); document.querySelectorAll(".med-field").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx),field=this.dataset.field; if(currentMedicines[idx]){ currentMedicines[idx][field]=this.value; updatePreview(); }})); }
-  function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); if(!container) return; container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
-  function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
-  function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(!container) return; container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
-  
-  function getPreviewHTML(splitMode) {
-    const firstName=document.getElementById("firstName").value.trim(), lastName=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diagnosis=document.getElementById("diagnosisField").value.trim();
-    const patientName=(firstName||lastName)?`${firstName} ${lastName}`.trim():"";
-    const patientLine=(patientName||age||gender)?`<div><strong>${patientName||"Patient"}</strong> ${age?`, Age: ${age}`:''} ${gender?`(${gender})`:''}</div>`:"";
-    const diagnosisHtml=diagnosis?`<div><strong>Diagnosis:</strong> ${escapeHtml(diagnosis)}</div>`:"";
-    let headerHtml="";
-    if(settings.prescType==="professional") headerHtml=`<div class="practice-header"><div class="practice-name">${escapeHtml(practiceInfo.doctorName||"Doctor Name")}</div><div class="practice-details">${escapeHtml(practiceInfo.degree||"")}${practiceInfo.regNo?` | Reg: ${escapeHtml(practiceInfo.regNo)}`:""}</div><div class="practice-details">${escapeHtml(practiceInfo.chamberName||"")}${practiceInfo.address?`, ${escapeHtml(practiceInfo.address)}`:""}</div></div>`;
-    let dateTimeHtml="";
-    if(settings.showDate||settings.showTime){ let dateStr=settings.showDate?new Date().toLocaleDateString():""; let timeStr=settings.showTime?formatTimeNoSeconds():""; let display=[dateStr,timeStr].filter(s=>s).join(" "); dateTimeHtml=`<div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${display}</span></div>`; } else dateTimeHtml=`<div><strong>${currentSerial}</strong></div>`;
-    let medBlocks="";
-    if(currentMedicines.length===0) medBlocks="<p><i>No medicines added.</i></p>";
-    else medBlocks=currentMedicines.map(item=>`<div class="preview-med-item"><div class="preview-med-name">${escapeHtml(item.name)} ${escapeHtml(item.dosage)}</div><div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}${item.howToTake?` • ${escapeHtml(item.howToTake)}`:''}</div></div>`).join("");
-    let adviceHtml=currentAdvices.length?`<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:"";
-    let signatureHtml=settings.showSignature?`<div class="signature-right">Doctor Signature: ___________________</div>`:"";
-    const mainContent=`${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}${signatureHtml}`;
-    
-    if(splitMode){ 
-      let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; 
-      let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; 
-      return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>`; 
-    }
-    else return `<div>${headerHtml}</div>${mainContent}${adviceHtml}`;
-  }
-  
-  function updatePreview(){ const splitMode=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(splitMode); const cont=document.getElementById("previewContainer"); if(splitMode) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
-  async function saveSettingsToFirestore() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').set({ settings, practiceInfo }); }
-  async function loadSettingsFromFirestore() { if(!currentUser) return; const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').get(); if(doc.exists){ const data=doc.data(); if(data.settings) settings={...settings,...data.settings}; if(data.practiceInfo) practiceInfo={...practiceInfo,...data.practiceInfo}; } document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; updatePreview(); }
-  function resetCurrentDraft(){ currentMedicines=[]; currentAdvices=[]; document.getElementById("firstName").value=""; document.getElementById("lastName").value=""; document.getElementById("patientAge").value=""; document.getElementById("patientGender").value=""; document.getElementById("diagnosisField").value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial=generateSerial(); }
-  async function saveCurrentPrescription(){ if(!await checkAndBlockIfLimitReached()) return; if(currentMedicines.length===0&&currentAdvices.length===0){ alert("Add medicine or advice"); return; } const newPresc={ id:Date.now().toString(), serial:currentSerial, createdAt:firebase.firestore.FieldValue.serverTimestamp(), dateTime:new Date().toISOString(), patient:{firstName:document.getElementById("firstName").value.trim(), lastName:document.getElementById("lastName").value.trim(), age:document.getElementById("patientAge").value.trim(), gender:document.getElementById("patientGender").value}, diagnosis:document.getElementById("diagnosisField").value.trim(), medicines:JSON.parse(JSON.stringify(currentMedicines)), advices:[...currentAdvices] }; prescriptions.unshift(newPresc); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('prescriptions').doc(newPresc.id).set(newPresc); await incrementDailyCount(); await loadSubscriptionData(); resetCurrentDraft(); alert(`Saved ${currentSerial}`); }
-  function showHistoryModal(){ renderHistoryList(); document.getElementById("historyModal").style.display="block"; }
-  function renderHistoryList(){ let filtered=[...prescriptions]; const name=document.getElementById("historySearchName").value.trim().toLowerCase(); const from=document.getElementById("historyFromDate").value; const to=document.getElementById("historyToDate").value; const year=document.getElementById("historyYear").value.trim(); const month=document.getElementById("historyMonth").value; if(name) filtered=filtered.filter(p=>`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim().toLowerCase().includes(name)); if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} if(year&&!isNaN(parseInt(year))) filtered=filtered.filter(p=>new Date(p.dateTime).getFullYear()===parseInt(year)); if(month&&month!=="") filtered=filtered.filter(p=>(new Date(p.dateTime).getMonth()+1)===parseInt(month)); const container=document.getElementById("historyListContainer"); if(filtered.length===0){container.innerHTML="<div class='history-item'>No records</div>"; return;} container.innerHTML=filtered.map(p=>`<div class="history-item" data-id="${p.id}"><div><strong>${p.serial}</strong> | ${`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim()||"Anonymous"} | ${new Date(p.dateTime).toLocaleDateString()}</div><div><i class="fas fa-chevron-right"></i> Load</div></div>`).join(""); document.querySelectorAll("#historyListContainer .history-item").forEach(el=>el.addEventListener("click",()=>{const presc=prescriptions.find(p=>p.id===el.dataset.id); if(presc){ loadPrescription(presc); document.getElementById("historyModal").style.display="none";}})); }
-  function loadPrescription(presc){ currentSerial=presc.serial; document.getElementById("firstName").value=presc.patient.firstName||""; document.getElementById("lastName").value=presc.patient.lastName||""; document.getElementById("patientAge").value=presc.patient.age||""; document.getElementById("patientGender").value=presc.patient.gender||""; document.getElementById("diagnosisField").value=presc.diagnosis||""; currentMedicines=JSON.parse(JSON.stringify(presc.medicines||[])); currentAdvices=[...(presc.advices||[])]; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); }
-  function resetHistoryFilters(){ document.getElementById("historySearchName").value=""; document.getElementById("historyFromDate").value=""; document.getElementById("historyToDate").value=""; document.getElementById("historyYear").value=""; document.getElementById("historyMonth").value=""; renderHistoryList(); }
-  function openQuickPopup(){ document.getElementById("quickModal").style.display="block"; }
-  async function addQuickMedicine(){ let name=document.getElementById("quickName").value.trim(); let dosage=document.getElementById("quickDosage").value.trim(); if(!name){alert("Enter medicine name"); return;} if(!dosage) dosage="As directed"; currentMedicines.push({name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed"}); let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing){ existing.usageCount=(existing.usageCount||0)+1; await saveMedicines(); } else { await addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed", usageCount:1, pinned:false }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
-  function closeModal(){ document.getElementById("medicineModal").style.display="none"; pendingMedicine=null; }
-  function closeQuickPopup(){ document.getElementById("quickModal").style.display="none"; }
-  function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=parseInt(document.getElementById("printTopMargin").value)||0; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.prescription-content{max-width:800px;margin:0 auto;}.preview-med-item{margin-bottom:0.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.3rem;}.preview-med-name{font-weight:700; color:#0c4e6e; font-size:0.85rem;}.preview-med-detail{font-size:0.75rem; color:#334155; margin-top:2px;}.signature-right{text-align:right; margin-top:20px; padding-top:10px; border-top:1px dashed #aaa;}.practice-header{margin-bottom:20px; text-align:center; border-bottom:2px solid #0a7e8c; padding-bottom:12px; width:100%;}.practice-name{font-size:1.4rem; font-weight:700; color:#0a4c6e;}.practice-details{font-size:0.75rem; color:#4b6b87; margin-top:6px;}@media print{body{padding:${margin}mm 10mm 10mm 10mm;}}</style></head><body><div class="prescription-content">${html}</div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
-  function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
-  async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
-  async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"As directed", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"", usageCount:0, pinned:false }); } } alert("Imported."); }
-  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required (login as narayanbarman3210@gmail.com)\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
-  function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
-  function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
-  function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
-  function openMedicineInventory(){ renderSimpleInventory(); document.getElementById("medicineInventoryModal").style.display="block"; }
-  function renderSimpleInventory(){ const tbody=document.getElementById("inventoryMedBody"); tbody.innerHTML=""; medicines.forEach((med,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input type="text" value="${escapeHtml(med.name)}" class="inv-name" data-idx="${idx}">`; row.insertCell(1).innerHTML=`<input type="text" value="${escapeHtml(med.dosage)}" class="inv-dosage" data-idx="${idx}">`; let delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ medicines.splice(idx,1); saveMedicines(); renderSimpleInventory(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); }; row.insertCell(2).appendChild(delBtn); }); document.querySelectorAll(".inv-name, .inv-dosage").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx); if(!isNaN(idx) && medicines[idx]){ if(this.classList.contains("inv-name")) medicines[idx].name=this.value; else medicines[idx].dosage=this.value; saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); }})); }
-  function addInventoryMedicine(){ let name=prompt("Medicine name:"); if(!name) return; let dosage=prompt("Dosage:"); if(!dosage) dosage="As directed"; addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"", usageCount:0, pinned:false }); renderSimpleInventory(); }
-  function deleteAllMedicines(){ if(confirm("Delete ALL medicines?")){ medicines=[]; saveMedicines(); renderSimpleInventory(); renderMedicineList(""); renderMostUsed(); renderPinnedSection(); } }
-  function openAdviceInventory(){ renderAdviceInventory(); document.getElementById("adviceInventoryModal").style.display="block"; }
-  function renderAdviceInventory(){ const container=document.getElementById("adviceInventoryList"); container.innerHTML=""; adviceTags.forEach((tag,idx)=>{ const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.gap="8px"; div.style.marginBottom="8px"; const input=document.createElement("input"); input.type="text"; input.value=tag; input.style.flex="1"; input.addEventListener("change",()=>{ adviceTags[idx]=input.value; saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); }); const delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ adviceTags.splice(idx,1); saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); }; div.appendChild(input); div.appendChild(delBtn); container.appendChild(div); }); const addBtn=document.createElement("button"); addBtn.innerText="+ Add New Advice"; addBtn.className="btn-sm"; addBtn.onclick=()=>{ const newAdv=prompt("New advice:"); if(newAdv && newAdv.trim()){ adviceTags.push(newAdv.trim()); saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); } }; container.appendChild(addBtn); }
-  function deleteAllAdvice(){ if(confirm("Delete ALL advice tags?")){ adviceTags=[]; saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); } }
-  function openTagEditModal(type, title){ currentTagType=type; document.getElementById("tagEditTitle").innerText=title; renderTagEditList(); document.getElementById("tagEditModal").style.display="block"; }
-  function renderTagEditList(){ const container=document.getElementById("tagEditList"); let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); container.innerHTML=""; tags.forEach((tag,idx)=>{ const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.gap="8px"; div.style.marginBottom="6px"; const inp=document.createElement("input"); inp.value=tag; inp.style.flex="1"; inp.addEventListener("change",(e)=>{ tags[idx]=e.target.value; saveTags(); renderTagEditList(); }); const del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="btn-sm btn-danger"; del.onclick=()=>{ tags.splice(idx,1); saveTags(); renderTagEditList(); }; div.appendChild(inp); div.appendChild(del); container.appendChild(div); }); }
-  function addNewTag(){ const newTag=document.getElementById("newTagInput").value.trim(); if(!newTag) return; let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); if(!tags.includes(newTag)) tags.push(newTag); saveTags(); renderTagEditList(); document.getElementById("newTagInput").value=""; }
-  function saveTagEditAndClose(){ saveTags(); if(currentTagType==="freq") renderTagGroup("freqTagsContainer", userFreqTags, "freq"); else if(currentTagType==="dur") renderTagGroup("durTagsContainer", userDurTags, "dur"); else renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("tagEditModal").style.display="none"; }
-  function showAllMedsPicker(){ const container=document.getElementById("allMedsListContainer"); container.innerHTML=medicines.map(med=>`<div class="picker-item" data-med-id="${med.id}">${escapeHtml(med.name)} <span style="color:#6b7280; font-size:0.7rem;">${med.dosage}</span></div>`).join(""); document.querySelectorAll("#allMedsListContainer .picker-item").forEach(el=>{ el.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); document.getElementById("allMedsPickerModal").style.display="none"; }); }); document.getElementById("allMedsPickerModal").style.display="block"; }
-  function showAllAdvicePicker(){ const container=document.getElementById("allAdviceListContainer"); container.innerHTML=adviceTags.map(tag=>`<div class="picker-item" data-advice="${escapeHtml(tag)}">${escapeHtml(tag)}</div>`).join(""); document.querySelectorAll("#allAdviceListContainer .picker-item").forEach(el=>{ el.addEventListener("click",()=>{ addAdvice(el.dataset.advice); document.getElementById("allAdvicePickerModal").style.display="none"; }); }); document.getElementById("allAdvicePickerModal").style.display="block"; }
-  function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
-  function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
-  
-  // ========== SMART LOGIN (SIGN IN OR SIGN UP AUTOMATICALLY) ==========
-  async function handleEmailAuth() {
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
-    const errorDiv = document.getElementById("loginErrorMsg");
-    
-    errorDiv.innerText = "";
-    if (!email || !password) { errorDiv.innerText = "Enter email and password"; return; }
-    
-    showLoading(true);
+
+  // Handle sign-in (mock)
+  async function handleSignIn() {
     try {
-      // First try to sign in
-      await auth.signInWithEmailAndPassword(email, password);
-    } catch(loginError) {
-      // If user doesn't exist, create account
-      if (loginError.code === 'auth/user-not-found') {
-        if (password.length < 6) { 
-          errorDiv.innerText = "Password must be at least 6 characters for new accounts."; 
-          showLoading(false);
-          return; 
-        }
-        try {
-          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-          await db.collection('users').doc(userCredential.user.uid).set({
-            email: email,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          alert("Account created automatically! Welcome to FastRx Pro.");
-        } catch(signupError) {
-          errorDiv.innerText = signupError.message;
-        }
-      } else if (loginError.code === 'auth/wrong-password') {
-        errorDiv.innerText = "Incorrect password. Please try again or use 'Forgot password'.";
-      } else {
-        errorDiv.innerText = loginError.message;
-      }
-    } finally {
-      showLoading(false);
+      const user = await mockGoogleSignIn();
+      setSession({
+        displayName: user.displayName,
+        avatarInitials: user.avatarInitials,
+        email: user.email
+      });
+      showDashboard({
+        displayName: user.displayName,
+        avatarInitials: user.avatarInitials
+      });
+    } catch(err) {
+      alert("Sign in failed (demo). Using fallback.");
+      const fallbackUser = { displayName: "Guest User", avatarInitials: "GU" };
+      setSession(fallbackUser);
+      showDashboard(fallbackUser);
     }
   }
-  
-  async function handleGoogleSignIn() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      const result = await auth.signInWithPopup(provider);
-      await db.collection('users').doc(result.user.uid).set({
-        email: result.user.email,
-        name: result.user.displayName,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
-  }
-  
-  async function handleForgotPassword() {
-    const email = document.getElementById("loginEmail").value.trim();
-    if (!email) { document.getElementById("loginErrorMsg").innerText = "Enter your email address"; return; }
-    try {
-      await auth.sendPasswordResetEmail(email);
-      alert("Password reset email sent. Check your inbox.");
-    } catch(e) { document.getElementById("loginErrorMsg").innerText = e.message; }
-  }
-  
-  function openLoginOverlay(){ document.getElementById("loginOverlay").classList.remove("hidden"); }
-  function closeLoginOverlay(){ document.getElementById("loginOverlay").classList.add("hidden"); }
-  
-  function onAuthStateChanged(user) {
-    if (user) {
-      currentUser = user;
-      document.getElementById("mainApp").style.display = "block";
-      document.getElementById("userWidget").innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
-      document.getElementById("logoutBtn")?.addEventListener("click", () => auth.signOut());
-      if (user.email === ADMIN_EMAIL) document.getElementById("adminPanelBtn").style.display = "inline-flex";
-      else document.getElementById("adminPanelBtn").style.display = "none";
-      loadUserData();
-      closeLoginOverlay();
+
+  // Check for existing session on load
+  function initApp() {
+    const saved = getSavedSession();
+    if (saved) {
+      showDashboard({ displayName: saved.displayName, avatarInitials: saved.avatar });
     } else {
-      currentUser = null;
-      document.getElementById("mainApp").style.display = "none";
-      document.getElementById("userWidget").innerHTML = `<button id="showLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
-      document.getElementById("showLoginBtn")?.addEventListener("click", openLoginOverlay);
-      openLoginOverlay();
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("dashboardApp").style.display = "none";
     }
+    // attach events
+    const googleBtn = document.getElementById("googleSignInBtn");
+    if (googleBtn) googleBtn.addEventListener("click", handleSignIn);
+    const logoutButton = document.getElementById("logoutBtn");
+    if (logoutButton) logoutButton.addEventListener("click", logout);
   }
-  auth.onAuthStateChanged(onAuthStateChanged);
-  
-  // ========== EVENT BINDINGS ==========
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("emailLoginBtn")?.addEventListener("click", handleEmailAuth);
-    document.getElementById("googleLoginBtn")?.addEventListener("click", handleGoogleSignIn);
-    document.getElementById("forgotPasswordLink")?.addEventListener("click", handleForgotPassword);
-    bindEvents();
-    setupSearchSuggestions();
-  });
-  
-  function bindEvents() {
-    document.getElementById("searchMedicine")?.addEventListener("input",e=>renderMedicineList(e.target.value));
-    document.getElementById("clearAllMedicinesBtn")?.addEventListener("click",()=>{currentMedicines=[]; renderMedicinesTable(); updatePreview();});
-    document.getElementById("quickMedicineBtn")?.addEventListener("click",openQuickPopup);
-    document.getElementById("bulkTriggerBtn")?.addEventListener("click",()=>document.getElementById("bulkMedFile").click());
-    document.getElementById("bulkMedFile")?.addEventListener("change",e=>{if(e.target.files[0]) importMedicinesFromFile(e.target.files[0]); e.target.value="";});
-    document.getElementById("addCustomAdviceBtn")?.addEventListener("click",()=>{const val=document.getElementById("customAdviceInput").value.trim(); if(val) addAdvice(val); document.getElementById("customAdviceInput").value="";});
-    document.getElementById("showHistoryBtn")?.addEventListener("click",showHistoryModal);
-    document.getElementById("analysisBtn")?.addEventListener("click",showAnalysis);
-    document.getElementById("helpBtn")?.addEventListener("click",showHelp);
-    document.getElementById("settingsBtn")?.addEventListener("click",openSettingsModal);
-    document.getElementById("savePrescriptionBtn")?.addEventListener("click",saveCurrentPrescription);
-    document.getElementById("printPreviewBtn")?.addEventListener("click",printWithMargin);
-    document.getElementById("clearCurrentBtn")?.addEventListener("click",resetCurrentDraft);
-    document.getElementById("modalConfirmBtn")?.addEventListener("click",addMedicineFromPopup);
-    document.getElementById("modalCancelBtn")?.addEventListener("click",closeModal);
-    document.getElementById("quickConfirmBtn")?.addEventListener("click",addQuickMedicine);
-    document.getElementById("quickCancelBtn")?.addEventListener("click",closeQuickPopup);
-    document.getElementById("applyHistoryFilter")?.addEventListener("click",()=>renderHistoryList());
-    document.getElementById("resetHistoryFilter")?.addEventListener("click",resetHistoryFilters);
-    document.getElementById("closeHistoryModal")?.addEventListener("click",()=>document.getElementById("historyModal").style.display="none");
-    document.getElementById("closeAnalysisModal")?.addEventListener("click",()=>document.getElementById("analysisModal").style.display="none");
-    document.getElementById("applyAnalysisFilter")?.addEventListener("click",updateAnalysisDashboard);
-    document.getElementById("resetAnalysisFilter")?.addEventListener("click",resetAnalysisFilters);
-    document.getElementById("closeSettingsModal")?.addEventListener("click",()=>document.getElementById("settingsModal").style.display="none");
-    document.getElementById("applySettingsBtn")?.addEventListener("click",()=>{ applySettings(); document.getElementById("settingsModal").style.display="none"; });
-    document.getElementById("cancelSettingsBtn")?.addEventListener("click",()=>document.getElementById("settingsModal").style.display="none");
-    document.getElementById("closeMedsPickerModal")?.addEventListener("click",()=>document.getElementById("allMedsPickerModal").style.display="none");
-    document.getElementById("closeAdvicePickerModal")?.addEventListener("click",()=>document.getElementById("allAdvicePickerModal").style.display="none");
-    document.getElementById("allMedsButton")?.addEventListener("click",showAllMedsPicker);
-    document.getElementById("allAdviceButton")?.addEventListener("click",showAllAdvicePicker);
-    document.getElementById("manageMedsBtn")?.addEventListener("click",openMedicineInventory);
-    document.getElementById("closeInventoryModal")?.addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
-    document.getElementById("closeInventoryBtn")?.addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
-    document.getElementById("deleteAllMedsBtn")?.addEventListener("click",deleteAllMedicines);
-    document.getElementById("addInventoryMedicineBtn")?.addEventListener("click",addInventoryMedicine);
-    document.getElementById("manageAdviceBtn")?.addEventListener("click",openAdviceInventory);
-    document.getElementById("closeAdviceInventoryModal")?.addEventListener("click",()=>document.getElementById("adviceInventoryModal").style.display="none");
-    document.getElementById("closeAdviceInventoryBtn")?.addEventListener("click",()=>document.getElementById("adviceInventoryModal").style.display="none");
-    document.getElementById("deleteAllAdviceBtn")?.addEventListener("click",deleteAllAdvice);
-    document.getElementById("editFreqTagsBtn")?.addEventListener("click",()=>openTagEditModal("freq","Edit Frequency Tags"));
-    document.getElementById("editDurTagsBtn")?.addEventListener("click",()=>openTagEditModal("dur","Edit Duration Tags"));
-    document.getElementById("editHowTagsBtn")?.addEventListener("click",()=>openTagEditModal("how","Edit 'How to take' Tags"));
-    document.getElementById("addNewTagBtn")?.addEventListener("click",addNewTag);
-    document.getElementById("saveTagEditBtn")?.addEventListener("click",saveTagEditAndClose);
-    document.getElementById("cancelTagEditBtn")?.addEventListener("click",()=>document.getElementById("tagEditModal").style.display="none");
-    ["firstName","lastName","patientAge","patientGender","diagnosisField"].forEach(id=>document.getElementById(id)?.addEventListener("input",updatePreview));
-    document.querySelectorAll('input[name="paperStyle"]').forEach(r=>r.addEventListener("change",()=>updatePreview()));
-    document.getElementById("diseasePickerBtn")?.addEventListener("click",showDiseaseModal);
-    document.getElementById("closeDiseaseModal")?.addEventListener("click",()=>document.getElementById("diseaseModal").style.display="none");
-    document.getElementById("addNewDiseaseBtn")?.addEventListener("click",addNewDiseaseFromModal);
-    document.getElementById("submitTransactionBtn")?.addEventListener("click",()=>{ const plan=document.querySelector('input[name="planSelect"]:checked')?.value; const txn=document.getElementById("transactionId").value.trim(); if(plan && txn) submitTransaction(plan, txn, false); else alert("Select plan and enter 12-digit transaction ID"); });
-    document.getElementById("submitRenewalBtn")?.addEventListener("click",()=>{ const plan=document.querySelector('input[name="renewPlan"]:checked')?.value; const txn=document.getElementById("renewTransactionId").value.trim(); if(plan && txn) submitTransaction(plan, txn, true); else alert("Select plan and enter transaction ID"); });
-    document.getElementById("closeRenewalModal")?.addEventListener("click",()=>document.getElementById("renewalModal").style.display="none");
-    document.getElementById("closeRenewalBtn")?.addEventListener("click",()=>document.getElementById("renewalModal").style.display="none");
-    document.getElementById("closeSubModal")?.addEventListener("click",()=>document.getElementById("subscriptionModal").style.display="none");
-    document.getElementById("cancelSubBtn")?.addEventListener("click",()=>document.getElementById("subscriptionModal").style.display="none");
-    document.getElementById("adminPanelBtn")?.addEventListener("click",showAdminPanel);
-    document.getElementById("closeAdminModal")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
-    document.getElementById("closeAdminBtn")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
-    document.getElementById("refreshPendingBtn")?.addEventListener("click",()=>{ if(document.querySelector(".admin-tab.active").dataset.tab === "pending") loadPendingTransactions(); else loadAllUsers(); });
-    window.addEventListener("click",e=>{ if(e.target.classList.contains("modal")) e.target.style.display="none"; });
-  }
+
+  // start
+  initApp();
 </script>
 </body>
 </html>
