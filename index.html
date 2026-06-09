@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ALL STYLES ========== */
+    /* ========== ALL STYLES (unchanged except badge contrast and pro button) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -24,6 +24,7 @@
     .btn-google { background: white; color: #0a4c6e; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; }
     .btn-google i { color: #DB4437; }
     .btn-logout { background: rgba(0,0,0,0.3); color: white; border: none; padding: 5px 12px; border-radius: 40px; cursor: pointer; font-size: 0.75rem; }
+    .btn-pro { background: #ffb347; color: #0a4c6e; border: none; padding: 4px 12px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.7rem; }
     .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; color: white; font-size: 1.2rem; backdrop-filter: blur(4px); }
     .top-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; background: white; padding: 8px 16px; border-radius: 50px; width: fit-content; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
     .top-btn { background: #f1f5f9; border: none; padding: 5px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: 0.1s; }
@@ -122,7 +123,7 @@
     .login-modal .footer-links { display: flex; justify-content: flex-end; margin-top: 16px; font-size: 0.7rem; }
     .login-modal .footer-links a { color: #0a7e8c; text-decoration: none; cursor: pointer; }
     .error-msg { color: #dc2626; font-size: 0.7rem; margin-top: 8px; text-align: center; }
-    .subscription-badge { background: #fef9e3; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; }
+    .subscription-badge { background: #fef9e3; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; color: #4a5c6c; font-weight: 500; }
     .subscription-badge.expired { background: #fee2e2; color: #b91c1c; }
     .subscription-badge.active { background: #d1fae5; color: #065f46; }
     .admin-tabs { display: flex; gap: 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
@@ -185,7 +186,7 @@
 
         <div class="card">
           <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="editable-hint">(click any field to edit)</span></span></div>
-          <div style="overflow-x:auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></td></thead><tbody id="medicinesTableBody"></tbody></table></div>
+          <div style="overflow-x:auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th><tr></thead><tbody id="medicinesTableBody"></tbody></tr></div>
           <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
         </div>
 
@@ -205,9 +206,9 @@
       <div id="loginErrorMsg" class="error-msg"></div>
       <div class="input-group"><label>Email</label><input type="email" id="loginEmail" placeholder="doctor@example.com"></div>
       <div class="input-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-      <button id="emailLoginBtn" class="btn-primary btn-login">Login / Sign Up</button>
+      <button id="emailLoginBtn" class="btn-primary btn-login">Sign In / Sign Up</button>
       <div class="divider">or</div>
-      <button id="googleLoginBtn" class="btn-google" style="width:100%; justify-content:center;"><i class="fab fa-google"></i> Sign in with Google</button>
+      <button id="googleLoginBtn" class="btn-google" style="width:100%; justify-content:center;"><i class="fab fa-google"></i> Continue with Google</button>
       <div class="footer-links">
         <a id="forgotPasswordLink">Forgot password?</a>
       </div>
@@ -217,7 +218,7 @@
 
 <!-- MODALS -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
-<div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
+<div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Upgrade to Pro</h3><p style="margin:10px 0;">Get unlimited prescriptions. Choose your plan:</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
 <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
 <div id="settingsModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeSettingsModal">&times;</span><h3><i class="fas fa-sliders-h"></i> Prescription Settings</h3>
   <div class="settings-group"><h4>Layout & Display</h4><div class="settings-row"><label class="settings-row-item"><input type="checkbox" id="settingShowDate" checked> Show Date</label><label class="settings-row-item"><input type="checkbox" id="settingShowTime" checked> Show Time</label><label class="settings-row-item"><input type="checkbox" id="settingShowSignature" checked> Doctor Signature</label></div><div class="settings-row"><span style="margin-right:12px;">Preview Style:</span><div class="radio-group"><label><input type="radio" name="settingStyle" value="plain" checked> Simple</label><label><input type="radio" name="settingStyle" value="split"> Left line</label></div></div></div>
@@ -333,12 +334,21 @@
     const widget = document.getElementById("userWidget");
     if(widget && currentUser) {
       let badge = '';
-      if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) badge = `<span class="subscription-badge active">Active till ${new Date(subscription.expiryDate).toLocaleDateString()}</span>`;
-      else if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) badge = `<span class="subscription-badge expired">Expired</span>`;
-      else badge = `<span class="subscription-badge">Free: ${10-subscription.dailyCount} left today</span>`;
+      if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) badge = `<span class="subscription-badge active">✅ Active till ${new Date(subscription.expiryDate).toLocaleDateString()}</span>`;
+      else if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) badge = `<span class="subscription-badge expired">⚠️ Expired</span>`;
+      else badge = `<span class="subscription-badge">📋 Free: ${10-subscription.dailyCount} left today</span>`;
       const existingBadge = widget.querySelector('.subscription-badge');
       if(existingBadge) existingBadge.remove();
       widget.insertAdjacentHTML('beforeend', badge);
+      // Also ensure pro button exists
+      if(!widget.querySelector('.btn-pro')) {
+        const proBtn = document.createElement('button');
+        proBtn.className = 'btn-pro';
+        proBtn.innerHTML = '<i class="fas fa-star"></i> Pro';
+        proBtn.style.marginLeft = '8px';
+        proBtn.onclick = () => document.getElementById("subscriptionModal").style.display = "block";
+        widget.appendChild(proBtn);
+      }
     }
   }
   function showRenewalModal(daysLeft) {
@@ -567,7 +577,7 @@
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"As directed", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"", usageCount:0, pinned:false }); } } alert("Imported."); }
   function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required (login as narayanbarman3210@gmail.com)\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
   function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
-  function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label='Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
+  function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
   function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
   function openMedicineInventory(){ renderSimpleInventory(); document.getElementById("medicineInventoryModal").style.display="block"; }
   function renderSimpleInventory(){ const tbody=document.getElementById("inventoryMedBody"); tbody.innerHTML=""; medicines.forEach((med,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input type="text" value="${escapeHtml(med.name)}" class="inv-name" data-idx="${idx}">`; row.insertCell(1).innerHTML=`<input type="text" value="${escapeHtml(med.dosage)}" class="inv-dosage" data-idx="${idx}">`; let delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ medicines.splice(idx,1); saveMedicines(); renderSimpleInventory(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); }; row.insertCell(2).appendChild(delBtn); }); document.querySelectorAll(".inv-name, .inv-dosage").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx); if(!isNaN(idx) && medicines[idx]){ if(this.classList.contains("inv-name")) medicines[idx].name=this.value; else medicines[idx].dosage=this.value; saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); }})); }
@@ -585,7 +595,7 @@
   function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
   function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
   
-  // ========== AUTHENTICATION (DUAL-ACTION FLOW) ==========
+  // ========== SMART LOGIN (SIGN IN OR SIGN UP AUTOMATICALLY) ==========
   async function handleEmailAuth() {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
@@ -596,22 +606,19 @@
     
     showLoading(true);
     try {
-      // Step 1: Attempt to sign in an existing user configuration
+      // First try to sign in
       await auth.signInWithEmailAndPassword(email, password);
     } catch(loginError) {
-      // Step 2: Fallback configuration if identity record is missing
-      if (loginError.code === 'auth/user-not-found' || loginError.code === 'auth/invalid-credential') {
+      // If user doesn't exist, create account
+      if (loginError.code === 'auth/user-not-found') {
         if (password.length < 6) { 
           errorDiv.innerText = "Password must be at least 6 characters for new accounts."; 
           showLoading(false);
           return; 
         }
         try {
-          // Attempt on the fly dynamic registration workflow
           const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-          const user = userCredential.user;
-          
-          await db.collection('users').doc(user.uid).set({
+          await db.collection('users').doc(userCredential.user.uid).set({
             email: email,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
@@ -619,6 +626,8 @@
         } catch(signupError) {
           errorDiv.innerText = signupError.message;
         }
+      } else if (loginError.code === 'auth/wrong-password') {
+        errorDiv.innerText = "Incorrect password. Please try again or use 'Forgot password'.";
       } else {
         errorDiv.innerText = loginError.message;
       }
