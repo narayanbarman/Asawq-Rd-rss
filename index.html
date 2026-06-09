@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ALL STYLES (unchanged) ========== */
+    /* ========== ALL STYLES (unchanged except subscription badge) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -122,9 +122,37 @@
     .login-modal .footer-links { display: flex; justify-content: flex-end; margin-top: 16px; font-size: 0.7rem; }
     .login-modal .footer-links a { color: #0a7e8c; text-decoration: none; cursor: pointer; }
     .error-msg { color: #dc2626; font-size: 0.7rem; margin-top: 8px; text-align: center; }
-    .subscription-badge { background: #fef9e3; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; }
-    .subscription-badge.expired { background: #fee2e2; color: #b91c1c; }
-    .subscription-badge.active { background: #d1fae5; color: #065f46; }
+    /* IMPROVED SUBSCRIPTION BADGE AND BUTTON */
+    .subscription-badge { 
+      background: #0f2c38; 
+      color: #ffd966; 
+      border-radius: 40px; 
+      padding: 4px 12px; 
+      font-size: 0.7rem; 
+      font-weight: bold;
+      border: 1px solid #ffd966;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      margin-left: 8px;
+    }
+    .subscription-badge.expired { background: #5a1e1e; color: #ffaaaa; border-color: #ffaaaa; }
+    .subscription-badge.active { background: #145c33; color: #c6ffb3; border-color: #b3ffb3; }
+    .premium-btn {
+      background: linear-gradient(135deg, #f5b042, #e67e22);
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 4px 14px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-left: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .premium-btn:hover { transform: scale(1.02); background: linear-gradient(135deg, #e67e22, #d35400); }
     .admin-tabs { display: flex; gap: 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
     .admin-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; transition: 0.1s; }
     .admin-tab:hover { background: #e6f4f5; }
@@ -332,13 +360,24 @@
   function updateSubscriptionBadge() {
     const widget = document.getElementById("userWidget");
     if(widget && currentUser) {
-      let badge = '';
-      if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) badge = `<span class="subscription-badge active">Active till ${new Date(subscription.expiryDate).toLocaleDateString()}</span>`;
-      else if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) badge = `<span class="subscription-badge expired">Expired</span>`;
-      else badge = `<span class="subscription-badge">Free: ${10-subscription.dailyCount} left today</span>`;
+      let badgeHtml = '';
+      if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) {
+        badgeHtml = `<span class="subscription-badge active"><i class="fas fa-crown"></i> PRO Active till ${new Date(subscription.expiryDate).toLocaleDateString()}</span>`;
+      } else if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) {
+        badgeHtml = `<span class="subscription-badge expired"><i class="fas fa-exclamation-triangle"></i> Expired</span>`;
+      } else {
+        const left = 10 - (subscription.dailyCount || 0);
+        badgeHtml = `<span class="subscription-badge"><i class="fas fa-prescription-bottle"></i> Free: ${left} left today</span>`;
+      }
+      // Add premium button
+      const premiumBtn = `<button id="premiumUpgradeBtn" class="premium-btn"><i class="fas fa-gem"></i> ⭐ Best Choice</button>`;
       const existingBadge = widget.querySelector('.subscription-badge');
+      const existingBtn = widget.querySelector('#premiumUpgradeBtn');
       if(existingBadge) existingBadge.remove();
-      widget.insertAdjacentHTML('beforeend', badge);
+      if(existingBtn) existingBtn.remove();
+      widget.insertAdjacentHTML('beforeend', badgeHtml + premiumBtn);
+      const btn = document.getElementById("premiumUpgradeBtn");
+      if(btn) btn.addEventListener("click", () => document.getElementById("subscriptionModal").style.display = "block");
     }
   }
   function showRenewalModal(daysLeft) {
@@ -611,6 +650,8 @@
         } catch (createError) {
           errorDiv.innerText = createError.message;
         }
+      } else if (signInError.code === 'auth/wrong-password') {
+        errorDiv.innerText = "Incorrect password. Try again or reset password.";
       } else {
         errorDiv.innerText = signInError.message;
       }
