@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ALL STYLES (unchanged from original working version) ========== */
+    /* ========== ORIGINAL STYLES (unchanged except login overlay) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -106,32 +106,196 @@
     .settings-group { margin-bottom: 20px; }
     .settings-group h4 { margin-bottom: 12px; font-size: 0.9rem; color: #0a4c6e; border-left: 3px solid #0a7e8c; padding-left: 8px; }
     .radio-group { display: flex; gap: 16px; margin-top: 8px; }
-    .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 1; visibility: visible; transition: all 0.4s ease; }
-    .login-overlay.hidden { opacity: 0; visibility: hidden; backdrop-filter: blur(0); }
-    .login-modal { background: white; border-radius: 48px; width: 90%; max-width: 440px; padding: 40px 32px; box-shadow: 0 30px 50px rgba(0,0,0,0.2); transform: scale(0.96); transition: transform 0.3s; text-align: center; }
-    .login-overlay:not(.hidden) .login-modal { transform: scale(1); }
-    .login-modal h2 { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #0f4c5f, #2c9a7a); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 8px; }
-    .login-sub { color: #5b7c93; font-size: 0.85rem; margin-bottom: 28px; border-bottom: 1px solid #e2edf2; display: inline-block; padding-bottom: 6px; }
-    .login-modal .input-group { text-align: left; margin-bottom: 20px; }
-    .login-modal .input-group label { font-size: 0.75rem; font-weight: 600; color: #1e4a62; display: block; margin-bottom: 6px; }
-    .login-modal .input-group input { width: 100%; padding: 14px 18px; background: #f8fafc; border: 1.5px solid #e2edf2; border-radius: 32px; font-size: 0.9rem; transition: all 0.2s; outline: none; }
-    .login-modal .input-group input:focus { border-color: #2c9a7a; box-shadow: 0 0 0 3px rgba(44,154,122,0.2); background: white; }
-    .login-modal .btn-login { background: linear-gradient(105deg, #0f4c5f, #1a6e5c); color: white; border: none; padding: 14px; border-radius: 44px; font-weight: 700; width: 100%; margin-top: 10px; cursor: pointer; }
-    .login-modal .divider { margin: 24px 0 16px; font-size: 0.7rem; color: #8ba3b5; position: relative; }
-    .login-modal .divider::before, .login-modal .divider::after { content: ""; position: absolute; top: 50%; width: 42%; height: 1px; background: #e2e8f0; }
+    /* IMPROVED LOGIN OVERLAY (modern glassmorphic) */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 25, 35, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    .login-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      backdrop-filter: blur(0);
+    }
+    .login-modal {
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 48px;
+      width: 90%;
+      max-width: 460px;
+      padding: 40px 36px;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.2);
+      transform: scale(0.96);
+      transition: transform 0.3s ease;
+      text-align: center;
+    }
+    .login-overlay:not(.hidden) .login-modal {
+      transform: scale(1);
+    }
+    .login-modal h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #0f4c5f, #2c9a7a);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 8px;
+    }
+    .login-sub {
+      color: #5b7c93;
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+      border-bottom: 1px solid #e2edf2;
+      display: inline-block;
+      padding-bottom: 6px;
+    }
+    .login-modal .input-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .login-modal .input-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #1e4a62;
+      display: block;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    .login-modal .input-group input {
+      width: 100%;
+      padding: 14px 18px;
+      background: #f8fafc;
+      border: 1.5px solid #e2edf2;
+      border-radius: 32px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .login-modal .input-group input:focus {
+      border-color: #2c9a7a;
+      box-shadow: 0 0 0 3px rgba(44, 154, 122, 0.2);
+      background: white;
+    }
+    .login-modal .btn-login {
+      background: linear-gradient(105deg, #0f4c5f, #1a6e5c);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 44px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      width: 100%;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 10px;
+      box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.2);
+    }
+    .login-modal .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.25);
+    }
+    .login-modal .divider {
+      margin: 24px 0 16px;
+      font-size: 0.7rem;
+      color: #8ba3b5;
+      position: relative;
+    }
+    .login-modal .divider::before,
+    .login-modal .divider::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 42%;
+      height: 1px;
+      background: #e2e8f0;
+    }
     .login-modal .divider::before { left: 0; }
     .login-modal .divider::after { right: 0; }
-    .login-modal .btn-google { background: white; border: 1.5px solid #dce5ef; border-radius: 44px; padding: 12px; width: 100%; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; color: #1f3b4c; }
+    .login-modal .btn-google {
+      background: white;
+      border: 1.5px solid #dce5ef;
+      border-radius: 44px;
+      padding: 12px;
+      width: 100%;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      color: #1f3b4c;
+      font-size: 0.85rem;
+    }
     .login-modal .btn-google i { font-size: 1.2rem; color: #DB4437; }
-    .login-modal .footer-links { margin-top: 20px; font-size: 0.75rem; text-align: right; }
-    .login-modal .footer-links a { color: #1a6e5c; text-decoration: none; font-weight: 500; cursor: pointer; }
-    .error-msg { background: #fee2e2; color: #b91c1c; padding: 8px 12px; border-radius: 40px; font-size: 0.7rem; margin-top: 12px; text-align: center; display: none; }
-    .subscription-badge { background: #0f2c38; color: #ffd966; border-radius: 40px; padding: 4px 12px; font-size: 0.7rem; font-weight: bold; border: 1px solid #ffd966; margin-left: 8px; }
+    .login-modal .btn-google:hover {
+      background: #f8fafd;
+      border-color: #bdd3e8;
+    }
+    .login-modal .footer-links {
+      margin-top: 20px;
+      font-size: 0.75rem;
+      text-align: right;
+    }
+    .login-modal .footer-links a {
+      color: #1a6e5c;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .error-msg {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 8px 12px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      margin-top: 12px;
+      text-align: center;
+    }
+    /* Improved subscription badge and premium button */
+    .subscription-badge { 
+      background: #0f2c38; 
+      color: #ffd966; 
+      border-radius: 40px; 
+      padding: 4px 12px; 
+      font-size: 0.7rem; 
+      font-weight: bold;
+      border: 1px solid #ffd966;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      margin-left: 8px;
+    }
     .subscription-badge.expired { background: #5a1e1e; color: #ffaaaa; border-color: #ffaaaa; }
     .subscription-badge.active { background: #145c33; color: #c6ffb3; border-color: #b3ffb3; }
-    .premium-btn { background: linear-gradient(135deg, #f5b042, #e67e22); color: white; border: none; border-radius: 40px; padding: 4px 14px; font-size: 0.7rem; font-weight: bold; cursor: pointer; margin-left: 8px; display: inline-flex; align-items: center; gap: 6px; }
+    .premium-btn {
+      background: linear-gradient(135deg, #f5b042, #e67e22);
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 4px 14px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-left: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .premium-btn:hover { transform: scale(1.02); background: linear-gradient(135deg, #e67e22, #d35400); }
     .admin-tabs { display: flex; gap: 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
-    .admin-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; }
+    .admin-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; transition: 0.1s; }
+    .admin-tab:hover { background: #e6f4f5; }
     .admin-tab.active { background: #0a7e8c; color: white; }
     .subscription-user-card { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
     @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
@@ -206,13 +370,13 @@
   <div id="loginOverlay" class="login-overlay">
     <div class="login-modal">
       <h2><i class="fas fa-stethoscope"></i> FastRx Pro</h2>
-      <div class="login-sub">cloud prescription system</div>
+      <div class="login-sub">Professional Cloud System</div>
       <div id="loginErrorMsg" class="error-msg"></div>
-      <div class="input-group"><label>Email address</label><input type="email" id="loginEmail" placeholder="doctor@clinic.com"></div>
+      <div class="input-group"><label>Email</label><input type="email" id="loginEmail" placeholder="doctor@example.com"></div>
       <div class="input-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-      <button id="emailLoginBtn" class="btn-login"><i class="fas fa-arrow-right-to-bracket"></i> Sign in / Create account</button>
+      <button id="emailLoginBtn" class="btn-login">Sign In / Create Account</button>
       <div class="divider">or</div>
-      <button id="googleLoginBtn" class="btn-google"><i class="fab fa-google"></i> Continue with Google</button>
+      <button id="googleLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in with Google</button>
       <div class="footer-links"><a id="forgotPasswordLink">Forgot password?</a></div>
     </div>
   </div>
@@ -229,7 +393,10 @@
   <div class="flex-between" style="margin-top:20px;"><button class="btn-primary" id="applySettingsBtn">Apply Settings</button><button class="btn-sm btn-outline" id="cancelSettingsBtn">Cancel</button></div>
 </div></div>
 <div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
-  <div class="admin-tabs"><div class="admin-tab active" data-tab="pending">Pending Approvals</div><div class="admin-tab" data-tab="users">All Users & Subscriptions</div></div>
+  <div class="admin-tabs">
+    <div class="admin-tab active" data-tab="pending">Pending Approvals</div>
+    <div class="admin-tab" data-tab="users">All Users & Subscriptions</div>
+  </div>
   <div id="pendingTransactionsList" style="max-height:400px; overflow-y:auto; margin:16px 0;"></div>
   <div id="allUsersList" style="max-height:400px; overflow-y:auto; margin:16px 0; display:none;"></div>
   <div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div>
@@ -259,7 +426,7 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
-
+  
   let currentUser = null;
   let medicines = [], adviceTags = [], prescriptions = [];
   let userFreqTags = ["1-1-1","1-0-0","0-1-0","0-0-1","BD","TID","OD"];
@@ -272,13 +439,13 @@
   let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
   let subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true };
   const ADMIN_EMAIL = "narayanbarman3210@gmail.com";
-
+  
   function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
   function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else if(el) el.remove(); }
   function showError(msg) { alert(msg); }
   function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
   function formatTimeNoSeconds() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
-
+  
   // ========== AUTO-SUGGEST STORAGE ==========
   async function saveAutoCompleteData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({ firstNames: savedFirstNames, lastNames: savedLastNames, diseases: savedDiseases }); }
   async function loadAutoCompleteData() {
@@ -296,7 +463,7 @@
   async function addNewFirstName(name) { if(name && !savedFirstNames.includes(name)) { savedFirstNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
-
+  
   // ========== SUBSCRIPTION FUNCTIONS ==========
   async function loadSubscriptionData() {
     if(!currentUser) return;
@@ -355,7 +522,7 @@
     document.getElementById("renewalMsg").innerText = `Your plan expires in ${daysLeft} day(s). Please recharge to continue.`;
     document.getElementById("renewalModal").style.display = "block";
   }
-
+  
   // ========== TRANSACTION & ADMIN FUNCTIONS ==========
   async function submitTransaction(plan, transactionId, isRenewal=false) {
     if(!transactionId || transactionId.length!==12 || isNaN(transactionId)) { alert("Enter valid 12-digit transaction ID"); return; }
@@ -376,7 +543,7 @@
     else document.getElementById("subscriptionModal").style.display = "none";
     showLoading(false);
   }
-
+  
   async function loadPendingTransactions() {
     if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
     const pendingSnap = await db.collection('pendingTransactions').where('approved', '==', false).get();
@@ -415,7 +582,7 @@
       });
     });
   }
-
+  
   async function loadAllUsers() {
     if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
     const usersSnap = await db.collection('users').get();
@@ -459,7 +626,7 @@
       });
     });
   }
-
+  
   function showAdminPanel() { 
     if(currentUser && currentUser.email === ADMIN_EMAIL) { 
       loadPendingTransactions(); 
@@ -483,7 +650,7 @@
       });
     } 
   }
-
+  
   // ========== DISEASE MODAL ==========
   function showDiseaseModal() {
     const container = document.getElementById("diseaseListContainer");
@@ -514,7 +681,7 @@
     const val = document.getElementById("newDiseaseInput").value.trim();
     if(val && !savedDiseases.includes(val)) { savedDiseases.push(val); await saveAutoCompleteData(); updateDatalists(); showDiseaseModal(); document.getElementById("newDiseaseInput").value = ""; }
   }
-
+  
   // ========== CORE DATA LOAD FUNCTIONS ==========
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving","Review after 3 days"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const freqDoc=await db.collection('users').doc(uid).collection('settings').doc('freqTags').get(); if(freqDoc.exists) userFreqTags=freqDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); const durDoc=await db.collection('users').doc(uid).collection('settings').doc('durTags').get(); if(durDoc.exists) userDurTags=durDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); const howDoc=await db.collection('users').doc(uid).collection('settings').doc('howTags').get(); if(howDoc.exists) userHowTags=howDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
   async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
@@ -595,12 +762,14 @@
   function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
   function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
   
-  // ========== FIXED AUTHENTICATION (Auto-create account) ==========
+  // ========== FIXED AUTHENTICATION (Auto create account if not exists) ==========
   async function handleEmailSignInOrSignUp() {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
     const errorDiv = document.getElementById("loginErrorMsg");
     errorDiv.style.display = "none";
+    errorDiv.innerText = "";
+    
     if (!email || !password) {
       errorDiv.innerText = "Enter email and password";
       errorDiv.style.display = "block";
@@ -611,36 +780,48 @@
       errorDiv.style.display = "block";
       return;
     }
-    const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
-    if (!emailRegex.test(email)) {
-      errorDiv.innerText = "Enter a valid email address (e.g., name@domain.com)";
+    // Simple email format validation
+    const emailPattern = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
+    if (!emailPattern.test(email)) {
+      errorDiv.innerText = "Please enter a valid email address (e.g., name@domain.com)";
       errorDiv.style.display = "block";
       return;
     }
+    
     showLoading(true);
     try {
+      // Try sign in first
       await auth.signInWithEmailAndPassword(email, password);
-    } catch (signInError) {
-      if (signInError.code === 'auth/user-not-found') {
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        // Account doesn't exist → create new account
         try {
-          const userCred = await auth.createUserWithEmailAndPassword(email, password);
-          await db.collection('users').doc(userCred.user.uid).set({
+          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          const user = userCredential.user;
+          // Create Firestore user document
+          await db.collection('users').doc(user.uid).set({
             email: email,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
+          // Success – user will be logged in automatically
         } catch (createErr) {
-          errorDiv.innerText = "Account creation failed: " + createErr.message;
+          errorDiv.innerText = "Creation failed: " + createErr.message;
           errorDiv.style.display = "block";
           showLoading(false);
           return;
         }
-      } else if (signInError.code === 'auth/wrong-password') {
-        errorDiv.innerText = "Incorrect password. Please try again or reset.";
+      } else if (error.code === 'auth/wrong-password') {
+        errorDiv.innerText = "Incorrect password. Try again or reset password.";
+        errorDiv.style.display = "block";
+        showLoading(false);
+        return;
+      } else if (error.code === 'auth/invalid-email') {
+        errorDiv.innerText = "Invalid email format. Please check and try again.";
         errorDiv.style.display = "block";
         showLoading(false);
         return;
       } else {
-        errorDiv.innerText = signInError.message;
+        errorDiv.innerText = error.message;
         errorDiv.style.display = "block";
         showLoading(false);
         return;
@@ -667,17 +848,24 @@
   
   async function handleForgotPassword() {
     const email = document.getElementById("loginEmail").value.trim();
-    if (!email) {
+    if (!email) { 
       const errorDiv = document.getElementById("loginErrorMsg");
       errorDiv.innerText = "Enter your email address";
       errorDiv.style.display = "block";
-      return;
+      return; 
     }
     try {
       await auth.sendPasswordResetEmail(email);
       alert("Password reset email sent. Check your inbox.");
-    } catch(e) { alert(e.message); }
+    } catch(e) { 
+      const errorDiv = document.getElementById("loginErrorMsg");
+      errorDiv.innerText = e.message;
+      errorDiv.style.display = "block";
+    }
   }
+  
+  function openLoginOverlay(){ document.getElementById("loginOverlay").classList.remove("hidden"); }
+  function closeLoginOverlay(){ document.getElementById("loginOverlay").classList.add("hidden"); }
   
   function onAuthStateChanged(user) {
     if (user) {
@@ -688,13 +876,13 @@
       if (user.email === ADMIN_EMAIL) document.getElementById("adminPanelBtn").style.display = "inline-flex";
       else document.getElementById("adminPanelBtn").style.display = "none";
       loadUserData();
-      document.getElementById("loginOverlay").classList.add("hidden");
+      closeLoginOverlay();
     } else {
       currentUser = null;
       document.getElementById("mainApp").style.display = "none";
       document.getElementById("userWidget").innerHTML = `<button id="showLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
-      document.getElementById("showLoginBtn")?.addEventListener("click", () => document.getElementById("loginOverlay").classList.remove("hidden"));
-      document.getElementById("loginOverlay").classList.remove("hidden");
+      document.getElementById("showLoginBtn")?.addEventListener("click", openLoginOverlay);
+      openLoginOverlay();
     }
   }
   auth.onAuthStateChanged(onAuthStateChanged);
