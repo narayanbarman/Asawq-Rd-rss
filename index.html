@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ORIGINAL STYLES (unchanged except login overlay) ========== */
+    /* ========== ALL STYLES (unchanged) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -298,6 +298,16 @@
     .admin-tab:hover { background: #e6f4f5; }
     .admin-tab.active { background: #0a7e8c; color: white; }
     .subscription-user-card { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+    /* Admin badge in user area */
+    .admin-badge {
+      background: #dc2626;
+      color: white;
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 0.6rem;
+      font-weight: bold;
+      margin-left: 6px;
+    }
     @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
     @media (max-width: 800px) { .right-panel { min-width: auto; } }
   </style>
@@ -382,7 +392,7 @@
   </div>
 </div>
 
-<!-- MODALS (all original) -->
+<!-- MODALS (unchanged) -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
 <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
@@ -545,7 +555,7 @@
   }
   
   async function loadPendingTransactions() {
-    if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+    if(!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
     const pendingSnap = await db.collection('pendingTransactions').where('approved', '==', false).get();
     const pending = pendingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const container = document.getElementById("pendingTransactionsList");
@@ -584,7 +594,7 @@
   }
   
   async function loadAllUsers() {
-    if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+    if(!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
     const usersSnap = await db.collection('users').get();
     const usersList = [];
     for(const userDoc of usersSnap.docs) {
@@ -628,7 +638,7 @@
   }
   
   function showAdminPanel() { 
-    if(currentUser && currentUser.email === ADMIN_EMAIL) { 
+    if(currentUser && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) { 
       loadPendingTransactions(); 
       loadAllUsers();
       document.getElementById("adminPanelModal").style.display = "block"; 
@@ -762,7 +772,7 @@
   function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
   function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
   
-  // ========== FIXED AUTHENTICATION (Auto create account if not exists) ==========
+  // ========== FIXED AUTHENTICATION (Auto create if not exists) ==========
   async function handleEmailSignInOrSignUp() {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
@@ -871,10 +881,16 @@
     if (user) {
       currentUser = user;
       document.getElementById("mainApp").style.display = "block";
-      document.getElementById("userWidget").innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
+      // Show admin badge in user area if admin
+      const isAdmin = user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      document.getElementById("userWidget").innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
       document.getElementById("logoutBtn")?.addEventListener("click", () => auth.signOut());
-      if (user.email === ADMIN_EMAIL) document.getElementById("adminPanelBtn").style.display = "inline-flex";
-      else document.getElementById("adminPanelBtn").style.display = "none";
+      // Show or hide admin panel button
+      const adminBtn = document.getElementById("adminPanelBtn");
+      if (adminBtn) {
+        if (isAdmin) adminBtn.style.display = "inline-flex";
+        else adminBtn.style.display = "none";
+      }
       loadUserData();
       closeLoginOverlay();
     } else {
