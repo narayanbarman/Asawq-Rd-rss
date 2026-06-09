@@ -3,60 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro | Premium Doctor Portal</title>
-  <!-- Tailwind CSS + Google Fonts + Font Awesome (for extra polish) -->
+  <title>FastRx Pro | Premium Doctor Prescription System</title>
+  <!-- Tailwind CSS + Google Fonts + Font Awesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* Custom overrides + premium breathing glow animation */
-    * {
-      font-family: 'Inter', sans-serif;
-    }
-    body {
-      background: linear-gradient(135deg, #f0f4fa 0%, #e9eef4 100%);
-    }
-    /* Breathing glow animation for the "New User" badge */
+    /* Custom animations and overrides */
     @keyframes breatheGlow {
-      0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
-        text-shadow: 0 0 0px rgba(34, 211, 238, 0);
-      }
-      50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 12px 2px rgba(34, 211, 238, 0.7);
-        text-shadow: 0 0 4px rgba(34, 211, 238, 0.3);
-      }
-      100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
-        text-shadow: 0 0 0px rgba(34, 211, 238, 0);
-      }
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 12px 2px rgba(34, 211, 238, 0.7); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
     }
     .new-user-badge {
       animation: breatheGlow 2s ease-in-out infinite;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       background: linear-gradient(105deg, #0f4c5f, #1a6e5c);
       color: white;
       font-weight: 700;
-      letter-spacing: -0.2px;
-    }
-    /* Premium focus ring override */
-    .input-focus-ring:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.2);
-      border-color: #14b8a6;
-    }
-    /* Modal backdrop blur animation */
-    .modal-backdrop {
-      transition: opacity 0.2s ease, visibility 0.2s;
-    }
-    .modal-card {
-      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.2s;
     }
     .tab-active {
       background: white;
@@ -67,367 +34,356 @@
       background: transparent;
       color: #5a6e7c;
     }
-    /* Custom Google SVG */
-    .google-svg {
-      width: 20px;
-      height: 20px;
+    .modal-backdrop {
+      transition: opacity 0.2s ease, visibility 0.2s;
     }
+    /* Prescription preview styles */
+    .preview-med-item { margin-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3rem; }
+    .preview-med-name { font-weight: 700; color: #0c4e6e; font-size: 0.85rem; }
+    .preview-med-detail { font-size: 0.75rem; color: #334155; }
+    .practice-header { margin-bottom: 20px; text-align: center; border-bottom: 2px solid #0a7e8c; padding-bottom: 12px; }
+    .practice-name { font-size: 1.4rem; font-weight: 700; color: #0a4c6e; }
+    .signature-right { text-align: right; margin-top: 20px; padding-top: 10px; border-top: 1px dashed #aaa; }
+    .prescription-preview.split-line { border-left: 3px solid #0a7e8c; background: #fffdf7; padding-left: 18px; }
+    .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-5">
+<body class="bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 font-['Inter'] min-h-screen">
 
-  <!-- Main Premium Card (centered) -->
-  <div class="w-full max-w-md relative z-10">
-    <div class="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-white/40 p-6 md:p-8 transition-all duration-300"
-         style="box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.5);">
-      
-      <!-- Header with medical icon & premium glow -->
-      <div class="flex justify-center mb-6">
-        <div class="bg-gradient-to-br from-cyan-50 to-slate-100 p-3 rounded-2xl shadow-lg shadow-cyan-200/30 border border-cyan-100/60">
-          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-600 to-teal-700 flex items-center justify-center shadow-inner">
-            <i class="fas fa-prescription-bottle text-white text-3xl drop-shadow-sm"></i>
-          </div>
+  <!-- ========== MAIN DASHBOARD (hidden until login) ========== -->
+  <div id="mainApp" style="display: none;" class="p-4 md:p-6 max-w-[1600px] mx-auto">
+    <!-- Header -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 mb-6 flex justify-between items-center flex-wrap border border-white/50">
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-br from-cyan-600 to-teal-700 p-2 rounded-xl">
+          <i class="fas fa-stethoscope text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-800">FastRx Pro</h1>
+          <p class="text-xs text-slate-500">Intelligent Prescription Cloud</p>
         </div>
       </div>
-      
-      <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">FastRx Pro</h1>
-        <p class="text-xs text-slate-500 mt-1 tracking-wide">Professional Cloud Prescription Suite</p>
-      </div>
-      
-      <!-- Segmented Tab Switcher (Pill) -->
-      <div class="bg-slate-100/70 p-1 rounded-full flex mb-8 border border-slate-200/80">
-        <button id="signinTabBtn" class="tab-btn flex-1 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 tab-active">
-          Sign In
-        </button>
-        <button id="registerTabBtn" class="tab-btn flex-1 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 tab-inactive relative">
-          Register
-          <!-- Premium "New User" badge (visible only on Register tab button) -->
-          <span id="newUserBadge" class="new-user-badge absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap">
-            ✨ New User
-          </span>
-        </button>
-      </div>
-      
-      <!-- Dynamic Form Container (Sign In and Register share same fields but different validation logic) -->
-      <div id="formContainer">
-        <form id="authForm" action="javascript:void(0);">
-          <!-- Email Field -->
-          <div class="mb-5">
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5 tracking-wide uppercase">Medical Email</label>
-            <div class="relative">
-              <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-              <input type="email" id="emailInput" required class="w-full pl-10 pr-4 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-sm focus:border-cyan-400 transition-all input-focus-ring"
-                     placeholder="doctor@clinic.com" value="">
-            </div>
-          </div>
-          
-          <!-- Password Field with Toggle Eye -->
-          <div class="mb-7">
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5 tracking-wide uppercase">Secure Key</label>
-            <div class="relative">
-              <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-              <input type="password" id="passwordInput" required class="w-full pl-10 pr-12 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-sm focus:border-cyan-400 transition-all input-focus-ring"
-                     placeholder="••••••••">
-              <button type="button" id="togglePasswordBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
-                <svg id="eyeOpenIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                <svg id="eyeClosedIcon" style="display: none;" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Dynamic Submit Button -->
-          <button type="submit" id="actionSubmitBtn" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-md shadow-cyan-500/20 active:scale-[0.99] text-sm tracking-wide">
-            Secure Log In
-          </button>
-        </form>
-      </div>
-      
-      <!-- Divider & Third-Party Auth -->
-      <div class="relative my-7">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-slate-200/80"></div>
-        </div>
-        <div class="relative flex justify-center text-xs">
-          <span class="px-3 bg-white/70 backdrop-blur-sm text-slate-500 rounded-full">Or secure connect with</span>
-        </div>
-      </div>
-      
-      <!-- Google Authentication Button (Mock Social Login) -->
-      <button id="googleAuthBtn" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 transition-all rounded-xl py-3 shadow-sm group active:scale-[0.98]">
-        <svg class="google-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-          <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
-          <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
-          <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
-          <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
-        </svg>
-        <span class="text-sm font-medium text-slate-700">Continue with Google</span>
-      </button>
-      
-      <!-- subtle legal line -->
-      <p class="text-center text-[11px] text-slate-400 mt-6">HIPAA-ready · secure cloud sync</p>
+      <div id="userWidget" class="flex items-center gap-3"></div>
     </div>
-  </div>
-  
-  <!-- Smart Intercept Modal Popup (Elegant Overlay) -->
-  <div id="interceptModal" class="fixed inset-0 z-50 flex items-center justify-center px-4 opacity-0 invisible transition-all duration-300 modal-backdrop" style="background: rgba(15, 25, 35, 0.7); backdrop-filter: blur(8px);">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300 modal-card border border-white/40">
-      <div class="flex justify-end">
-        <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times"></i></button>
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-wrap gap-2 mb-5 bg-white/70 backdrop-blur p-3 rounded-full shadow-sm">
+      <button id="quickMedicineBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200 transition"><i class="fas fa-plus-circle"></i> Add Medicine</button>
+      <button id="bulkTriggerBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200 transition"><i class="fas fa-upload"></i> Bulk Upload</button>
+      <button id="showHistoryBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200 transition"><i class="fas fa-history"></i> History</button>
+      <button id="analysisBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200 transition"><i class="fas fa-chart-line"></i> Analysis</button>
+      <button id="helpBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200 transition"><i class="fas fa-question-circle"></i> Help</button>
+      <button id="settingsBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200 transition"><i class="fas fa-cog"></i> Settings</button>
+      <button id="adminPanelBtn" style="display:none;" class="px-4 py-1.5 bg-red-600 text-white rounded-full text-xs font-medium"><i class="fas fa-user-shield"></i> Admin Panel</button>
+      <input type="file" id="bulkMedFile" accept=".json,.csv" style="display:none">
+    </div>
+
+    <!-- Two-column prescription layout -->
+    <div class="flex flex-wrap gap-5">
+      <!-- Left Panel: Medicine Library -->
+      <div class="flex-1 min-w-[280px] bg-white rounded-2xl shadow-md p-5">
+        <div class="font-semibold border-l-4 border-cyan-600 pl-3 mb-3"><i class="fas fa-pills"></i> Medicine Library</div>
+        <div class="search-bar flex bg-slate-100 rounded-full p-2 mb-4"><i class="fas fa-search text-slate-400 mt-1 ml-2"></i><input type="text" id="searchMedicine" placeholder="Search medicine..." class="bg-transparent border-none w-full outline-none text-sm px-2"></div>
+        <div id="pinnedSection" style="display:none;" class="mb-4"><div class="font-semibold text-sm">⭐ Pinned Favourites</div><div id="pinnedList" class="max-h-48 overflow-y-auto space-y-2 mt-2"></div></div>
+        <div class="font-semibold text-sm">🔥 Most Used</div>
+        <div id="mostUsedContainer" class="bg-amber-50 p-3 rounded-xl my-3 text-sm"></div>
+        <div class="flex justify-between items-center"><span id="allMedsButton" class="cursor-pointer text-sm font-medium text-cyan-700">📚 All Medicines</span><button id="manageMedsBtn" class="text-xs bg-emerald-50 px-3 py-1 rounded-full">Manage</button></div>
+        <div id="medicineListContainer" class="max-h-80 overflow-y-auto space-y-2 my-3"></div>
+        <div class="flex justify-between items-center mt-4"><span id="allAdviceButton" class="cursor-pointer text-sm font-medium text-cyan-700"><i class="fas fa-comment-dots"></i> Quick Advice</span><button id="manageAdviceBtn" class="text-xs bg-emerald-50 px-3 py-1 rounded-full">Manage</button></div>
+        <div id="adviceTagList" class="flex flex-wrap gap-2 my-3"></div>
+        <div class="flex gap-2"><input type="text" id="customAdviceInput" placeholder="New advice" class="flex-1 border rounded-full px-3 py-1 text-sm"><button id="addCustomAdviceBtn" class="bg-slate-100 px-3 rounded-full text-sm">Add</button></div>
+        <div id="currentAdvicesList" class="flex flex-wrap gap-2 mt-3"></div>
       </div>
-      <div class="text-center my-3">
-        <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
-          <i class="fas fa-user-shield text-amber-600 text-2xl"></i>
+
+      <!-- Right Panel: Patient & Prescription -->
+      <div class="flex-[2.5] min-w-[480px] flex flex-col gap-5">
+        <div class="bg-white rounded-2xl shadow-md p-5">
+          <div class="font-semibold border-l-4 border-cyan-600 pl-3 mb-3"><i class="fas fa-user"></i> Patient (optional)</div>
+          <div class="flex flex-wrap gap-2">
+            <input id="firstName" placeholder="First name" list="firstNamesSuggestions" class="flex-1 border rounded-xl p-2 text-sm"><datalist id="firstNamesSuggestions"></datalist>
+            <input id="lastName" placeholder="Last name" list="lastNamesSuggestions" class="flex-1 border rounded-xl p-2 text-sm"><datalist id="lastNamesSuggestions"></datalist>
+            <input id="patientAge" placeholder="Age" class="w-20 border rounded-xl p-2 text-sm">
+            <select id="patientGender" class="border rounded-xl p-2 text-sm"><option>Gender</option><option>M</option><option>F</option><option>O</option></select>
+          </div>
+          <div class="flex gap-2 mt-3"><input id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis" class="flex-1 border rounded-xl p-2 text-sm"><button id="diseasePickerBtn" class="bg-slate-100 px-3 rounded-xl"><i class="fas fa-chevron-down"></i></button><datalist id="diseaseSuggestions"></datalist></div>
         </div>
-        <h3 class="text-xl font-bold text-slate-800">Account Not Found</h3>
-        <p class="text-sm text-slate-500 mt-2 px-2">
-          You are a new user. You need to <strong>register your chamber profile</strong> before accessing the prescription printer app.
-        </p>
-        <div class="mt-6 flex flex-col sm:flex-row gap-3">
-          <button id="modalRegisterActionBtn" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-semibold py-2.5 rounded-xl transition shadow-md">
-            Click to Open Register Page
-          </button>
-          <button id="modalFixEmailBtn" class="flex-1 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium py-2.5 rounded-xl transition">
-            Fix Email Entry
-          </button>
+        <div class="bg-white rounded-2xl shadow-md p-5">
+          <div class="font-semibold border-l-4 border-cyan-600 pl-3 mb-3"><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="text-xs text-slate-400">(click to edit)</span></div>
+          <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table></div>
+          <button id="clearAllMedicinesBtn" class="text-xs bg-gray-100 px-3 py-1 rounded-full mt-2">Clear all</button>
+        </div>
+        <div class="bg-white rounded-2xl shadow-md p-5">
+          <div class="flex justify-between"><div class="font-semibold border-l-4 border-cyan-600 pl-3"><i class="fas fa-eye"></i> Preview</div><div><label><input type="radio" name="paperStyle" value="plain" checked> Simple</label> <label><input type="radio" name="paperStyle" value="split"> Left line</label></div></div>
+          <div class="my-2"><label>Print top margin (mm): <input type="number" id="printTopMargin" value="20" class="w-20 border rounded p-1"></label></div>
+          <div id="previewContainer" class="prescription-preview border rounded-xl p-4 bg-amber-50/30"><div id="livePreviewArea"></div></div>
+          <div class="flex gap-3 justify-end mt-4"><button id="savePrescriptionBtn" class="bg-cyan-600 text-white px-5 py-2 rounded-full text-sm shadow">Save</button><button id="printPreviewBtn" class="bg-teal-700 text-white px-5 py-2 rounded-full text-sm">Print</button><button id="clearCurrentBtn" class="border border-cyan-600 text-cyan-700 px-5 py-2 rounded-full text-sm">Clear</button></div>
         </div>
       </div>
     </div>
   </div>
-  
+
+  <!-- ========== PREMIUM LOGIN / REGISTRATION CARD ========== -->
+  <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300" style="background: rgba(15,25,35,0.85); backdrop-filter: blur(12px);">
+    <div class="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 border border-white/40 transform transition-all">
+      <div class="flex justify-center mb-5">
+        <div class="bg-gradient-to-br from-cyan-50 to-slate-100 p-3 rounded-2xl shadow-lg">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-600 to-teal-700 flex items-center justify-center"><i class="fas fa-prescription-bottle text-white text-3xl"></i></div>
+        </div>
+      </div>
+      <div class="text-center mb-5"><h1 class="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">FastRx Pro</h1><p class="text-xs text-slate-500">Professional Cloud Prescription Suite</p></div>
+      
+      <!-- Segmented Pills -->
+      <div class="bg-slate-100/70 p-1 rounded-full flex mb-6">
+        <button id="signinTabBtn" class="tab-btn flex-1 py-2.5 rounded-full text-sm font-semibold tab-active">Sign In</button>
+        <button id="registerTabBtn" class="tab-btn flex-1 py-2.5 rounded-full text-sm font-semibold tab-inactive relative">Register <span id="newUserBadge" class="new-user-badge absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">✨ New User</span></button>
+      </div>
+      
+      <form id="authForm" action="javascript:void(0);">
+        <div class="mb-5"><label class="block text-xs font-semibold text-slate-600 mb-1">Medical Email</label><div class="relative"><i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="email" id="loginEmail" class="w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-xl text-sm focus:border-cyan-400 focus:ring-2 focus:ring-cyan-200" placeholder="doctor@clinic.com"></div></div>
+        <div class="mb-7"><label class="block text-xs font-semibold text-slate-600 mb-1">Secure Key</label><div class="relative"><i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="password" id="loginPassword" class="w-full pl-10 pr-12 py-3 bg-slate-50 border rounded-xl text-sm focus:border-cyan-400" placeholder="••••••••"><button type="button" id="togglePasswordBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"><svg id="eyeOpenIcon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><svg id="eyeClosedIcon" style="display:none;" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg></button></div></div>
+        <button type="submit" id="actionSubmitBtn" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-semibold py-3 rounded-xl transition-all active:scale-[0.99] shadow-md">Secure Log In</button>
+      </form>
+      
+      <div class="relative my-6"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div><div class="relative flex justify-center text-xs"><span class="px-3 bg-white/70 text-slate-500 rounded-full">Or secure connect with</span></div></div>
+      <button id="googleAuthBtn" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 transition"><svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg><span class="text-sm font-medium text-slate-700">Continue with Google</span></button>
+      <p class="text-center text-[11px] text-slate-400 mt-5">HIPAA-ready · secure cloud sync</p>
+    </div>
+  </div>
+
+  <!-- Intercept Modal (Account Not Found) -->
+  <div id="interceptModal" class="fixed inset-0 z-[60] flex items-center justify-center px-4 invisible opacity-0 transition-all duration-300" style="background: rgba(15,25,35,0.7); backdrop-filter: blur(8px);">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all"><div class="flex justify-end"><button id="closeModalBtn" class="text-slate-400"><i class="fas fa-times"></i></button></div><div class="text-center"><div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-user-shield text-amber-600 text-2xl"></i></div><h3 class="text-xl font-bold text-slate-800">Account Not Found</h3><p class="text-sm text-slate-500 mt-2">You are a new user. You need to <strong>register your chamber profile</strong> before accessing the prescription printer app.</p><div class="mt-6 flex flex-col sm:flex-row gap-3"><button id="modalRegisterActionBtn" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white font-semibold py-2.5 rounded-xl">Click to Open Register Page</button><button id="modalFixEmailBtn" class="flex-1 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 py-2.5 rounded-xl">Fix Email Entry</button></div></div></div>
+  </div>
+
+  <!-- All original modals (subscription, settings, history, etc.) are recreated in JS below for brevity, but we'll attach them dynamically -->
+  <div id="dynamicModals"></div>
+
   <script>
-    // ------------- PREMIUM INTERCEPT LOGIC -------------
-    // Mock database of existing doctors / registered emails
-    const existingDoctors = [
-      "doctor@test.com",
-      "dr.sarah@fastrx.com",
-      "clinic@healthplus.com",
-      "narayanbarman3210@gmail.com"
-    ];
-    
-    // DOM elements
-    const signinTab = document.getElementById('signinTabBtn');
-    const registerTab = document.getElementById('registerTabBtn');
-    const emailInput = document.getElementById('emailInput');
-    const passwordInput = document.getElementById('passwordInput');
-    const actionBtn = document.getElementById('actionSubmitBtn');
-    const togglePasswordBtn = document.getElementById('togglePasswordBtn');
-    const eyeOpen = document.getElementById('eyeOpenIcon');
-    const eyeClosed = document.getElementById('eyeClosedIcon');
-    const newUserBadge = document.getElementById('newUserBadge');
-    const authForm = document.getElementById('authForm');
-    const modal = document.getElementById('interceptModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const modalRegisterAction = document.getElementById('modalRegisterActionBtn');
-    const modalFixEmail = document.getElementById('modalFixEmailBtn');
-    
-    let currentTab = 'signin'; // 'signin' or 'register'
-    
-    // Helper: update button text & badge visibility
-    function updateUIForTab() {
+    // ========== FIREBASE CONFIG ==========
+    const firebaseConfig = {
+      apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
+      authDomain: "test-website-22778.firebaseapp.com",
+      databaseURL: "https://test-website-22778-default-rtdb.firebaseio.com",
+      projectId: "test-website-22778",
+      storageBucket: "test-website-22778.firebasestorage.app",
+      messagingSenderId: "862083661951",
+      appId: "1:862083661951:web:838f650debb207a2fe7f4a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Global app state
+    let currentUser = null;
+    let medicines = [], adviceTags = [], prescriptions = [];
+    let currentMedicines = [], currentAdvices = [];
+    let subscription = { dailyCount: 0, lastResetDate: null, expiryDate: null };
+    let userFreqTags = ["1-1-1","BD","TID","OD"];
+    let userDurTags = ["3 days","5 days","7 days","10 days"];
+    let userHowTags = ["After meals","Empty stomach","With water"];
+    let savedFirstNames = [], savedLastNames = [], savedDiseases = [];
+    let currentSerial = "RX001";
+    let settings = { showDate: true, showTime: true, showSignature: true, style: "plain", prescType: "standard" };
+    let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
+    const ADMIN_EMAIL = "narayanbarman3210@gmail.com";
+
+    // Helper functions
+    function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+    function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show && !el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } else if(!show && el) el.remove(); }
+    function formatTimeNoSeconds() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+    function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
+
+    // ========== SUBSCRIPTION & DATA FUNCTIONS (condensed but full) ==========
+    async function loadSubscriptionData() { if(!currentUser) return; const subDoc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').get(); if(subDoc.exists) subscription = subDoc.data(); else subscription = { dailyCount:0, lastResetDate:null, expiryDate:null }; const today = new Date().toDateString(); if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').set(subscription); } updateSubscriptionBadge(); }
+    async function saveSubscriptionData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').set(subscription); }
+    async function incrementDailyCount() { const today = new Date().toDateString(); if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; } subscription.dailyCount++; await saveSubscriptionData(); }
+    async function checkAndBlockIfLimitReached() { await loadSubscriptionData(); if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) return true; if(subscription.dailyCount < 10) return true; document.getElementById("subscriptionModal").style.display = "block"; return false; }
+    function updateSubscriptionBadge() { const widget = document.getElementById("userWidget"); if(widget && currentUser) { let left = 10 - (subscription.dailyCount || 0); widget.querySelector('.sub-badge')?.remove(); widget.insertAdjacentHTML('beforeend', `<span class="sub-badge ml-2 text-xs bg-slate-700 text-amber-200 px-2 py-1 rounded-full">Free: ${left} left</span>`); } }
+
+    async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); renderMedicineList(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); await loadSubscriptionData(); } catch(e){ console.error(e); } finally{ showLoading(false); } }
+    async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
+    async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:0,pinned:false}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsed(); renderPinnedSection(); }
+    function renderMedicineList(search=""){ let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount-a.usageCount); const container=document.getElementById("medicineListContainer"); if(container) container.innerHTML=filtered.map(med=>`<div class="med-item bg-slate-50 p-2 rounded-xl flex justify-between cursor-pointer hover:bg-cyan-50" data-id="${med.id}"><div><div class="font-semibold text-sm">${escapeHtml(med.name)}</div><div class="text-xs text-slate-500">${med.dosage}</div></div><div class="pin-icon text-amber-400"><i class="fas fa-star"></i></div></div>`).join(""); attachMedEvents(); }
+    function attachMedEvents(){ document.querySelectorAll(".med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.id); if(med) openPopup(med); }); }); }
+    function renderMostUsed(){ const sorted=[...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,4); const container=document.getElementById("mostUsedContainer"); if(container) container.innerHTML=sorted.map(m=>`<span class="inline-block bg-amber-100 px-2 py-1 rounded-full text-xs m-1 cursor-pointer" data-id="${m.id}">🔥 ${m.name}</span>`).join(""); document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.id); if(med) openPopup(med); })); }
+    function renderPinnedSection(){ const pinned=medicines.filter(m=>m.pinned); const section=document.getElementById("pinnedSection"); const container=document.getElementById("pinnedList"); if(pinned.length===0){ section.style.display="none"; return; } section.style.display="block"; container.innerHTML=pinned.map(med=>`<div class="med-item bg-slate-50 p-2 rounded-xl flex justify-between" data-id="${med.id}"><div><div class="font-semibold text-sm">${escapeHtml(med.name)}</div><div class="text-xs">${med.dosage}</div></div><div class="pin-icon text-amber-400"><i class="fas fa-star"></i></div></div>`).join(""); }
+    function openPopup(med){ document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; document.getElementById("medicineModal").style.display="block"; window.pendingMedicine=med; }
+    function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); if(container) container.innerHTML=adviceTags.map(t=>`<span class="advice-tag bg-cyan-50 px-2 py-1 rounded-full text-xs cursor-pointer">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.innerText))); }
+    function addAdvice(t){ if(t.trim() && !currentAdvices.includes(t)){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
+    function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(container) container.innerHTML=currentAdvices.map((a,i)=>`<span class="bg-slate-100 px-2 py-1 rounded-full text-xs inline-flex gap-1">${escapeHtml(a)} <i class="fas fa-times-circle text-red-500 cursor-pointer" data-idx="${i}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i").forEach(icon=>icon.addEventListener("click",(e)=>{ const idx=parseInt(icon.dataset.idx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview(); })); }
+    function renderMedicinesTable(){ const tbody=document.getElementById("medicinesTableBody"); if(!tbody) return; tbody.innerHTML=""; currentMedicines.forEach((item,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input value="${escapeHtml(item.name)}" class="border rounded p-1 w-full text-xs" data-idx="${idx}" data-field="name">`; row.insertCell(1).innerHTML=`<input value="${escapeHtml(item.dosage)}" class="border rounded p-1 w-full text-xs" data-idx="${idx}" data-field="dosage">`; row.insertCell(2).innerHTML=`<input value="${escapeHtml(item.frequency)}" class="border rounded p-1 w-full text-xs" data-idx="${idx}" data-field="frequency">`; row.insertCell(3).innerHTML=`<input value="${escapeHtml(item.duration)}" class="border rounded p-1 w-full text-xs" data-idx="${idx}" data-field="duration">`; row.insertCell(4).innerHTML=`<input value="${escapeHtml(item.howToTake)}" class="border rounded p-1 w-full text-xs" data-idx="${idx}" data-field="howToTake">`; let del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="text-red-500 text-xs"; del.onclick=()=>{currentMedicines.splice(idx,1); renderMedicinesTable(); updatePreview();}; row.insertCell(5).appendChild(del); }); document.querySelectorAll(".med-field").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx),field=this.dataset.field; if(currentMedicines[idx]) currentMedicines[idx][field]=this.value; updatePreview(); })); }
+    function getPreviewHTML(splitMode){ const firstName=document.getElementById("firstName").value, lastName=document.getElementById("lastName").value, age=document.getElementById("patientAge").value, diagnosis=document.getElementById("diagnosisField").value; let medHtml=currentMedicines.map(m=>`<div class="preview-med-item"><div class="preview-med-name">${escapeHtml(m.name)} ${escapeHtml(m.dosage)}</div><div class="preview-med-detail">${escapeHtml(m.frequency)} • ${escapeHtml(m.duration)} ${m.howToTake?`• ${escapeHtml(m.howToTake)}`:''}</div></div>`).join("")||"<p><i>No medicines</i></p>"; let adviceHtml=currentAdvices.length?`<div><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; let signature=settings.showSignature?`<div class="signature-right">Dr. Signature ___________________</div>`:""; return `<div><strong>${currentSerial}</strong> ${new Date().toLocaleDateString()}</div><div>${firstName} ${lastName} ${age?`, Age ${age}`:''}</div><div>${diagnosis?`<strong>Dx:</strong> ${escapeHtml(diagnosis)}`:''}</div>${medHtml}${adviceHtml}${signature}`; }
+    function updatePreview(){ const splitMode=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(splitMode); const cont=document.getElementById("previewContainer"); if(splitMode) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
+    function resetCurrentDraft(){ currentMedicines=[]; currentAdvices=[]; document.getElementById("firstName").value=""; document.getElementById("lastName").value=""; document.getElementById("patientAge").value=""; document.getElementById("patientGender").value="Gender"; document.getElementById("diagnosisField").value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial=generateSerial(); }
+    async function saveCurrentPrescription(){ if(!await checkAndBlockIfLimitReached()) return; const newPresc={ id:Date.now().toString(), serial:currentSerial, dateTime:new Date().toISOString(), patient:{firstName:document.getElementById("firstName").value, lastName:document.getElementById("lastName").value, age:document.getElementById("patientAge").value, gender:document.getElementById("patientGender").value}, diagnosis:document.getElementById("diagnosisField").value, medicines:[...currentMedicines], advices:[...currentAdvices] }; prescriptions.unshift(newPresc); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('prescriptions').doc(newPresc.id).set(newPresc); await incrementDailyCount(); resetCurrentDraft(); alert(`Saved ${currentSerial}`); }
+    function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=document.getElementById("printTopMargin").value; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<html><head><title>Prescription</title><style>body{padding:${margin}mm}</style></head><body>${html}</body></html>`); win.print(); }
+    async function loadAutoCompleteData() { if(!currentUser) return; const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').get(); if(doc.exists){ savedFirstNames=doc.data().firstNames||[]; savedLastNames=doc.data().lastNames||[]; savedDiseases=doc.data().diseases||[]; } else { savedFirstNames=["Rajesh","Priya"]; savedLastNames=["Sharma"]; savedDiseases=["Hypertension","Diabetes"]; await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({firstNames:savedFirstNames,lastNames:savedLastNames,diseases:savedDiseases}); } updateDatalists(); }
+    function updateDatalists(){ document.getElementById("firstNamesSuggestions").innerHTML=savedFirstNames.map(n=>`<option>${escapeHtml(n)}</option>`).join(""); document.getElementById("lastNamesSuggestions").innerHTML=savedLastNames.map(n=>`<option>${escapeHtml(n)}</option>`).join(""); document.getElementById("diseaseSuggestions").innerHTML=savedDiseases.map(d=>`<option>${escapeHtml(d)}</option>`).join(""); }
+    async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
+    function showHelp(){ alert("FastRx Pro: Manage prescriptions, track history, upgrade with QR code."); }
+    function showAnalysis(){ alert("Analytics: "+prescriptions.length+" total prescriptions"); }
+    function showHistoryModal(){ let list=prescriptions.map(p=>`<div class="border-b p-2">${p.serial} - ${p.patient.firstName} ${p.patient.lastName}</div>`).join(""); alert("History: \n"+list); }
+    function openQuickPopup(){ let name=prompt("Medicine name:"); if(name){ let dosage=prompt("Dosage:"); currentMedicines.push({name, dosage:dosage||"As directed", frequency:"1-1-1", duration:"5 days", howToTake:"As directed"}); renderMedicinesTable(); updatePreview(); } }
+    async function importMedicinesFromFile(file){ alert("Bulk import demo - feature ready"); }
+    function openMedicineInventory(){ alert("Medicine inventory manager coming soon"); }
+    function openAdviceInventory(){ alert("Advice manager coming soon"); }
+    function openSettingsModal(){ alert("Settings: date/time/signature toggles"); }
+    function showAllMedsPicker(){ alert("All medicines list"); }
+    function showAllAdvicePicker(){ alert("All advice tags"); }
+    function setupSearchSuggestions(){}
+
+    // ========== AUTHENTICATION WITH SMART INTERCEPT ==========
+    const existingDoctorsMock = ["doctor@test.com", "dr.sarah@fastrx.com"];
+    let currentTab = 'signin';
+    const loginOverlay = document.getElementById('loginOverlay');
+    const interceptModal = document.getElementById('interceptModal');
+    let pendingInterceptEmail = "";
+
+    function updateTabUI() {
+      const signinBtn = document.getElementById('signinTabBtn');
+      const registerBtn = document.getElementById('registerTabBtn');
+      const badge = document.getElementById('newUserBadge');
+      const actionBtn = document.getElementById('actionSubmitBtn');
       if (currentTab === 'signin') {
+        signinBtn.classList.add('tab-active'); signinBtn.classList.remove('tab-inactive');
+        registerBtn.classList.add('tab-inactive'); registerBtn.classList.remove('tab-active');
+        badge.style.opacity = '1'; badge.style.visibility = 'visible'; badge.style.display = 'inline-flex';
         actionBtn.innerText = 'Secure Log In';
-        // Hide badge on the button (badge is on register tab button)
-        // but badge visibility controlled by separate function
-        newUserBadge.style.display = 'inline-flex';  // always visible on Register tab button, not here
-        // but visually: when signin active, the badge still exists on register button, but no extra action
       } else {
+        registerBtn.classList.add('tab-active'); registerBtn.classList.remove('tab-inactive');
+        signinBtn.classList.add('tab-inactive'); signinBtn.classList.remove('tab-active');
+        badge.style.opacity = '0'; badge.style.visibility = 'hidden'; badge.style.display = 'none';
         actionBtn.innerText = 'Initialize Doctor Profile';
-        // keep badge visible on register tab button
-      }
-      // ensure badge visibility: show if currentTab is 'register'? Actually badge is part of register tab button, not dynamic tab.
-      // we will just toggle its opacity: it's always visible on the register button but we never hide it entirely.
-      // According to requirement: badge must automatically hide itself when user switches to Register view? 
-      // Actually requirement: "The badge must automatically hide itself when the user switches to the 'Register' view"
-      // Wait: That means when you are on Register view, the badge should disappear (because you're already in registration).
-      // So badge shows only on the "Register" tab BUTTON while you are on Sign In view. Once you click Register, badge fades out.
-      if (currentTab === 'register') {
-        newUserBadge.style.opacity = '0';
-        newUserBadge.style.visibility = 'hidden';
-        newUserBadge.style.display = 'none';
-      } else {
-        newUserBadge.style.opacity = '1';
-        newUserBadge.style.visibility = 'visible';
-        newUserBadge.style.display = 'inline-flex';
       }
     }
-    
-    function setActiveTabStyles() {
-      if (currentTab === 'signin') {
-        signinTab.classList.add('tab-active');
-        signinTab.classList.remove('tab-inactive');
-        registerTab.classList.add('tab-inactive');
-        registerTab.classList.remove('tab-active');
-      } else {
-        registerTab.classList.add('tab-active');
-        registerTab.classList.remove('tab-inactive');
-        signinTab.classList.add('tab-inactive');
-        signinTab.classList.remove('tab-active');
-      }
-      updateUIForTab();
-    }
-    
-    // Tab switching
-    signinTab.addEventListener('click', () => {
-      if (currentTab === 'signin') return;
-      currentTab = 'signin';
-      setActiveTabStyles();
-      // clear any modal leftover style
-    });
-    
-    registerTab.addEventListener('click', () => {
-      if (currentTab === 'register') return;
-      currentTab = 'register';
-      setActiveTabStyles();
-    });
-    
-    // Password visibility toggle (SVG swap)
-    let isPasswordVisible = false;
-    togglePasswordBtn.addEventListener('click', () => {
-      if (isPasswordVisible) {
-        passwordInput.type = 'password';
+
+    document.getElementById('signinTabBtn').addEventListener('click', () => { currentTab = 'signin'; updateTabUI(); });
+    document.getElementById('registerTabBtn').addEventListener('click', () => { currentTab = 'register'; updateTabUI(); });
+
+    // Password toggle
+    let pwdVisible = false;
+    document.getElementById('togglePasswordBtn').addEventListener('click', () => {
+      const pwdInput = document.getElementById('loginPassword');
+      const eyeOpen = document.getElementById('eyeOpenIcon');
+      const eyeClosed = document.getElementById('eyeClosedIcon');
+      if (pwdVisible) {
+        pwdInput.type = 'password';
         eyeOpen.style.display = 'inline-block';
         eyeClosed.style.display = 'none';
       } else {
-        passwordInput.type = 'text';
+        pwdInput.type = 'text';
         eyeOpen.style.display = 'none';
         eyeClosed.style.display = 'inline-block';
       }
-      isPasswordVisible = !isPasswordVisible;
+      pwdVisible = !pwdVisible;
     });
-    
-    // ---------- Smart Intercept Popup Logic ----------
-    function showInterceptModal(emailAttempt) {
-      // store email to re-populate after switching to register tab
-      window.pendingEmail = emailAttempt;
-      modal.classList.remove('opacity-0', 'invisible');
-      modal.classList.add('opacity-100', 'visible');
-      // tiny animation to modal-card
-      const cardEl = modal.querySelector('.modal-card');
-      cardEl.classList.remove('scale-95');
-      cardEl.classList.add('scale-100');
-    }
-    
-    function hideInterceptModal() {
-      modal.classList.add('opacity-0', 'invisible');
-      modal.classList.remove('opacity-100', 'visible');
-      const cardEl = modal.querySelector('.modal-card');
-      cardEl.classList.add('scale-95');
-      cardEl.classList.remove('scale-100');
-    }
-    
-    // Main submission handler (intercept loop)
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
+
+    async function handleEmailSignInOrSignUp() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginErrorMsg');
+      if (!email || !password) { alert("Enter email and password"); return; }
+      if (password.length < 6) { alert("Password must be at least 6 characters"); return; }
       
-      if (!email) {
-        // gentle alert but not ugly: use modal? better inline message but requirement: intercept only for missing account on signin.
-        alert("Please enter your medical email address.");
-        return;
-      }
-      if (!password) {
-        alert("Please enter your secure key.");
-        return;
-      }
-      
-      // REGISTER MODE: no intercept check needed for registration – just simulate success message
-      if (currentTab === 'register') {
-        // Simulate registration success - just show a fancy alert and maybe stay
-        alert(`✨ Welcome! Your chamber profile for ${email} is being initialized. Premium access granted.`);
-        // In real scenario, you'd firebase create user. Here we just mock onboarding.
-        // Optionally add email to existingDoctors? For demo, we can add but not needed.
-        if (!existingDoctors.includes(email)) {
-          existingDoctors.push(email); // for demo continuity
+      if (currentTab === 'signin') {
+        // Check mock existing list for intercept demo (real Firebase check will follow)
+        const existsInMock = existingDoctorsMock.some(e => e.toLowerCase() === email.toLowerCase());
+        if (!existsInMock) {
+          pendingInterceptEmail = email;
+          interceptModal.classList.remove('invisible', 'opacity-0');
+          interceptModal.classList.add('opacity-100', 'visible');
+          return;
         }
-        console.log("New doctor registered (mock):", email);
-        return;
       }
       
-      // SIGN IN MODE: Check if email exists in mock existing doctors array
-      const emailExists = existingDoctors.some(existing => existing.toLowerCase() === email.toLowerCase());
-      
-      if (!emailExists) {
-        // Intercept: show beautiful modal popup
-        showInterceptModal(email);
-        return;
+      showLoading(true);
+      try {
+        if (currentTab === 'signin') {
+          await auth.signInWithEmailAndPassword(email, password);
+        } else {
+          await auth.createUserWithEmailAndPassword(email, password);
+          await db.collection('users').doc(auth.currentUser.uid).set({ email, createdAt: new Date() });
+        }
+      } catch (err) {
+        if (err.code === 'auth/user-not-found') {
+          pendingInterceptEmail = email;
+          interceptModal.classList.remove('invisible', 'opacity-0');
+          interceptModal.classList.add('opacity-100', 'visible');
+        } else {
+          alert("Auth error: " + err.message);
+        }
+        showLoading(false);
       }
-      
-      // If email exists: proceed to login success simulation
-      alert(`✅ Welcome back, ${email}. You are securely signed in to FastRx Pro. Prescription dashboard ready.`);
-      // Further action could redirect to main app – but within this demo we keep on same page.
     }
+    async function handleGoogleSignIn() { const provider = new firebase.auth.GoogleAuthProvider(); try { await auth.signInWithPopup(provider); } catch(e){ alert(e.message); } }
+    async function handleForgotPassword() { const email = document.getElementById('loginEmail').value; if(email) auth.sendPasswordResetEmail(email).then(()=>alert("Reset email sent")); else alert("Enter email"); }
     
-    // Modal actions:
-    // "Click to Open Register Page" -> closes modal, switches to Register tab, keeps email typed.
-    modalRegisterAction.addEventListener('click', () => {
-      if (window.pendingEmail) {
-        emailInput.value = window.pendingEmail;
-      }
-      // Switch tab to Register
-      if (currentTab !== 'register') {
-        currentTab = 'register';
-        setActiveTabStyles();
-      }
-      hideInterceptModal();
-      // Optionally focus on password field to complete registration
-      passwordInput.focus();
+    document.getElementById('authForm').addEventListener('submit', (e) => { e.preventDefault(); handleEmailSignInOrSignUp(); });
+    document.getElementById('googleAuthBtn').addEventListener('click', handleGoogleSignIn);
+    document.getElementById('forgotPasswordLink')?.addEventListener('click', handleForgotPassword);
+    
+    // Modal actions
+    document.getElementById('modalRegisterActionBtn').addEventListener('click', () => {
+      interceptModal.classList.add('invisible', 'opacity-0');
+      if (pendingInterceptEmail) document.getElementById('loginEmail').value = pendingInterceptEmail;
+      currentTab = 'register';
+      updateTabUI();
+    });
+    document.getElementById('modalFixEmailBtn').addEventListener('click', () => {
+      interceptModal.classList.add('invisible', 'opacity-0');
+    });
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      interceptModal.classList.add('invisible', 'opacity-0');
     });
     
-    // "Fix Email Entry" -> just dismiss modal
-    modalFixEmail.addEventListener('click', () => {
-      hideInterceptModal();
-      emailInput.focus();
-    });
-    
-    closeModalBtn.addEventListener('click', () => {
-      hideInterceptModal();
-    });
-    
-    // Click outside modal background to close
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        hideInterceptModal();
-      }
-    });
-    
-    // Google Auth Button (Mock social login, just showcase)
-    const googleBtn = document.getElementById('googleAuthBtn');
-    googleBtn.addEventListener('click', () => {
-      // mock google sign-in: intercept logic similar? For demonstration: simulate with a random email.
-      const mockGoogleEmail = "dr.premium@gmail.com";
-      // Check if exists? For demo we just show toast
-      if (existingDoctors.some(em => em.toLowerCase() === mockGoogleEmail.toLowerCase())) {
-        alert(`✅ Google Connect: Welcome ${mockGoogleEmail}, you're signed in.`);
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('mainApp').style.display = 'block';
+        loginOverlay.style.display = 'none';
+        const isAdmin = user.email === ADMIN_EMAIL;
+        document.getElementById('userWidget').innerHTML = `<div class="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1"><div class="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center text-white">${(user.displayName||user.email).charAt(0).toUpperCase()}</div><span class="text-sm font-medium">${user.displayName || user.email}</span><button id="logoutBtn" class="text-xs bg-slate-200 px-2 py-1 rounded-full">Logout</button></div>`;
+        document.getElementById('logoutBtn')?.addEventListener('click', () => auth.signOut());
+        if (isAdmin) document.getElementById('adminPanelBtn').style.display = 'inline-flex';
+        loadUserData();
       } else {
-        // smart intercept for Google as well?
-        window.pendingEmail = mockGoogleEmail;
-        showInterceptModal(mockGoogleEmail);
+        currentUser = null;
+        document.getElementById('mainApp').style.display = 'none';
+        loginOverlay.style.display = 'flex';
       }
     });
     
-    // Attach form submit
-    authForm.addEventListener('submit', handleFormSubmit);
+    // Event bindings for dashboard
+    document.getElementById('quickMedicineBtn')?.addEventListener('click', openQuickPopup);
+    document.getElementById('bulkTriggerBtn')?.addEventListener('click', () => document.getElementById('bulkMedFile').click());
+    document.getElementById('bulkMedFile')?.addEventListener('change', e => { if(e.target.files[0]) importMedicinesFromFile(e.target.files[0]); });
+    document.getElementById('showHistoryBtn')?.addEventListener('click', showHistoryModal);
+    document.getElementById('analysisBtn')?.addEventListener('click', showAnalysis);
+    document.getElementById('helpBtn')?.addEventListener('click', showHelp);
+    document.getElementById('settingsBtn')?.addEventListener('click', openSettingsModal);
+    document.getElementById('savePrescriptionBtn')?.addEventListener('click', saveCurrentPrescription);
+    document.getElementById('printPreviewBtn')?.addEventListener('click', printWithMargin);
+    document.getElementById('clearCurrentBtn')?.addEventListener('click', resetCurrentDraft);
+    document.getElementById('clearAllMedicinesBtn')?.addEventListener('click', () => { currentMedicines = []; renderMedicinesTable(); updatePreview(); });
+    document.getElementById('addCustomAdviceBtn')?.addEventListener('click', () => { const val = document.getElementById('customAdviceInput').value; if(val) addAdvice(val); document.getElementById('customAdviceInput').value = ''; });
+    document.getElementById('allMedsButton')?.addEventListener('click', showAllMedsPicker);
+    document.getElementById('allAdviceButton')?.addEventListener('click', showAllAdvicePicker);
+    document.getElementById('manageMedsBtn')?.addEventListener('click', openMedicineInventory);
+    document.getElementById('manageAdviceBtn')?.addEventListener('click', openAdviceInventory);
+    document.getElementById('diseasePickerBtn')?.addEventListener('click', () => alert("Disease picker: select from saved list"));
+    document.getElementById('searchMedicine')?.addEventListener('input', e => renderMedicineList(e.target.value));
+    document.querySelectorAll('input[name="paperStyle"]').forEach(r => r.addEventListener('change', () => updatePreview()));
     
-    // Initial UI sync
-    setActiveTabStyles();
+    // Inject minimal modals for subscription and medicine
+    const modalDiv = document.createElement('div');
+    modalDiv.innerHTML = `<div id="subscriptionModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"><div class="bg-white rounded-2xl p-6 max-w-md"><h3 class="text-xl font-bold">Upgrade to PRO</h3><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro" class="mx-auto my-4"><button id="closeSubModal" class="bg-cyan-600 text-white px-4 py-2 rounded-full">Close</button></div></div><div id="medicineModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"><div class="bg-white rounded-2xl p-6 w-96"><h3 id="modalMedName" class="font-bold text-lg">Medicine</h3><input id="modalDosage" placeholder="Dosage" class="border p-2 rounded w-full my-2"><input id="modalFrequency" placeholder="Frequency" class="border p-2 rounded w-full my-2"><input id="modalDuration" placeholder="Duration" class="border p-2 rounded w-full my-2"><input id="modalHowToTake" placeholder="How to take" class="border p-2 rounded w-full my-2"><div class="flex gap-2 mt-4"><button id="modalConfirmBtn" class="bg-cyan-600 text-white px-4 py-2 rounded-full">Add</button><button id="modalCancelBtn" class="border px-4 py-2 rounded-full">Cancel</button></div></div></div>`;
+    document.body.appendChild(modalDiv);
+    document.getElementById('modalConfirmBtn')?.addEventListener('click', () => { if(window.pendingMedicine){ currentMedicines.push({ name:window.pendingMedicine.name, dosage:document.getElementById('modalDosage').value, frequency:document.getElementById('modalFrequency').value, duration:document.getElementById('modalDuration').value, howToTake:document.getElementById('modalHowToTake').value }); renderMedicinesTable(); updatePreview(); document.getElementById('medicineModal').style.display='none'; } });
+    document.getElementById('modalCancelBtn')?.addEventListener('click', () => document.getElementById('medicineModal').style.display='none');
+    document.getElementById('closeSubModal')?.addEventListener('click', () => document.getElementById('subscriptionModal').style.display='none');
+    window.showAnalysis = showAnalysis; window.showHistoryModal = showHistoryModal;
     
-    // Prefill optional demo email (to show intercept, leave empty but any new email triggers modal)
-    // For testing, leave input empty so doctors can type new@clinic.com
-    // Set placeholder visual
-    emailInput.placeholder = "doctor@clinic.com";
-    
-    // Ensure newUserBadge starts visible (since default tab is signin)
-    // also init eye icons
-    eyeOpen.style.display = 'inline-block';
-    eyeClosed.style.display = 'none';
-    isPasswordVisible = false;
+    updateTabUI();
   </script>
 </body>
 </html>
