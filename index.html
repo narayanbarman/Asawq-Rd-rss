@@ -3,399 +3,1074 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro | Ultimate Prescription System</title>
-  <!-- Tailwind + Fonts + Icons -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>FastRx Pro – Professional Prescription System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* Custom animations & overrides */
+    /* ========== ORIGINAL STYLES (unchanged) ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #eef2f7; padding: 15px; }
+    .dashboard { max-width: 1600px; margin: 0 auto; }
+    .header { background: #0a4c6e; color: white; padding: 10px 20px; border-radius: 28px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+    .logo h1 { font-size: 1.3rem; font-weight: 600; }
+    .logo p { font-size: 0.65rem; opacity: 0.8; }
+    .user-area { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.15); padding: 5px 14px 5px 10px; border-radius: 60px; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #ffb347; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .user-avatar img { width: 32px; height: 32px; object-fit: cover; }
+    .btn-google { background: white; color: #0a4c6e; border: none; padding: 6px 16px; border-radius: 40px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+    .btn-google i { color: #DB4437; }
+    .btn-logout { background: rgba(0,0,0,0.3); color: white; border: none; padding: 5px 12px; border-radius: 40px; cursor: pointer; font-size: 0.75rem; }
+    .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; color: white; font-size: 1.2rem; backdrop-filter: blur(4px); }
+    .top-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; background: white; padding: 8px 16px; border-radius: 50px; width: fit-content; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .top-btn { background: #f1f5f9; border: none; padding: 5px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: 0.1s; }
+    .top-btn:hover { background: #e2e8f0; }
+    .prescription-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+    .left-panel { flex: 1.2; min-width: 280px; background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; height: fit-content; }
+    .right-panel { flex: 2.5; min-width: 480px; display: flex; flex-direction: column; gap: 20px; }
+    .card { background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; }
+    .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 12px; border-left: 4px solid #0a7e8c; padding-left: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; color: #1f3b4c; }
+    .card-title span { display: flex; align-items: center; gap: 6px; }
+    .clickable-title { cursor: pointer; transition: 0.1s; border-radius: 20px; padding: 2px 6px; }
+    .clickable-title:hover { background: #e6f4f5; color: #0a7e8c; }
+    .search-bar { background: #f1f5f9; border-radius: 40px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; position: relative; }
+    .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.85rem; outline: none; }
+    .suggestions-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 20px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    .suggestions-dropdown div { padding: 8px 16px; cursor: pointer; font-size: 0.8rem; }
+    .suggestions-dropdown div:hover { background: #e6f4f5; }
+    .med-grid { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
+    .med-item { background: #f8fafc; border-radius: 20px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2edf2; transition: all 0.15s; }
+    .med-item:hover { background: #e6f4f5; border-color: #0a7e8c; transform: translateX(2px); }
+    .med-name { font-weight: 600; color: #0c4e6e; font-size: 0.85rem; }
+    .med-detail { font-size: 0.65rem; color: #4b6b87; }
+    .pin-icon { cursor: pointer; font-size: 1rem; width: 28px; text-align: center; color: #94a3b8; transition: 0.1s; margin-left: 8px; }
+    .pin-icon.pinned { color: #f59e0b; }
+    .pin-icon:hover { color: #eab308; transform: scale(1.1); }
+    .most-used { background: #fef9e3; padding: 8px; border-radius: 16px; margin: 12px 0; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+    .btn-sm { background: #ecfdf5; border: none; padding: 5px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
+    .btn-primary { background: #0a7e8c; color: white; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+    .btn-outline { background: white; border: 1px solid #0a7e8c; color: #0a7e8c; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; border: none; }
+    .btn-danger:hover { background: #fecaca; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    input, select { border: 1px solid #cbd5e1; border-radius: 14px; padding: 6px 8px; font-size: 0.75rem; width: 100%; }
+    .patient-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .name-field, .lastname-field { flex: 2; }
+    .age-field, .gender-field { flex: 1; }
+    .disease-wrapper { position: relative; display: flex; gap: 8px; align-items: center; }
+    .disease-wrapper input { flex: 1; }
+    .disease-picker-btn { background: #e2e8f0; border: none; border-radius: 30px; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
+    .layout-toggle { background: #f8fafc; border-radius: 40px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.7rem; }
+    .prescription-preview { background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 16px; }
+    .prescription-preview.split-line { border-left: 3px solid #0a7e8c; background: #fffdf7; padding-left: 18px; }
+    .tag-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .tag { background: #eef2ff; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+    .tag:hover { background: #0a7e8c; color: white; }
+    .advice-tag { background: #e6f4f5; padding: 3px 10px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 3px; font-size: 0.7rem; }
+    .advice-tag:hover { background: #0a7e8c; color: white; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); overflow-y: auto; }
+    .modal-content { background: white; margin: 3% auto; padding: 20px; border-radius: 28px; width: 95%; max-width: 900px; }
+    .bottom-buttons { display: flex; gap: 12px; margin-top: 15px; justify-content: flex-end; flex-wrap: wrap; }
+    .margin-control { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .history-filters, .analysis-filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; }
+    .filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .filter-group label { font-size: 0.7rem; font-weight: 500; color: #4b6b87; }
+    .history-list, .analysis-stats { max-height: 400px; overflow-y: auto; }
+    .history-item, .stat-item { background: #f8fafc; margin: 8px 0; padding: 10px 14px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2e8f0; }
+    .close-modal { float: right; font-size: 26px; font-weight: bold; cursor: pointer; color: #6b7280; }
+    .close-modal:hover { color: black; }
+    .inventory-table { width: 100%; border-collapse: collapse; }
+    .inventory-table th, .inventory-table td { border: 1px solid #e2e8f0; padding: 8px; vertical-align: middle; }
+    .analysis-cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .analytics-card { background: linear-gradient(135deg, #f8fafc, #ffffff); border-radius: 24px; padding: 16px; flex: 1; min-width: 120px; text-align: center; border: 1px solid #e2e8f0; }
+    .analytics-card .number { font-size: 2rem; font-weight: 700; color: #0a7e8c; }
+    .analytics-card .label { font-size: 0.7rem; color: #4b6b87; margin-top: 6px; }
+    .scrollable-picker { max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+    .picker-item { background: #f8fafc; border-radius: 20px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #e2edf2; }
+    .picker-item:hover { background: #e6f4f5; border-color: #0a7e8c; }
+    .editable-hint { font-size: 0.65rem; color: #9ca3af; margin-left: 6px; font-weight: normal; }
+    .preview-med-item { margin-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3rem; }
+    .preview-med-name { font-weight: 700; color: #0c4e6e; font-size: 0.85rem; }
+    .preview-med-detail { font-size: 0.75rem; color: #334155; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+    .practice-header { margin-bottom: 20px; text-align: center; border-bottom: 2px solid #0a7e8c; padding-bottom: 12px; width: 100%; }
+    .practice-name { font-size: 1.4rem; font-weight: 700; color: #0a4c6e; }
+    .practice-details { font-size: 0.75rem; color: #4b6b87; margin-top: 6px; }
+    .signature-right { text-align: right; margin-top: 20px; padding-top: 10px; border-top: 1px dashed #aaa; }
+    .settings-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; margin-bottom: 20px; }
+    .settings-row-item { display: flex; align-items: center; gap: 6px; }
+    .settings-group { margin-bottom: 20px; }
+    .settings-group h4 { margin-bottom: 12px; font-size: 0.9rem; color: #0a4c6e; border-left: 3px solid #0a7e8c; padding-left: 8px; }
+    .radio-group { display: flex; gap: 16px; margin-top: 8px; }
+    /* IMPROVED LOGIN OVERLAY WITH SEGMENTED TABS + BREATHING BADGE */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 25, 35, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    .login-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      backdrop-filter: blur(0);
+    }
+    .login-modal {
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 48px;
+      width: 90%;
+      max-width: 460px;
+      padding: 40px 36px;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.2);
+      transform: scale(0.96);
+      transition: transform 0.3s ease;
+      text-align: center;
+    }
+    .login-overlay:not(.hidden) .login-modal {
+      transform: scale(1);
+    }
+    .login-modal h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #0f4c5f, #2c9a7a);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 8px;
+    }
+    .login-sub {
+      color: #5b7c93;
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+      border-bottom: 1px solid #e2edf2;
+      display: inline-block;
+      padding-bottom: 6px;
+    }
+    /* Segmented pill tabs */
+    .segmented-pills {
+      background: #eef2f8;
+      padding: 4px;
+      border-radius: 60px;
+      display: flex;
+      margin-bottom: 28px;
+    }
+    .pill {
+      flex: 1;
+      text-align: center;
+      padding: 10px 0;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .pill.active {
+      background: white;
+      color: #0f4c5f;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .pill.inactive {
+      color: #6b7c8f;
+    }
+    .new-user-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: linear-gradient(105deg, #0f4c5f, #1a6e5c);
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 30px;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      animation: breatheGlow 2s ease-in-out infinite;
+    }
     @keyframes breatheGlow {
       0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4); }
       50% { transform: scale(1.05); box-shadow: 0 0 12px 2px rgba(34, 211, 238, 0.7); }
       100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
     }
-    .new-user-badge {
-      animation: breatheGlow 2s ease-in-out infinite;
+    .input-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .input-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #1e4a62;
+      display: block;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 14px 18px;
+      background: #f8fafc;
+      border: 1.5px solid #e2edf2;
+      border-radius: 32px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .input-group input:focus {
+      border-color: #2c9a7a;
+      box-shadow: 0 0 0 3px rgba(44, 154, 122, 0.2);
+      background: white;
+    }
+    .password-wrapper {
+      position: relative;
+    }
+    .password-wrapper input {
+      padding-right: 48px;
+    }
+    .toggle-password {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #8ba3b5;
+      font-size: 1.1rem;
+    }
+    .btn-login {
       background: linear-gradient(105deg, #0f4c5f, #1a6e5c);
       color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 44px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      width: 100%;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 10px;
+      box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.2);
     }
-    .tab-active { background: white; color: #0f4c5f; box-shadow: 0 4px 12px -6px rgba(0,0,0,0.1); }
-    .tab-inactive { background: transparent; color: #5a6e7c; }
-    .modal-backdrop { transition: opacity 0.2s ease; }
-    .prescription-preview.split-line { border-left: 3px solid #0a7e8c; background: #fffdf7; padding-left: 18px; }
-    .preview-med-item { margin-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3rem; }
-    .preview-med-name { font-weight: 700; color: #0c4e6e; font-size: 0.85rem; }
-    .preview-med-detail { font-size: 0.75rem; color: #334155; }
-    .practice-header { margin-bottom: 20px; text-align: center; border-bottom: 2px solid #0a7e8c; padding-bottom: 12px; }
-    .practice-name { font-size: 1.4rem; font-weight: 700; color: #0a4c6e; }
-    .signature-right { text-align: right; margin-top: 20px; padding-top: 10px; border-top: 1px dashed #aaa; }
-    .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
-    .med-item:hover { background: #e6f4f5; transform: translateX(2px); }
-    .pin-icon.pinned { color: #f59e0b; }
-    .tag:hover { background: #0a7e8c; color: white; }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.25);
+    }
+    .divider {
+      margin: 24px 0 16px;
+      font-size: 0.7rem;
+      color: #8ba3b5;
+      position: relative;
+    }
+    .divider::before,
+    .divider::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 42%;
+      height: 1px;
+      background: #e2e8f0;
+    }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+    .btn-google {
+      background: white;
+      border: 1.5px solid #dce5ef;
+      border-radius: 44px;
+      padding: 12px;
+      width: 100%;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      color: #1f3b4c;
+      font-size: 0.85rem;
+    }
+    .btn-google i { font-size: 1.2rem; color: #DB4437; }
+    .btn-google:hover {
+      background: #f8fafd;
+      border-color: #bdd3e8;
+    }
+    .footer-links {
+      margin-top: 20px;
+      font-size: 0.75rem;
+      text-align: right;
+    }
+    .footer-links a {
+      color: #1a6e5c;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .error-msg {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 8px 12px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      margin-top: 12px;
+      text-align: center;
+    }
+    /* Subscription badge & premium button */
+    .subscription-badge { 
+      background: #0f2c38; 
+      color: #ffd966; 
+      border-radius: 40px; 
+      padding: 4px 12px; 
+      font-size: 0.7rem; 
+      font-weight: bold;
+      border: 1px solid #ffd966;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      margin-left: 8px;
+    }
+    .subscription-badge.expired { background: #5a1e1e; color: #ffaaaa; border-color: #ffaaaa; }
+    .subscription-badge.active { background: #145c33; color: #c6ffb3; border-color: #b3ffb3; }
+    .premium-btn {
+      background: linear-gradient(135deg, #f5b042, #e67e22);
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 4px 14px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-left: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .premium-btn:hover { transform: scale(1.02); background: linear-gradient(135deg, #e67e22, #d35400); }
+    .admin-tabs { display: flex; gap: 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
+    .admin-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; transition: 0.1s; }
+    .admin-tab:hover { background: #e6f4f5; }
+    .admin-tab.active { background: #0a7e8c; color: white; }
+    .subscription-user-card { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+    .admin-badge {
+      background: #dc2626;
+      color: white;
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 0.6rem;
+      font-weight: bold;
+      margin-left: 6px;
+    }
+    /* Intercept Modal */
+    .intercept-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 2100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(15, 25, 35, 0.7);
+      backdrop-filter: blur(8px);
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.3s;
+    }
+    .intercept-modal.visible {
+      visibility: visible;
+      opacity: 1;
+    }
+    .intercept-card {
+      background: white;
+      border-radius: 2rem;
+      max-width: 420px;
+      width: 100%;
+      padding: 1.5rem;
+      box-shadow: 0 30px 40px rgba(0,0,0,0.2);
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+    .intercept-modal.visible .intercept-card {
+      transform: scale(1);
+    }
+    @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
+    @media (max-width: 800px) { .right-panel { min-width: auto; } }
   </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 font-['Inter'] min-h-screen">
+<body>
+<div class="dashboard" id="app">
+  <div class="header">
+    <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Professional Cloud System</p></div>
+    <div id="userWidget"></div>
+  </div>
 
-  <!-- ========== MAIN DASHBOARD (hidden until logged in) ========== -->
-  <div id="mainApp" style="display: none;" class="p-4 md:p-6 max-w-[1600px] mx-auto">
-    <!-- Header with glass effect -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 mb-6 flex justify-between items-center flex-wrap border border-white/50">
-      <div class="flex items-center gap-3">
-        <div class="bg-gradient-to-br from-cyan-600 to-teal-700 p-2 rounded-xl"><i class="fas fa-stethoscope text-white text-xl"></i></div>
-        <div><h1 class="text-xl font-bold text-slate-800">FastRx Pro</h1><p class="text-xs text-slate-500">Intelligent Prescription Cloud</p></div>
-      </div>
-      <div id="userWidget" class="flex items-center gap-3"></div>
-    </div>
-
-    <!-- Top Action Bar (all original buttons) -->
-    <div class="flex flex-wrap gap-2 mb-5 bg-white/70 backdrop-blur p-3 rounded-full shadow-sm">
-      <button id="quickMedicineBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200"><i class="fas fa-plus-circle"></i> Add Medicine</button>
-      <button id="bulkTriggerBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200"><i class="fas fa-upload"></i> Bulk Upload</button>
-      <button id="showHistoryBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200"><i class="fas fa-history"></i> History</button>
-      <button id="analysisBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200"><i class="fas fa-chart-line"></i> Analysis</button>
-      <button id="helpBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200"><i class="fas fa-question-circle"></i> Help</button>
-      <button id="settingsBtn" class="top-btn px-4 py-1.5 bg-slate-100 rounded-full text-xs font-medium hover:bg-slate-200"><i class="fas fa-cog"></i> Settings</button>
-      <button id="adminPanelBtn" style="display:none;" class="px-4 py-1.5 bg-red-600 text-white rounded-full text-xs font-medium"><i class="fas fa-user-shield"></i> Admin Panel</button>
+  <div id="mainApp" style="display: none;">
+    <div class="top-actions">
+      <button class="top-btn" id="quickMedicineBtn"><i class="fas fa-plus-circle"></i> Add Medicine</button>
+      <button class="top-btn" id="bulkTriggerBtn"><i class="fas fa-upload"></i> Bulk Upload</button>
+      <button class="top-btn" id="showHistoryBtn"><i class="fas fa-history"></i> History</button>
+      <button class="top-btn" id="analysisBtn"><i class="fas fa-chart-line"></i> Analysis</button>
+      <button class="top-btn" id="helpBtn"><i class="fas fa-question-circle"></i> Help</button>
+      <button class="top-btn" id="settingsBtn"><i class="fas fa-cog"></i> Settings</button>
+      <button class="top-btn" id="adminPanelBtn" style="display:none; background:#dc2626; color:white;"><i class="fas fa-user-shield"></i> Admin Panel</button>
       <input type="file" id="bulkMedFile" accept=".json,.csv" style="display:none">
     </div>
 
-    <!-- Two‑column prescription layout (original full layout) -->
-    <div class="flex flex-wrap gap-5">
-      <!-- Left Panel: Medicine Library -->
-      <div class="flex-1 min-w-[280px] bg-white rounded-2xl shadow-md p-5">
-        <div class="font-semibold border-l-4 border-cyan-600 pl-3 mb-3"><i class="fas fa-pills"></i> Medicine Library</div>
-        <div class="search-bar flex bg-slate-100 rounded-full p-2 mb-4 relative"><i class="fas fa-search text-slate-400 mt-1 ml-2"></i><input type="text" id="searchMedicine" placeholder="Search medicine..." class="bg-transparent border-none w-full outline-none text-sm px-2"><div id="suggestionsBox" class="absolute top-full left-0 right-0 bg-white border rounded-xl mt-1 hidden z-10"></div></div>
-        <div id="pinnedSection" style="display:none;" class="mb-4"><div class="font-semibold text-sm">⭐ Pinned Favourites</div><div id="pinnedList" class="max-h-48 overflow-y-auto space-y-2 mt-2"></div></div>
-        <div class="font-semibold text-sm">🔥 Most Used</div>
-        <div id="mostUsedContainer" class="bg-amber-50 p-3 rounded-xl my-3 text-sm"></div>
-        <div class="flex justify-between items-center"><span id="allMedsButton" class="cursor-pointer text-sm font-medium text-cyan-700">📚 All Medicines</span><button id="manageMedsBtn" class="text-xs bg-emerald-50 px-3 py-1 rounded-full">Manage</button></div>
-        <div id="medicineListContainer" class="max-h-80 overflow-y-auto space-y-2 my-3"></div>
-        <div class="flex justify-between items-center mt-4"><span id="allAdviceButton" class="cursor-pointer text-sm font-medium text-cyan-700"><i class="fas fa-comment-dots"></i> Quick Advice</span><button id="manageAdviceBtn" class="text-xs bg-emerald-50 px-3 py-1 rounded-full">Manage</button></div>
-        <div id="adviceTagList" class="flex flex-wrap gap-2 my-3"></div>
-        <div class="flex gap-2"><input type="text" id="customAdviceInput" placeholder="New advice" class="flex-1 border rounded-full px-3 py-1 text-sm"><button id="addCustomAdviceBtn" class="bg-slate-100 px-3 rounded-full text-sm">Add</button></div>
-        <div id="currentAdvicesList" class="flex flex-wrap gap-2 mt-3"></div>
+    <div class="prescription-layout">
+      <div class="left-panel">
+        <div class="card-title"><span><i class="fas fa-pills"></i> Medicine Library</span></div>
+        <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="searchMedicine" placeholder="Search medicine..."><div id="suggestionsBox" class="suggestions-dropdown"></div></div>
+        <div id="pinnedSection" style="margin-bottom:16px; display:none;"><div style="font-weight:600; font-size:0.8rem;">⭐ Pinned Favourites</div><div id="pinnedList" class="med-grid" style="max-height:200px;"></div></div>
+        <div style="font-weight:600; font-size:0.8rem;">🔥 Most Used</div><div id="mostUsedContainer" class="most-used"></div>
+        <div class="flex-between"><span class="clickable-title" id="allMedsButton" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;"><i class="fas fa-expand-alt"></i> 📚 All Medicines</span><button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button></div>
+        <div id="medicineListContainer" class="med-grid"></div>
+        <div class="flex-between" style="margin-top:16px;"><span class="clickable-title" id="allAdviceButton" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;"><i class="fas fa-expand-alt"></i> <i class="fas fa-comment-dots"></i> Quick Advice</span><button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button></div>
+        <div class="tag-group" id="adviceTagList"></div>
+        <div class="flex-between"><input type="text" id="customAdviceInput" placeholder="Type new advice, then Add" style="flex:3;"><button class="btn-sm" id="addCustomAdviceBtn">Add</button></div>
+        <div id="currentAdvicesList" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px;"></div>
       </div>
 
-      <!-- Right Panel: Patient & Prescription -->
-      <div class="flex-[2.5] min-w-[480px] flex flex-col gap-5">
-        <div class="bg-white rounded-2xl shadow-md p-5">
-          <div class="font-semibold border-l-4 border-cyan-600 pl-3 mb-3"><i class="fas fa-user"></i> Patient (optional)</div>
-          <div class="flex flex-wrap gap-2">
-            <input id="firstName" placeholder="First name" list="firstNamesSuggestions" class="flex-1 border rounded-xl p-2 text-sm"><datalist id="firstNamesSuggestions"></datalist>
-            <input id="lastName" placeholder="Last name" list="lastNamesSuggestions" class="flex-1 border rounded-xl p-2 text-sm"><datalist id="lastNamesSuggestions"></datalist>
-            <input id="patientAge" placeholder="Age" class="w-20 border rounded-xl p-2 text-sm">
-            <select id="patientGender" class="border rounded-xl p-2 text-sm"><option>Gender</option><option>M</option><option>F</option><option>O</option></select>
+      <div class="right-panel">
+        <div class="card">
+          <div class="card-title"><span><i class="fas fa-user"></i> Patient (optional)</span></div>
+          <div class="patient-row">
+            <div class="name-field"><input type="text" id="firstName" placeholder="First name" list="firstNamesSuggestions"><datalist id="firstNamesSuggestions"></datalist></div>
+            <div class="lastname-field"><input type="text" id="lastName" placeholder="Last name" list="lastNamesSuggestions"><datalist id="lastNamesSuggestions"></datalist></div>
+            <div class="age-field"><input type="text" id="patientAge" placeholder="Age"></div>
+            <div class="gender-field"><select id="patientGender"><option value="">Gender</option><option>M</option><option>F</option><option>O</option></select></div>
           </div>
-          <div class="flex gap-2 mt-3"><input id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis" class="flex-1 border rounded-xl p-2 text-sm"><button id="diseasePickerBtn" class="bg-slate-100 px-3 rounded-xl"><i class="fas fa-chevron-down"></i></button><datalist id="diseaseSuggestions"></datalist></div>
+          <div style="margin-top:8px;" class="disease-wrapper">
+            <input type="text" id="diagnosisField" list="diseaseSuggestions" placeholder="Disease / Diagnosis" autocomplete="off">
+            <button id="diseasePickerBtn" class="disease-picker-btn" title="Open disease list"><i class="fas fa-chevron-down"></i></button>
+            <datalist id="diseaseSuggestions"></datalist>
+          </div>
         </div>
-        <div class="bg-white rounded-2xl shadow-md p-5">
-          <div class="font-semibold border-l-4 border-cyan-600 pl-3 mb-3"><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="text-xs text-slate-400">(click to edit)</span></div>
-          <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table></div>
-          <button id="clearAllMedicinesBtn" class="text-xs bg-gray-100 px-3 py-1 rounded-full mt-2">Clear all</button>
+
+        <div class="card">
+          <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="editable-hint">(click any field to edit)</span></span></div>
+          <div style="overflow-x:auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table></div>
+          <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
         </div>
-        <div class="bg-white rounded-2xl shadow-md p-5">
-          <div class="flex justify-between"><div class="font-semibold border-l-4 border-cyan-600 pl-3"><i class="fas fa-eye"></i> Preview</div><div><label><input type="radio" name="paperStyle" value="plain" checked> Simple</label> <label><input type="radio" name="paperStyle" value="split"> Left line</label></div></div>
-          <div class="my-2"><label>Print top margin (mm): <input type="number" id="printTopMargin" value="20" class="w-20 border rounded p-1"></label></div>
-          <div id="previewContainer" class="prescription-preview border rounded-xl p-4 bg-amber-50/30"><div id="livePreviewArea"></div></div>
-          <div class="flex gap-3 justify-end mt-4"><button id="savePrescriptionBtn" class="bg-cyan-600 text-white px-5 py-2 rounded-full text-sm shadow">Save</button><button id="printPreviewBtn" class="bg-teal-700 text-white px-5 py-2 rounded-full text-sm">Print</button><button id="clearCurrentBtn" class="border border-cyan-600 text-cyan-700 px-5 py-2 rounded-full text-sm">Clear</button></div>
+
+        <div class="card">
+          <div class="flex-between"><div class="card-title" style="margin-bottom:0;"><span><i class="fas fa-eye"></i> Preview</span></div><div class="layout-toggle"><label><input type="radio" name="paperStyle" value="plain" checked> Simple</label><label><input type="radio" name="paperStyle" value="split"> Left line</label></div></div>
+          <div class="margin-control"><label><i class="fas fa-arrows-alt-v"></i> Print top margin (mm):</label><input type="number" id="printTopMargin" value="20" step="2" min="0" max="60"> mm</div>
+          <div id="previewContainer" class="prescription-preview"><div id="livePreviewArea"></div></div>
+          <div class="bottom-buttons"><button class="btn-primary" id="savePrescriptionBtn"><i class="fas fa-save"></i> Save</button><button class="btn-primary" id="printPreviewBtn" style="background:#2c6e5c;"><i class="fas fa-print"></i> Print</button><button class="btn-sm btn-outline" id="clearCurrentBtn">Clear</button></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ========== PREMIUM LOGIN / REGISTRATION CARD ========== -->
-  <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300" style="background: rgba(15,25,35,0.85); backdrop-filter: blur(12px);">
-    <div class="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 border border-white/40 transform transition-all">
-      <div class="flex justify-center mb-5">
-        <div class="bg-gradient-to-br from-cyan-50 to-slate-100 p-3 rounded-2xl shadow-lg">
-          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-600 to-teal-700 flex items-center justify-center"><i class="fas fa-prescription-bottle text-white text-3xl"></i></div>
-        </div>
-      </div>
-      <div class="text-center mb-5"><h1 class="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">FastRx Pro</h1><p class="text-xs text-slate-500">Professional Cloud Prescription Suite</p></div>
+  <!-- PREMIUM LOGIN OVERLAY WITH SEGMENTED TABS -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-modal">
+      <h2><i class="fas fa-stethoscope"></i> FastRx Pro</h2>
+      <div class="login-sub">Professional Cloud System</div>
       
       <!-- Segmented Pills -->
-      <div class="bg-slate-100/70 p-1 rounded-full flex mb-6">
-        <button id="signinTabBtn" class="tab-btn flex-1 py-2.5 rounded-full text-sm font-semibold tab-active">Sign In</button>
-        <button id="registerTabBtn" class="tab-btn flex-1 py-2.5 rounded-full text-sm font-semibold tab-inactive relative">Register <span id="newUserBadge" class="new-user-badge absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap">✨ New User</span></button>
+      <div class="segmented-pills">
+        <div id="signinPill" class="pill active">Sign In</div>
+        <div id="registerPill" class="pill inactive">Register <span id="newUserBadge" class="new-user-badge">✨ New User</span></div>
       </div>
       
-      <form id="authForm" action="javascript:void(0);">
-        <div class="mb-5"><label class="block text-xs font-semibold text-slate-600 mb-1">Medical Email</label><div class="relative"><i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="email" id="loginEmail" class="w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-xl text-sm focus:border-cyan-400 focus:ring-2 focus:ring-cyan-200" placeholder="doctor@clinic.com"></div></div>
-        <div class="mb-7"><label class="block text-xs font-semibold text-slate-600 mb-1">Secure Key</label><div class="relative"><i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="password" id="loginPassword" class="w-full pl-10 pr-12 py-3 bg-slate-50 border rounded-xl text-sm focus:border-cyan-400" placeholder="••••••••"><button type="button" id="togglePasswordBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"><svg id="eyeOpenIcon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><svg id="eyeClosedIcon" style="display:none;" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg></button></div></div>
-        <button type="submit" id="actionSubmitBtn" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-semibold py-3 rounded-xl transition-all active:scale-[0.99] shadow-md">Secure Log In</button>
-      </form>
+      <div id="loginErrorMsg" class="error-msg" style="display:none;"></div>
+      <div class="input-group"><label>Email</label><input type="email" id="loginEmail" placeholder="doctor@example.com"></div>
+      <div class="input-group"><label>Password</label><div class="password-wrapper"><input type="password" id="loginPassword" placeholder="••••••••"><button type="button" id="togglePasswordBtn" class="toggle-password"><i class="fas fa-eye-slash"></i></button></div></div>
+      <button id="actionBtn" class="btn-login">Secure Log In</button>
       
-      <div class="relative my-6"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div><div class="relative flex justify-center text-xs"><span class="px-3 bg-white/70 text-slate-500 rounded-full">Or secure connect with</span></div></div>
-      <button id="googleAuthBtn" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 transition"><svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg><span class="text-sm font-medium text-slate-700">Continue with Google</span></button>
-      <p class="text-center text-[11px] text-slate-400 mt-5">HIPAA-ready · secure cloud sync</p>
+      <div class="divider">or</div>
+      <button id="googleLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in with Google</button>
+      <div class="footer-links"><a id="forgotPasswordLink">Forgot password?</a></div>
     </div>
   </div>
 
   <!-- Intercept Modal (Account Not Found) -->
-  <div id="interceptModal" class="fixed inset-0 z-[60] flex items-center justify-center px-4 invisible opacity-0 transition-all duration-300" style="background: rgba(15,25,35,0.7); backdrop-filter: blur(8px);">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all"><div class="flex justify-end"><button id="closeModalBtn" class="text-slate-400"><i class="fas fa-times"></i></button></div><div class="text-center"><div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-user-shield text-amber-600 text-2xl"></i></div><h3 class="text-xl font-bold text-slate-800">Account Not Found</h3><p class="text-sm text-slate-500 mt-2">You are a new user. You need to <strong>register your chamber profile</strong> before accessing the prescription printer app.</p><div class="mt-6 flex flex-col sm:flex-row gap-3"><button id="modalRegisterActionBtn" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white font-semibold py-2.5 rounded-xl">Click to Open Register Page</button><button id="modalFixEmailBtn" class="flex-1 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 py-2.5 rounded-xl">Fix Email Entry</button></div></div></div>
+  <div id="interceptModal" class="intercept-modal">
+    <div class="intercept-card">
+      <div class="flex justify-end"><button id="closeInterceptBtn" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button></div>
+      <div class="text-center my-3">
+        <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-user-shield text-amber-600 text-2xl"></i></div>
+        <h3 class="text-xl font-bold text-slate-800">Account Not Found</h3>
+        <p class="text-sm text-slate-500 mt-2">You are a new user. You need to <strong>register your chamber profile</strong> before accessing the prescription printer app.</p>
+        <div class="mt-6 flex flex-col sm:flex-row gap-3">
+          <button id="interceptRegisterBtn" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white font-semibold py-2.5 rounded-xl">Click to Open Register Page</button>
+          <button id="interceptFixEmailBtn" class="flex-1 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 py-2.5 rounded-xl">Fix Email Entry</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- All original modals (subscription, settings, history, analysis, inventory, etc.) -->
-  <div id="dynamicModals"></div>
+  <!-- ALL ORIGINAL MODALS (unchanged) -->
+  <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
+  <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
+  <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
+  <div id="settingsModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeSettingsModal">&times;</span><h3><i class="fas fa-sliders-h"></i> Prescription Settings</h3>
+    <div class="settings-group"><h4>Layout & Display</h4><div class="settings-row"><label class="settings-row-item"><input type="checkbox" id="settingShowDate" checked> Show Date</label><label class="settings-row-item"><input type="checkbox" id="settingShowTime" checked> Show Time</label><label class="settings-row-item"><input type="checkbox" id="settingShowSignature" checked> Doctor Signature</label></div><div class="settings-row"><span style="margin-right:12px;">Preview Style:</span><div class="radio-group"><label><input type="radio" name="settingStyle" value="plain" checked> Simple</label><label><input type="radio" name="settingStyle" value="split"> Left line</label></div></div></div>
+    <div class="settings-group"><h4>Prescription Type</h4><div class="radio-group"><label><input type="radio" name="prescType" value="standard" checked> Standard (no header)</label><label><input type="radio" name="prescType" value="professional"> Professional (with practice header)</label></div></div>
+    <div class="settings-group" id="practiceInfoCard"><h4>Practice Information</h4><div class="settings-row" style="flex-wrap:wrap; gap:16px;"><div style="flex:1; min-width:180px;"><label>Doctor Name</label><input type="text" id="doctorName" placeholder="Dr. John Doe"></div><div style="flex:1; min-width:180px;"><label>Registration No.</label><input type="text" id="doctorRegNo" placeholder="MCI/12345"></div><div style="flex:1; min-width:180px;"><label>Degree(s)</label><input type="text" id="doctorDegree" placeholder="MBBS, MD"></div></div><div class="settings-row" style="flex-wrap:wrap; gap:16px; margin-top:12px;"><div style="flex:1; min-width:200px;"><label>Chamber / Clinic Name</label><input type="text" id="chamberName" placeholder="City Hospital"></div><div style="flex:2; min-width:250px;"><label>Address</label><input type="text" id="doctorAddress" placeholder="123 Main Street, City"></div></div></div>
+    <div class="flex-between" style="margin-top:20px;"><button class="btn-primary" id="applySettingsBtn">Apply Settings</button><button class="btn-sm btn-outline" id="cancelSettingsBtn">Cancel</button></div>
+  </div></div>
+  <div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
+    <div class="admin-tabs"><div class="admin-tab active" data-tab="pending">Pending Approvals</div><div class="admin-tab" data-tab="users">All Users & Subscriptions</div></div>
+    <div id="pendingTransactionsList" style="max-height:400px; overflow-y:auto; margin:16px 0;"></div><div id="allUsersList" style="max-height:400px; overflow-y:auto; margin:16px 0; display:none;"></div>
+    <div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div>
+  </div></div>
+  <div id="allMedsPickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeMedsPickerModal">&times;</span><h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3><div id="allMedsListContainer" class="scrollable-picker"></div></div></div>
+  <div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
+  <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
+  <div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
+  <div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
+  <div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
+  <div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
+  <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
+  <div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin:16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
 
-  <script>
-    // ========== FIREBASE CONFIG ==========
-    const firebaseConfig = {
-      apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
-      authDomain: "test-website-22778.firebaseapp.com",
-      databaseURL: "https://test-website-22778-default-rtdb.firebaseio.com",
-      projectId: "test-website-22778",
-      storageBucket: "test-website-22778.firebasestorage.app",
-      messagingSenderId: "862083661951",
-      appId: "1:862083661951:web:838f650debb207a2fe7f4a"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+<script>
+  // ========== FIREBASE CONFIG (unchanged) ==========
+  const firebaseConfig = {
+    apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
+    authDomain: "test-website-22778.firebaseapp.com",
+    databaseURL: "https://test-website-22778-default-rtdb.firebaseio.com",
+    projectId: "test-website-22778",
+    storageBucket: "test-website-22778.firebasestorage.app",
+    messagingSenderId: "862083661951",
+    appId: "1:862083661951:web:838f650debb207a2fe7f4a",
+    measurementId: "G-9E5RYBBKJS"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    // Global state (full original)
-    let currentUser = null;
-    let medicines = [], adviceTags = [], prescriptions = [];
-    let userFreqTags = ["1-1-1","BD","TID","OD"];
-    let userDurTags = ["3 days","5 days","7 days","10 days"];
-    let userHowTags = ["After meals","Empty stomach","With water"];
-    let savedFirstNames = [], savedLastNames = [], savedDiseases = [];
-    let currentMedicines = [], currentAdvices = [];
-    let currentSerial = "RX001";
-    let settings = { showDate: true, showTime: true, showSignature: true, style: "plain", prescType: "standard" };
-    let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
-    let subscription = { dailyCount: 0, lastResetDate: null, expiryDate: null, pendingTransaction: null };
-    const ADMIN_EMAIL = "narayanbarman3210@gmail.com";
-    let monthlyChartInstance = null;
-    let pendingMedicine = null;
+  // ========== GLOBAL VARIABLES (all original) ==========
+  let currentUser = null;
+  let medicines = [], adviceTags = [], prescriptions = [];
+  let userFreqTags = ["1-1-1","1-0-0","0-1-0","0-0-1","BD","TID","OD"];
+  let userDurTags = ["3 days","5 days","7 days","10 days","14 days","30 days"];
+  let userHowTags = ["After meals","Empty stomach","With water","At bedtime"];
+  let savedFirstNames = [], savedLastNames = [], savedDiseases = [];
+  let currentMedicines = [], currentAdvices = [], currentDiagnosis = "", currentSerial = "";
+  let pendingMedicine = null, currentTagType = "";
+  let settings = { showDate: true, showTime: true, showSignature: true, style: "plain", prescType: "standard" };
+  let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
+  let subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true };
+  const ADMIN_EMAIL = "narayanbarman3210@gmail.com";
 
-    // ========== UTILITIES ==========
-    function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-    function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show && !el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } else if(!show && el) el.remove(); }
-    function formatTimeNoSeconds() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
-    function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
+  // Helper functions (unchanged)
+  function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+  function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else if(el) el.remove(); }
+  function showError(msg) { alert(msg); }
+  function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
+  function formatTimeNoSeconds() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
 
-    // ========== SUBSCRIPTION & DATA SYNC ==========
-    async function loadSubscriptionData() { if(!currentUser) return; const subDoc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').get(); if(subDoc.exists) subscription = subDoc.data(); else subscription = { dailyCount:0, lastResetDate:null, expiryDate:null }; const today = new Date().toDateString(); if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; await saveSubscriptionData(); } updateSubscriptionBadge(); }
-    async function saveSubscriptionData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').set(subscription); }
-    async function incrementDailyCount() { const today = new Date().toDateString(); if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; } subscription.dailyCount++; await saveSubscriptionData(); }
-    async function checkAndBlockIfLimitReached() { await loadSubscriptionData(); if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) return true; if(subscription.dailyCount < 10) return true; document.getElementById("subscriptionModal").style.display = "flex"; return false; }
-    function updateSubscriptionBadge() { const widget = document.getElementById("userWidget"); if(widget && currentUser) { let left = 10 - (subscription.dailyCount || 0); const old = widget.querySelector('.sub-badge'); if(old) old.remove(); widget.insertAdjacentHTML('beforeend', `<span class="sub-badge ml-2 text-xs bg-slate-700 text-amber-200 px-2 py-1 rounded-full">Free: ${left} left today</span>`); } }
+  // ========== AUTO-SUGGEST STORAGE ==========
+  async function saveAutoCompleteData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({ firstNames: savedFirstNames, lastNames: savedLastNames, diseases: savedDiseases }); }
+  async function loadAutoCompleteData() {
+    if(!currentUser) return;
+    const doc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').get();
+    if(doc.exists) { savedFirstNames = doc.data().firstNames || []; savedLastNames = doc.data().lastNames || []; savedDiseases = doc.data().diseases || []; }
+    else { savedFirstNames = ["Rajesh","Priya","Anjali"]; savedLastNames = ["Sharma","Verma"]; savedDiseases = ["Hypertension","Diabetes Type 2","URTI","UTI","Malaria"]; await saveAutoCompleteData(); }
+    updateDatalists();
+  }
+  function updateDatalists() {
+    document.getElementById("firstNamesSuggestions").innerHTML = savedFirstNames.map(n=>`<option>${escapeHtml(n)}</option>`).join("");
+    document.getElementById("lastNamesSuggestions").innerHTML = savedLastNames.map(n=>`<option>${escapeHtml(n)}</option>`).join("");
+    document.getElementById("diseaseSuggestions").innerHTML = savedDiseases.map(d=>`<option>${escapeHtml(d)}</option>`).join("");
+  }
+  async function addNewFirstName(name) { if(name && !savedFirstNames.includes(name)) { savedFirstNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
+  async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
+  async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
 
-    async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving","Review after 3 days"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); } catch(e){ console.error(e); alert("Load error: "+e.message); } finally{ showLoading(false); } }
-    async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
-    async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
-    async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsed(); renderPinnedSection(); }
-    async function saveSettingsToFirestore() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').set({ settings, practiceInfo }); }
-    async function loadSettingsFromFirestore() { if(!currentUser) return; const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').get(); if(doc.exists){ const data=doc.data(); if(data.settings) settings={...settings,...data.settings}; if(data.practiceInfo) practiceInfo={...practiceInfo,...data.practiceInfo}; } document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; updatePreview(); }
-    async function loadAutoCompleteData() { if(!currentUser) return; const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').get(); if(doc.exists) { savedFirstNames=doc.data().firstNames||[]; savedLastNames=doc.data().lastNames||[]; savedDiseases=doc.data().diseases||[]; } else { savedFirstNames=["Rajesh","Priya","Anjali"]; savedLastNames=["Sharma","Verma"]; savedDiseases=["Hypertension","Diabetes Type 2","URTI","UTI","Malaria"]; await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({firstNames:savedFirstNames,lastNames:savedLastNames,diseases:savedDiseases}); } updateDatalists(); }
-    function updateDatalists() { document.getElementById("firstNamesSuggestions").innerHTML = savedFirstNames.map(n=>`<option>${escapeHtml(n)}</option>`).join(""); document.getElementById("lastNamesSuggestions").innerHTML = savedLastNames.map(n=>`<option>${escapeHtml(n)}</option>`).join(""); document.getElementById("diseaseSuggestions").innerHTML = savedDiseases.map(d=>`<option>${escapeHtml(d)}</option>`).join(""); }
-
-    // ========== RENDER FUNCTIONS ==========
-    function renderMedicineList(search=""){ let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount-a.usageCount); const container=document.getElementById("medicineListContainer"); if(!container) return; container.innerHTML=filtered.map(med=>`<div class="med-item bg-slate-50 p-2 rounded-xl flex justify-between cursor-pointer hover:bg-cyan-50 border" data-id="${med.id}"><div><div class="font-semibold text-sm">${escapeHtml(med.name)}</div><div class="text-xs text-slate-500">${med.dosage}</div></div><div class="pin-icon ${med.pinned?'pinned':''} text-amber-400 cursor-pointer" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); attachMedEvents(); }
-    function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.id); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
-    function renderPinnedSection(){ const pinned=medicines.filter(m=>m.pinned); const section=document.getElementById("pinnedSection"); const container=document.getElementById("pinnedList"); if(pinned.length===0){ section.style.display="none"; return; } section.style.display="block"; container.innerHTML=pinned.map(med=>`<div class="med-item bg-slate-50 p-2 rounded-xl flex justify-between cursor-pointer" data-id="${med.id}"><div><div class="font-semibold text-sm">${escapeHtml(med.name)}</div><div class="text-xs">${med.dosage}</div></div><div class="pin-icon pinned text-amber-400 cursor-pointer" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.id); if(med) openPopup(med); }); }); document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
-    function renderMostUsed(){ const sorted=[...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5); const container=document.getElementById("mostUsedContainer"); if(container) container.innerHTML=sorted.map(m=>`<span class="inline-block bg-amber-100 px-2 py-1 rounded-full text-xs m-1 cursor-pointer" data-id="${m.id}">🔥 ${escapeHtml(m.name)}</span>`).join(""); document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.id); if(med) openPopup(med); })); }
-    function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); if(container) container.innerHTML=adviceTags.map(t=>`<span class="advice-tag bg-cyan-50 px-2 py-1 rounded-full text-xs cursor-pointer">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.innerText))); }
-    function addAdvice(t){ if(t.trim() && !currentAdvices.includes(t)){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
-    function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(container) container.innerHTML=currentAdvices.map((a,i)=>`<span class="bg-slate-100 px-2 py-1 rounded-full text-xs inline-flex gap-1">${escapeHtml(a)} <i class="fas fa-times-circle text-red-500 cursor-pointer" data-idx="${i}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i").forEach(icon=>icon.addEventListener("click",(e)=>{ const idx=parseInt(icon.dataset.idx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview(); })); }
-    function renderMedicinesTable(){ const tbody=document.getElementById("medicinesTableBody"); if(!tbody) return; tbody.innerHTML=""; currentMedicines.forEach((item,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input value="${escapeHtml(item.name)}" class="border rounded p-1 w-full text-xs med-field" data-idx="${idx}" data-field="name">`; row.insertCell(1).innerHTML=`<input value="${escapeHtml(item.dosage)}" class="border rounded p-1 w-full text-xs med-field" data-idx="${idx}" data-field="dosage">`; row.insertCell(2).innerHTML=`<input value="${escapeHtml(item.frequency)}" class="border rounded p-1 w-full text-xs med-field" data-idx="${idx}" data-field="frequency">`; row.insertCell(3).innerHTML=`<input value="${escapeHtml(item.duration)}" class="border rounded p-1 w-full text-xs med-field" data-idx="${idx}" data-field="duration">`; row.insertCell(4).innerHTML=`<input value="${escapeHtml(item.howToTake)}" class="border rounded p-1 w-full text-xs med-field" data-idx="${idx}" data-field="howToTake">`; let del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="text-red-500 text-xs"; del.onclick=()=>{currentMedicines.splice(idx,1); renderMedicinesTable(); updatePreview();}; row.insertCell(5).appendChild(del); }); document.querySelectorAll(".med-field").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx),field=this.dataset.field; if(currentMedicines[idx]) currentMedicines[idx][field]=this.value; updatePreview(); })); }
-    function getPreviewHTML(splitMode) { const firstName=document.getElementById("firstName").value.trim(), lastName=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diagnosis=document.getElementById("diagnosisField").value.trim(); const patientName=(firstName||lastName)?`${firstName} ${lastName}`.trim():""; const patientLine=(patientName||age||gender)?`<div><strong>${patientName||"Patient"}</strong> ${age?`, Age: ${age}`:''} ${gender?`(${gender})`:''}</div>`:""; const diagnosisHtml=diagnosis?`<div><strong>Diagnosis:</strong> ${escapeHtml(diagnosis)}</div>`:""; let headerHtml=""; if(settings.prescType==="professional") headerHtml=`<div class="practice-header"><div class="practice-name">${escapeHtml(practiceInfo.doctorName||"Doctor Name")}</div><div class="practice-details">${escapeHtml(practiceInfo.degree||"")}${practiceInfo.regNo?` | Reg: ${escapeHtml(practiceInfo.regNo)}`:""}</div><div class="practice-details">${escapeHtml(practiceInfo.chamberName||"")}${practiceInfo.address?`, ${escapeHtml(practiceInfo.address)}`:""}</div></div>`; let dateTimeHtml=""; if(settings.showDate||settings.showTime){ let dateStr=settings.showDate?new Date().toLocaleDateString():""; let timeStr=settings.showTime?formatTimeNoSeconds():""; let display=[dateStr,timeStr].filter(s=>s).join(" "); dateTimeHtml=`<div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${display}</span></div>`; } else dateTimeHtml=`<div><strong>${currentSerial}</strong></div>`; let medBlocks=""; if(currentMedicines.length===0) medBlocks="<p><i>No medicines added.</i></p>"; else medBlocks=currentMedicines.map(item=>`<div class="preview-med-item"><div class="preview-med-name">${escapeHtml(item.name)} ${escapeHtml(item.dosage)}</div><div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}${item.howToTake?` • ${escapeHtml(item.howToTake)}`:''}</div></div>`).join(""); let adviceHtml=currentAdvices.length?`<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; let signatureHtml=settings.showSignature?`<div class="signature-right">Doctor Signature: ___________________</div>`:""; const mainContent=`${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}${signatureHtml}`; if(splitMode){ let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>`; } else return `<div>${headerHtml}</div>${mainContent}${adviceHtml}`; }
-    function updatePreview(){ const splitMode=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(splitMode); const cont=document.getElementById("previewContainer"); if(splitMode) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
-    function resetCurrentDraft(){ currentMedicines=[]; currentAdvices=[]; document.getElementById("firstName").value=""; document.getElementById("lastName").value=""; document.getElementById("patientAge").value=""; document.getElementById("patientGender").value="Gender"; document.getElementById("diagnosisField").value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial=generateSerial(); }
-    async function saveCurrentPrescription(){ if(!await checkAndBlockIfLimitReached()) return; if(currentMedicines.length===0&&currentAdvices.length===0){ alert("Add medicine or advice"); return; } const newPresc={ id:Date.now().toString(), serial:currentSerial, createdAt:firebase.firestore.FieldValue.serverTimestamp(), dateTime:new Date().toISOString(), patient:{firstName:document.getElementById("firstName").value.trim(), lastName:document.getElementById("lastName").value.trim(), age:document.getElementById("patientAge").value.trim(), gender:document.getElementById("patientGender").value}, diagnosis:document.getElementById("diagnosisField").value.trim(), medicines:JSON.parse(JSON.stringify(currentMedicines)), advices:[...currentAdvices] }; prescriptions.unshift(newPresc); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('prescriptions').doc(newPresc.id).set(newPresc); await incrementDailyCount(); await loadSubscriptionData(); resetCurrentDraft(); alert(`Saved ${currentSerial}`); }
-    function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=parseInt(document.getElementById("printTopMargin").value)||0; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.preview-med-item{margin-bottom:0.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.3rem;}.preview-med-name{font-weight:700; color:#0c4e6e; font-size:0.85rem;}.signature-right{text-align:right; margin-top:20px; border-top:1px dashed #aaa;}</style></head><body>${html}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
-    function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; document.getElementById("medicineModal").style.display="flex"; }
-    async function addMedicineFromPopup(){ if(pendingMedicine){ currentMedicines.push({ name:pendingMedicine.name, dosage:document.getElementById("modalDosage").value.trim()||"As directed", frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); const med=medicines.find(m=>m.id===pendingMedicine.id); if(med) med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMedicinesTable(); updatePreview(); document.getElementById("medicineModal").style.display="none"; renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); } }
-    function openQuickPopup(){ document.getElementById("quickModal").style.display="flex"; }
-    async function addQuickMedicine(){ let name=document.getElementById("quickName").value.trim(); let dosage=document.getElementById("quickDosage").value.trim(); if(!name){alert("Enter medicine name"); return;} if(!dosage) dosage="As directed"; currentMedicines.push({name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed"}); let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing){ existing.usageCount=(existing.usageCount||0)+1; await saveMedicines(); } else { await addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed", usageCount:1, pinned:false }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
-    function showHistoryModal(){ renderHistoryList(); document.getElementById("historyModal").style.display="flex"; }
-    function renderHistoryList(){ let filtered=[...prescriptions]; const name=document.getElementById("historySearchName").value.trim().toLowerCase(); const from=document.getElementById("historyFromDate").value; const to=document.getElementById("historyToDate").value; const year=document.getElementById("historyYear").value.trim(); const month=document.getElementById("historyMonth").value; if(name) filtered=filtered.filter(p=>`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim().toLowerCase().includes(name)); if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} if(year&&!isNaN(parseInt(year))) filtered=filtered.filter(p=>new Date(p.dateTime).getFullYear()===parseInt(year)); if(month&&month!=="") filtered=filtered.filter(p=>(new Date(p.dateTime).getMonth()+1)===parseInt(month)); const container=document.getElementById("historyListContainer"); if(filtered.length===0){container.innerHTML="<div class='history-item'>No records</div>"; return;} container.innerHTML=filtered.map(p=>`<div class="history-item bg-slate-50 p-3 rounded-xl mb-2 flex justify-between cursor-pointer" data-id="${p.id}"><div><strong>${p.serial}</strong> | ${`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim()||"Anonymous"} | ${new Date(p.dateTime).toLocaleDateString()}</div><div><i class="fas fa-chevron-right"></i> Load</div></div>`).join(""); document.querySelectorAll("#historyListContainer .history-item").forEach(el=>el.addEventListener("click",()=>{const presc=prescriptions.find(p=>p.id===el.dataset.id); if(presc){ loadPrescription(presc); document.getElementById("historyModal").style.display="none";}})); }
-    function loadPrescription(presc){ currentSerial=presc.serial; document.getElementById("firstName").value=presc.patient.firstName||""; document.getElementById("lastName").value=presc.patient.lastName||""; document.getElementById("patientAge").value=presc.patient.age||""; document.getElementById("patientGender").value=presc.patient.gender||""; document.getElementById("diagnosisField").value=presc.diagnosis||""; currentMedicines=JSON.parse(JSON.stringify(presc.medicines||[])); currentAdvices=[...(presc.advices||[])]; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); }
-    function resetHistoryFilters(){ document.getElementById("historySearchName").value=""; document.getElementById("historyFromDate").value=""; document.getElementById("historyToDate").value=""; document.getElementById("historyYear").value=""; document.getElementById("historyMonth").value=""; renderHistoryList(); }
-    function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="flex"; }
-    function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card bg-white p-4 rounded-xl shadow-sm text-center"><div class="text-2xl font-bold text-cyan-700">${total}</div><div class="text-xs">Total Prescriptions</div></div><div class="analytics-card bg-white p-4 rounded-xl shadow-sm text-center"><div class="text-2xl font-bold text-cyan-700">${todayCount}</div><div class="text-xs">Today</div></div><div class="analytics-card bg-white p-4 rounded-xl shadow-sm text-center"><div class="text-2xl font-bold text-cyan-700">${weekCount}</div><div class="text-xs">Last 7 days</div></div><div class="analytics-card bg-white p-4 rounded-xl shadow-sm text-center"><div class="text-2xl font-bold text-cyan-700">${monthCount}</div><div class="text-xs">Last 30 days</div></div><div class="analytics-card bg-white p-4 rounded-xl shadow-sm text-center"><div class="text-2xl font-bold text-cyan-700">${yearCount}</div><div class="text-xs">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); }
-    function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
-    function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required\n• Pin favourites, history, analytics"); }
-    function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<2){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,5); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div class="p-2 hover:bg-cyan-50 cursor-pointer" data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{ const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
-    async function importMedicinesFromFile(file){ alert("Bulk import: feature ready for JSON/CSV"); }
-    function openMedicineInventory(){ alert("Medicine inventory manager (edit/delete)"); }
-    function openAdviceInventory(){ alert("Advice tags manager"); }
-    function openSettingsModal(){ document.getElementById("settingsModal").style.display="flex"; }
-    function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const styleRadio=document.querySelector('input[name="settingStyle"]:checked'); if(styleRadio) settings.style=styleRadio.value; const typeRadio=document.querySelector('input[name="prescType"]:checked'); if(typeRadio) settings.prescType=typeRadio.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
-    function showAllMedsPicker(){ alert("All medicines picker"); }
-    function showAllAdvicePicker(){ alert("All advice picker"); }
-    function showAdminPanel(){ alert("Admin panel – approve/reject transactions"); }
-    function showDiseaseModal(){ alert("Disease picker with saved list"); }
-
-    // ========== AUTHENTICATION WITH SMART INTERCEPT ==========
-    let currentTabAuth = 'signin';
-    const loginOverlay = document.getElementById('loginOverlay');
-    const interceptModal = document.getElementById('interceptModal');
-    let pendingInterceptEmail = "";
-    function updateTabUI() {
-      const signinBtn = document.getElementById('signinTabBtn');
-      const registerBtn = document.getElementById('registerTabBtn');
-      const badge = document.getElementById('newUserBadge');
-      const actionBtn = document.getElementById('actionSubmitBtn');
-      if (currentTabAuth === 'signin') {
-        signinBtn.classList.add('tab-active'); signinBtn.classList.remove('tab-inactive');
-        registerBtn.classList.add('tab-inactive'); registerBtn.classList.remove('tab-active');
-        badge.style.opacity = '1'; badge.style.visibility = 'visible'; badge.style.display = 'inline-flex';
-        actionBtn.innerText = 'Secure Log In';
-      } else {
-        registerBtn.classList.add('tab-active'); registerBtn.classList.remove('tab-inactive');
-        signinBtn.classList.add('tab-inactive'); signinBtn.classList.remove('tab-active');
-        badge.style.opacity = '0'; badge.style.visibility = 'hidden'; badge.style.display = 'none';
-        actionBtn.innerText = 'Initialize Doctor Profile';
-      }
+  // ========== SUBSCRIPTION FUNCTIONS ==========
+  async function loadSubscriptionData() {
+    if(!currentUser) return;
+    const subDoc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').get();
+    if(subDoc.exists) subscription = subDoc.data();
+    else { subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true }; await saveSubscriptionData(); }
+    const today = new Date().toDateString();
+    if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; await saveSubscriptionData(); }
+    if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) subscription.isActive = false;
+    else if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) subscription.isActive = true;
+    await saveSubscriptionData();
+    if(subscription.expiryDate) {
+      const daysLeft = Math.ceil((new Date(subscription.expiryDate) - new Date()) / (1000*60*60*24));
+      if(daysLeft <= 2 && daysLeft > 0) showRenewalModal(daysLeft);
     }
-    document.getElementById('signinTabBtn').addEventListener('click', () => { currentTabAuth = 'signin'; updateTabUI(); });
-    document.getElementById('registerTabBtn').addEventListener('click', () => { currentTabAuth = 'register'; updateTabUI(); });
-    let pwdVisible = false;
-    document.getElementById('togglePasswordBtn').addEventListener('click', () => {
-      const pwdInput = document.getElementById('loginPassword');
-      const eyeOpen = document.getElementById('eyeOpenIcon');
-      const eyeClosed = document.getElementById('eyeClosedIcon');
-      if (pwdVisible) {
-        pwdInput.type = 'password';
-        eyeOpen.style.display = 'inline-block';
-        eyeClosed.style.display = 'none';
-      } else {
-        pwdInput.type = 'text';
-        eyeOpen.style.display = 'none';
-        eyeClosed.style.display = 'inline-block';
-      }
-      pwdVisible = !pwdVisible;
-    });
-    async function handleEmailSignInOrSignUp() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      if (!email || !password) { alert("Enter email and password"); return; }
-      if (password.length < 6) { alert("Password must be at least 6 characters"); return; }
-      if (currentTabAuth === 'signin') {
-        // Intercept mock: if email not in existing list (demo), show modal. In real app, Firebase will return user-not-found.
-        // For demo, we simulate intercept for any email not already in our mock list
-        const mockExisting = ["doctor@test.com", "dr.sarah@fastrx.com", "narayanbarman3210@gmail.com"];
-        if (!mockExisting.includes(email.toLowerCase())) {
-          pendingInterceptEmail = email;
-          interceptModal.classList.remove('invisible', 'opacity-0');
-          interceptModal.classList.add('opacity-100', 'visible');
-          return;
-        }
-      }
-      showLoading(true);
-      try {
-        if (currentTabAuth === 'signin') {
-          await auth.signInWithEmailAndPassword(email, password);
-        } else {
-          await auth.createUserWithEmailAndPassword(email, password);
-          await db.collection('users').doc(auth.currentUser.uid).set({ email, createdAt: new Date() });
-        }
-      } catch (err) {
-        if (err.code === 'auth/user-not-found') {
-          pendingInterceptEmail = email;
-          interceptModal.classList.remove('invisible', 'opacity-0');
-          interceptModal.classList.add('opacity-100', 'visible');
-        } else {
-          alert("Auth error: " + err.message);
-        }
-        showLoading(false);
-      }
+    updateSubscriptionBadge();
+    return subscription.isActive;
+  }
+  async function saveSubscriptionData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').set(subscription); }
+  async function incrementDailyCount() {
+    const today = new Date().toDateString();
+    if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; }
+    subscription.dailyCount++;
+    await saveSubscriptionData();
+  }
+  async function checkAndBlockIfLimitReached() {
+    await loadSubscriptionData();
+    if(subscription.isActive && subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) return true;
+    if(subscription.dailyCount < 10) return true;
+    document.getElementById("subscriptionModal").style.display = "block";
+    return false;
+  }
+  function updateSubscriptionBadge() {
+    const widget = document.getElementById("userWidget");
+    if(widget && currentUser) {
+      let badgeHtml = '';
+      if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) badgeHtml = `<span class="subscription-badge active"><i class="fas fa-crown"></i> PRO Active till ${new Date(subscription.expiryDate).toLocaleDateString()}</span>`;
+      else if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) badgeHtml = `<span class="subscription-badge expired"><i class="fas fa-exclamation-triangle"></i> Expired</span>`;
+      else { const left = 10 - (subscription.dailyCount || 0); badgeHtml = `<span class="subscription-badge"><i class="fas fa-prescription-bottle"></i> Free: ${left} left today</span>`; }
+      const premiumBtn = `<button id="premiumUpgradeBtn" class="premium-btn"><i class="fas fa-gem"></i> ⭐ Best Choice</button>`;
+      const existingBadge = widget.querySelector('.subscription-badge');
+      const existingBtn = widget.querySelector('#premiumUpgradeBtn');
+      if(existingBadge) existingBadge.remove();
+      if(existingBtn) existingBtn.remove();
+      widget.insertAdjacentHTML('beforeend', badgeHtml + premiumBtn);
+      const btn = document.getElementById("premiumUpgradeBtn");
+      if(btn) btn.addEventListener("click", () => document.getElementById("subscriptionModal").style.display = "block");
     }
-    async function handleGoogleSignIn() { const provider = new firebase.auth.GoogleAuthProvider(); try { await auth.signInWithPopup(provider); } catch(e){ alert(e.message); } }
-    async function handleForgotPassword() { const email = document.getElementById('loginEmail').value.trim(); if(email) auth.sendPasswordResetEmail(email).then(()=>alert("Reset email sent")); else alert("Enter email"); }
-    document.getElementById('authForm').addEventListener('submit', (e) => { e.preventDefault(); handleEmailSignInOrSignUp(); });
-    document.getElementById('googleAuthBtn').addEventListener('click', handleGoogleSignIn);
-    document.getElementById('forgotPasswordLink')?.addEventListener('click', handleForgotPassword);
-    document.getElementById('modalRegisterActionBtn').addEventListener('click', () => {
-      interceptModal.classList.add('invisible', 'opacity-0');
-      if (pendingInterceptEmail) document.getElementById('loginEmail').value = pendingInterceptEmail;
-      currentTabAuth = 'register';
-      updateTabUI();
-    });
-    document.getElementById('modalFixEmailBtn').addEventListener('click', () => { interceptModal.classList.add('invisible', 'opacity-0'); });
-    document.getElementById('closeModalBtn').addEventListener('click', () => { interceptModal.classList.add('invisible', 'opacity-0'); });
+  }
+  function showRenewalModal(daysLeft) {
+    document.getElementById("renewalMsg").innerText = `Your plan expires in ${daysLeft} day(s). Please recharge to continue.`;
+    document.getElementById("renewalModal").style.display = "block";
+  }
 
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('mainApp').style.display = 'block';
-        loginOverlay.style.display = 'none';
-        const isAdmin = user.email === ADMIN_EMAIL;
-        document.getElementById('userWidget').innerHTML = `<div class="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1"><div class="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center text-white">${(user.displayName||user.email).charAt(0).toUpperCase()}</div><span class="text-sm font-medium">${user.displayName || user.email}</span><button id="logoutBtn" class="text-xs bg-slate-200 px-2 py-1 rounded-full">Logout</button></div>`;
-        document.getElementById('logoutBtn')?.addEventListener('click', () => auth.signOut());
-        if (isAdmin) document.getElementById('adminPanelBtn').style.display = 'inline-flex';
-        loadUserData();
+  // ========== TRANSACTION & ADMIN FUNCTIONS ==========
+  async function submitTransaction(plan, transactionId, isRenewal=false) {
+    if(!transactionId || transactionId.length!==12 || isNaN(transactionId)) { alert("Enter valid 12-digit transaction ID"); return; }
+    showLoading(true);
+    await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').update({ pendingTransaction: { plan, transactionId, timestamp: new Date().toISOString(), approved: false } });
+    await db.collection('pendingTransactions').doc(Date.now().toString()).set({ userId: currentUser.uid, userEmail: currentUser.email, plan, transactionId, timestamp: new Date().toISOString(), approved: false });
+    alert("Transaction submitted. Awaiting admin approval.");
+    if(isRenewal) document.getElementById("renewalModal").style.display = "none";
+    else document.getElementById("subscriptionModal").style.display = "none";
+    showLoading(false);
+  }
+  async function loadPendingTransactions() {
+    if(!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    const pendingSnap = await db.collection('pendingTransactions').where('approved', '==', false).get();
+    const pending = pendingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const container = document.getElementById("pendingTransactionsList");
+    if(pending.length===0) { container.innerHTML = "<p>No pending approvals.</p>"; return; }
+    container.innerHTML = pending.map(p => `<div style="background:#f8fafc; padding:12px; border-radius:16px; margin-bottom:10px;"><div><strong>${escapeHtml(p.userEmail)}</strong></div><div>Plan: ${p.plan} | TXN: ${p.transactionId}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-id="${p.id}" data-approve="true">Approve</button><button class="btn-sm btn-danger" data-id="${p.id}" data-approve="false">Reject</button></div></div>`).join("");
+    container.querySelectorAll("button[data-id]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const approve = btn.dataset.approve === "true";
+        const pendingDoc = await db.collection('pendingTransactions').doc(id).get();
+        const data = pendingDoc.data();
+        if(data) {
+          if(approve) {
+            const expiryDate = new Date();
+            if(data.plan === "monthly") expiryDate.setMonth(expiryDate.getMonth()+1);
+            else expiryDate.setFullYear(expiryDate.getFullYear()+1);
+            await db.collection('users').doc(data.userId).collection('settings').doc('subscription').update({ isActive: true, plan: data.plan, expiryDate: expiryDate.toISOString(), pendingTransaction: null, dailyCount: 0 });
+            await db.collection('pendingTransactions').doc(id).update({ approved: true });
+            alert("Approved! User can now use unlimited prescriptions.");
+          } else {
+            await db.collection('users').doc(data.userId).collection('settings').doc('subscription').update({ pendingTransaction: null });
+            await db.collection('pendingTransactions').doc(id).update({ approved: true });
+            alert("Rejected");
+          }
+          loadPendingTransactions();
+          loadAllUsers();
+        }
+      });
+    });
+  }
+  async function loadAllUsers() {
+    if(!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    const usersSnap = await db.collection('users').get();
+    const usersList = [];
+    for(const userDoc of usersSnap.docs) {
+      const subDoc = await db.collection('users').doc(userDoc.id).collection('settings').doc('subscription').get();
+      const userData = { email: userDoc.data()?.email || userDoc.id, uid: userDoc.id };
+      if(subDoc.exists) userData.subscription = subDoc.data();
+      else userData.subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0 };
+      usersList.push(userData);
+    }
+    const container = document.getElementById("allUsersList");
+    if(usersList.length===0) { container.innerHTML = "<p>No users found.</p>"; return; }
+    container.innerHTML = usersList.map(u => {
+      const expiry = u.subscription.expiryDate ? new Date(u.subscription.expiryDate).toLocaleDateString() : 'Never';
+      const status = u.subscription.expiryDate && new Date(u.subscription.expiryDate) >= new Date() ? 'Active' : (u.subscription.expiryDate ? 'Expired' : 'Free');
+      const planBadge = u.subscription.plan === 'monthly' ? '📅 Monthly' : (u.subscription.plan === 'yearly' ? '📆 Yearly' : 'Free');
+      return `<div class="subscription-user-card"><div><strong>${escapeHtml(u.email)}</strong></div><div>Plan: ${planBadge} | Status: ${status} | Expires: ${expiry}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-uid="${u.uid}" data-action="extend_monthly">+1 Month</button><button class="btn-sm" data-uid="${u.uid}" data-action="extend_yearly">+1 Year</button><button class="btn-sm btn-danger" data-uid="${u.uid}" data-action="cancel">Cancel Subscription</button></div></div>`;
+    }).join("");
+    container.querySelectorAll("button[data-uid]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.dataset.uid;
+        const action = btn.dataset.action;
+        const subRef = db.collection('users').doc(uid).collection('settings').doc('subscription');
+        const subDoc = await subRef.get();
+        let currentExpiry = subDoc.exists ? (subDoc.data().expiryDate ? new Date(subDoc.data().expiryDate) : new Date()) : new Date();
+        if(currentExpiry < new Date()) currentExpiry = new Date();
+        if(action === 'extend_monthly') { currentExpiry.setMonth(currentExpiry.getMonth() + 1); await subRef.update({ isActive: true, plan: 'monthly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 }); alert("Extended by 1 month!"); }
+        else if(action === 'extend_yearly') { currentExpiry.setFullYear(currentExpiry.getFullYear() + 1); await subRef.update({ isActive: true, plan: 'yearly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 }); alert("Extended by 1 year!"); }
+        else if(action === 'cancel') { await subRef.update({ isActive: false, expiryDate: null, plan: null }); alert("Subscription cancelled."); }
+        loadAllUsers();
+      });
+    });
+  }
+  function showAdminPanel() { 
+    if(currentUser && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) { 
+      loadPendingTransactions(); loadAllUsers();
+      document.getElementById("adminPanelModal").style.display = "block"; 
+      document.querySelectorAll(".admin-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+          if(tab.dataset.tab === "pending") { document.getElementById("pendingTransactionsList").style.display = "block"; document.getElementById("allUsersList").style.display = "none"; loadPendingTransactions(); }
+          else { document.getElementById("pendingTransactionsList").style.display = "none"; document.getElementById("allUsersList").style.display = "block"; loadAllUsers(); }
+        });
+      });
+    } 
+  }
+
+  // ========== DISEASE MODAL ==========
+  function showDiseaseModal() {
+    const container = document.getElementById("diseaseListContainer");
+    container.innerHTML = savedDiseases.map(d => `<span class="tag" data-disease="${escapeHtml(d)}" style="display:inline-flex; align-items:center; gap:6px;">${escapeHtml(d)} <i class="fas fa-trash-alt" style="color:#dc2626; cursor:pointer;" data-disease="${escapeHtml(d)}"></i></span>`).join("");
+    container.querySelectorAll(".tag").forEach(el => {
+      el.addEventListener("click", (e) => {
+        if(e.target.classList.contains("fa-trash-alt")) return;
+        document.getElementById("diagnosisField").value = el.getAttribute("data-disease");
+        updatePreview();
+        document.getElementById("diseaseModal").style.display = "none";
+      });
+      const delIcon = el.querySelector(".fa-trash-alt");
+      if(delIcon) delIcon.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const disease = delIcon.getAttribute("data-disease");
+        if(confirm(`Delete "${disease}"?`)) {
+          const idx = savedDiseases.indexOf(disease);
+          if(idx !== -1) savedDiseases.splice(idx,1);
+          await saveAutoCompleteData();
+          updateDatalists();
+          showDiseaseModal();
+        }
+      });
+    });
+    document.getElementById("diseaseModal").style.display = "block";
+  }
+  async function addNewDiseaseFromModal() {
+    const val = document.getElementById("newDiseaseInput").value.trim();
+    if(val && !savedDiseases.includes(val)) { savedDiseases.push(val); await saveAutoCompleteData(); updateDatalists(); showDiseaseModal(); document.getElementById("newDiseaseInput").value = ""; }
+  }
+
+  // ========== CORE DATA LOAD FUNCTIONS ==========
+  async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving","Review after 3 days"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const freqDoc=await db.collection('users').doc(uid).collection('settings').doc('freqTags').get(); if(freqDoc.exists) userFreqTags=freqDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); const durDoc=await db.collection('users').doc(uid).collection('settings').doc('durTags').get(); if(durDoc.exists) userDurTags=durDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); const howDoc=await db.collection('users').doc(uid).collection('settings').doc('howTags').get(); if(howDoc.exists) userHowTags=howDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
+  async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
+  async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
+  async function saveTags() { if(!currentUser) return; const uid=currentUser.uid; await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); }
+  async function updateMedicineUsage(medId) { const med=medicines.find(m=>m.id===medId); if(med){ med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMostUsed(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); } }
+  async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsed(); renderPinnedSection(); }
+  function renderMedicineList(search=""){ let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount-a.usageCount); const container=document.getElementById("medicineListContainer"); if(!container) return; container.innerHTML=filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); attachMedEvents(); }
+  function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
+  function renderPinnedSection(){ const pinned=medicines.filter(m=>m.pinned); const section=document.getElementById("pinnedSection"); const container=document.getElementById("pinnedList"); if(pinned.length===0){ section.style.display="none"; return; } section.style.display="block"; container.innerHTML=pinned.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon pinned" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
+  function renderMostUsed(){ const sorted=[...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5); const container=document.getElementById("mostUsedContainer"); if(container) container.innerHTML=`<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")+`</div>`; document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); })); }
+  function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; renderTagGroup("freqTagsContainer", userFreqTags, "freq"); renderTagGroup("durTagsContainer", userDurTags, "dur"); renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("medicineModal").style.display="block"; }
+  function renderTagGroup(containerId, tags, type){ const container=document.getElementById(containerId); if(!container) return; container.innerHTML=tags.map(t=>`<span class="tag" data-tag="${escapeHtml(t)}" data-type="${type}">${escapeHtml(t)}</span>`).join(""); container.querySelectorAll(".tag").forEach(el=>el.addEventListener("click",()=>{ if(type==="freq") document.getElementById("modalFrequency").value=el.dataset.tag; else if(type==="dur") document.getElementById("modalDuration").value=el.dataset.tag; else document.getElementById("modalHowToTake").value=el.dataset.tag; })); }
+  async function addMedicineFromPopup(){ if(pendingMedicine){ currentMedicines.push({ name:pendingMedicine.name, dosage:document.getElementById("modalDosage").value.trim()||"As directed", frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); const med=medicines.find(m=>m.id===pendingMedicine.id); if(med) med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMedicinesTable(); updatePreview(); closeModal(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); } }
+  function renderMedicinesTable(){ const tbody=document.getElementById("medicinesTableBody"); if(!tbody) return; tbody.innerHTML=""; currentMedicines.forEach((item,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input value="${escapeHtml(item.name)}" class="med-field" data-idx="${idx}" data-field="name">`; row.insertCell(1).innerHTML=`<input value="${escapeHtml(item.dosage)}" class="med-field" data-idx="${idx}" data-field="dosage">`; row.insertCell(2).innerHTML=`<input value="${escapeHtml(item.frequency)}" class="med-field" data-idx="${idx}" data-field="frequency">`; row.insertCell(3).innerHTML=`<input value="${escapeHtml(item.duration)}" class="med-field" data-idx="${idx}" data-field="duration">`; row.insertCell(4).innerHTML=`<input value="${escapeHtml(item.howToTake)}" class="med-field" data-idx="${idx}" data-field="howToTake">`; let del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="btn-sm"; del.onclick=()=>{currentMedicines.splice(idx,1); renderMedicinesTable(); updatePreview();}; row.insertCell(5).appendChild(del); }); document.querySelectorAll(".med-field").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx),field=this.dataset.field; if(currentMedicines[idx]){ currentMedicines[idx][field]=this.value; updatePreview(); }})); }
+  function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); if(!container) return; container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
+  function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
+  function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(!container) return; container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
+  function getPreviewHTML(splitMode) {
+    const firstName=document.getElementById("firstName").value.trim(), lastName=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diagnosis=document.getElementById("diagnosisField").value.trim();
+    const patientName=(firstName||lastName)?`${firstName} ${lastName}`.trim():"";
+    const patientLine=(patientName||age||gender)?`<div><strong>${patientName||"Patient"}</strong> ${age?`, Age: ${age}`:''} ${gender?`(${gender})`:''}</div>`:"";
+    const diagnosisHtml=diagnosis?`<div><strong>Diagnosis:</strong> ${escapeHtml(diagnosis)}</div>`:"";
+    let headerHtml="";
+    if(settings.prescType==="professional") headerHtml=`<div class="practice-header"><div class="practice-name">${escapeHtml(practiceInfo.doctorName||"Doctor Name")}</div><div class="practice-details">${escapeHtml(practiceInfo.degree||"")}${practiceInfo.regNo?` | Reg: ${escapeHtml(practiceInfo.regNo)}`:""}</div><div class="practice-details">${escapeHtml(practiceInfo.chamberName||"")}${practiceInfo.address?`, ${escapeHtml(practiceInfo.address)}`:""}</div></div>`;
+    let dateTimeHtml="";
+    if(settings.showDate||settings.showTime){ let dateStr=settings.showDate?new Date().toLocaleDateString():""; let timeStr=settings.showTime?formatTimeNoSeconds():""; let display=[dateStr,timeStr].filter(s=>s).join(" "); dateTimeHtml=`<div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${display}</span></div>`; } else dateTimeHtml=`<div><strong>${currentSerial}</strong></div>`;
+    let medBlocks="";
+    if(currentMedicines.length===0) medBlocks="<p><i>No medicines added.</i></p>";
+    else medBlocks=currentMedicines.map(item=>`<div class="preview-med-item"><div class="preview-med-name">${escapeHtml(item.name)} ${escapeHtml(item.dosage)}</div><div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}${item.howToTake?` • ${escapeHtml(item.howToTake)}`:''}</div></div>`).join("");
+    let adviceHtml=currentAdvices.length?`<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:"";
+    let signatureHtml=settings.showSignature?`<div class="signature-right">Doctor Signature: ___________________</div>`:"";
+    const mainContent=`${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}${signatureHtml}`;
+    if(splitMode){ let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>`; }
+    else return `<div>${headerHtml}</div>${mainContent}${adviceHtml}`;
+  }
+  function updatePreview(){ const splitMode=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(splitMode); const cont=document.getElementById("previewContainer"); if(splitMode) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
+  async function saveSettingsToFirestore() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').set({ settings, practiceInfo }); }
+  async function loadSettingsFromFirestore() { if(!currentUser) return; const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').get(); if(doc.exists){ const data=doc.data(); if(data.settings) settings={...settings,...data.settings}; if(data.practiceInfo) practiceInfo={...practiceInfo,...data.practiceInfo}; } document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; updatePreview(); }
+  function resetCurrentDraft(){ currentMedicines=[]; currentAdvices=[]; document.getElementById("firstName").value=""; document.getElementById("lastName").value=""; document.getElementById("patientAge").value=""; document.getElementById("patientGender").value=""; document.getElementById("diagnosisField").value=""; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); currentSerial=generateSerial(); }
+  async function saveCurrentPrescription(){ if(!await checkAndBlockIfLimitReached()) return; if(currentMedicines.length===0&&currentAdvices.length===0){ alert("Add medicine or advice"); return; } const newPresc={ id:Date.now().toString(), serial:currentSerial, createdAt:firebase.firestore.FieldValue.serverTimestamp(), dateTime:new Date().toISOString(), patient:{firstName:document.getElementById("firstName").value.trim(), lastName:document.getElementById("lastName").value.trim(), age:document.getElementById("patientAge").value.trim(), gender:document.getElementById("patientGender").value}, diagnosis:document.getElementById("diagnosisField").value.trim(), medicines:JSON.parse(JSON.stringify(currentMedicines)), advices:[...currentAdvices] }; prescriptions.unshift(newPresc); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('prescriptions').doc(newPresc.id).set(newPresc); await incrementDailyCount(); await loadSubscriptionData(); resetCurrentDraft(); alert(`Saved ${currentSerial}`); }
+  function showHistoryModal(){ renderHistoryList(); document.getElementById("historyModal").style.display="block"; }
+  function renderHistoryList(){ let filtered=[...prescriptions]; const name=document.getElementById("historySearchName").value.trim().toLowerCase(); const from=document.getElementById("historyFromDate").value; const to=document.getElementById("historyToDate").value; const year=document.getElementById("historyYear").value.trim(); const month=document.getElementById("historyMonth").value; if(name) filtered=filtered.filter(p=>`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim().toLowerCase().includes(name)); if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} if(year&&!isNaN(parseInt(year))) filtered=filtered.filter(p=>new Date(p.dateTime).getFullYear()===parseInt(year)); if(month&&month!=="") filtered=filtered.filter(p=>(new Date(p.dateTime).getMonth()+1)===parseInt(month)); const container=document.getElementById("historyListContainer"); if(filtered.length===0){container.innerHTML="<div class='history-item'>No records</div>"; return;} container.innerHTML=filtered.map(p=>`<div class="history-item" data-id="${p.id}"><div><strong>${p.serial}</strong> | ${`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim()||"Anonymous"} | ${new Date(p.dateTime).toLocaleDateString()}</div><div><i class="fas fa-chevron-right"></i> Load</div></div>`).join(""); document.querySelectorAll("#historyListContainer .history-item").forEach(el=>el.addEventListener("click",()=>{const presc=prescriptions.find(p=>p.id===el.dataset.id); if(presc){ loadPrescription(presc); document.getElementById("historyModal").style.display="none";}})); }
+  function loadPrescription(presc){ currentSerial=presc.serial; document.getElementById("firstName").value=presc.patient.firstName||""; document.getElementById("lastName").value=presc.patient.lastName||""; document.getElementById("patientAge").value=presc.patient.age||""; document.getElementById("patientGender").value=presc.patient.gender||""; document.getElementById("diagnosisField").value=presc.diagnosis||""; currentMedicines=JSON.parse(JSON.stringify(presc.medicines||[])); currentAdvices=[...(presc.advices||[])]; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); }
+  function resetHistoryFilters(){ document.getElementById("historySearchName").value=""; document.getElementById("historyFromDate").value=""; document.getElementById("historyToDate").value=""; document.getElementById("historyYear").value=""; document.getElementById("historyMonth").value=""; renderHistoryList(); }
+  function openQuickPopup(){ document.getElementById("quickModal").style.display="block"; }
+  async function addQuickMedicine(){ let name=document.getElementById("quickName").value.trim(); let dosage=document.getElementById("quickDosage").value.trim(); if(!name){alert("Enter medicine name"); return;} if(!dosage) dosage="As directed"; currentMedicines.push({name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed"}); let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing){ existing.usageCount=(existing.usageCount||0)+1; await saveMedicines(); } else { await addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"As directed", usageCount:1, pinned:false }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
+  function closeModal(){ document.getElementById("medicineModal").style.display="none"; pendingMedicine=null; }
+  function closeQuickPopup(){ document.getElementById("quickModal").style.display="none"; }
+  function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=parseInt(document.getElementById("printTopMargin").value)||0; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.prescription-content{max-width:800px;margin:0 auto;}.preview-med-item{margin-bottom:0.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.3rem;}.preview-med-name{font-weight:700; color:#0c4e6e; font-size:0.85rem;}.preview-med-detail{font-size:0.75rem; color:#334155; margin-top:2px;}.signature-right{text-align:right; margin-top:20px; padding-top:10px; border-top:1px dashed #aaa;}.practice-header{margin-bottom:20px; text-align:center; border-bottom:2px solid #0a7e8c; padding-bottom:12px; width:100%;}.practice-name{font-size:1.4rem; font-weight:700; color:#0a4c6e;}.practice-details{font-size:0.75rem; color:#4b6b87; margin-top:6px;}@media print{body{padding:${margin}mm 10mm 10mm 10mm;}}</style></head><body><div class="prescription-content">${html}</div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
+  function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
+  async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
+  async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"As directed", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"", usageCount:0, pinned:false }); } } alert("Imported."); }
+  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required (login as narayanbarman3210@gmail.com)\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
+  function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
+  function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
+  function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
+  function openMedicineInventory(){ renderSimpleInventory(); document.getElementById("medicineInventoryModal").style.display="block"; }
+  function renderSimpleInventory(){ const tbody=document.getElementById("inventoryMedBody"); tbody.innerHTML=""; medicines.forEach((med,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input type="text" value="${escapeHtml(med.name)}" class="inv-name" data-idx="${idx}">`; row.insertCell(1).innerHTML=`<input type="text" value="${escapeHtml(med.dosage)}" class="inv-dosage" data-idx="${idx}">`; let delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ medicines.splice(idx,1); saveMedicines(); renderSimpleInventory(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); }; row.insertCell(2).appendChild(delBtn); }); document.querySelectorAll(".inv-name, .inv-dosage").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx); if(!isNaN(idx) && medicines[idx]){ if(this.classList.contains("inv-name")) medicines[idx].name=this.value; else medicines[idx].dosage=this.value; saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); }})); }
+  function addInventoryMedicine(){ let name=prompt("Medicine name:"); if(!name) return; let dosage=prompt("Dosage:"); if(!dosage) dosage="As directed"; addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"", usageCount:0, pinned:false }); renderSimpleInventory(); }
+  function deleteAllMedicines(){ if(confirm("Delete ALL medicines?")){ medicines=[]; saveMedicines(); renderSimpleInventory(); renderMedicineList(""); renderMostUsed(); renderPinnedSection(); } }
+  function openAdviceInventory(){ renderAdviceInventory(); document.getElementById("adviceInventoryModal").style.display="block"; }
+  function renderAdviceInventory(){ const container=document.getElementById("adviceInventoryList"); container.innerHTML=""; adviceTags.forEach((tag,idx)=>{ const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.gap="8px"; div.style.marginBottom="8px"; const input=document.createElement("input"); input.type="text"; input.value=tag; input.style.flex="1"; input.addEventListener("change",()=>{ adviceTags[idx]=input.value; saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); }); const delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ adviceTags.splice(idx,1); saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); }; div.appendChild(input); div.appendChild(delBtn); container.appendChild(div); }); const addBtn=document.createElement("button"); addBtn.innerText="+ Add New Advice"; addBtn.className="btn-sm"; addBtn.onclick=()=>{ const newAdv=prompt("New advice:"); if(newAdv && newAdv.trim()){ adviceTags.push(newAdv.trim()); saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); } }; container.appendChild(addBtn); }
+  function deleteAllAdvice(){ if(confirm("Delete ALL advice tags?")){ adviceTags=[]; saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); } }
+  function openTagEditModal(type, title){ currentTagType=type; document.getElementById("tagEditTitle").innerText=title; renderTagEditList(); document.getElementById("tagEditModal").style.display="block"; }
+  function renderTagEditList(){ const container=document.getElementById("tagEditList"); let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); container.innerHTML=""; tags.forEach((tag,idx)=>{ const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.gap="8px"; div.style.marginBottom="6px"; const inp=document.createElement("input"); inp.value=tag; inp.style.flex="1"; inp.addEventListener("change",(e)=>{ tags[idx]=e.target.value; saveTags(); renderTagEditList(); }); const del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="btn-sm btn-danger"; del.onclick=()=>{ tags.splice(idx,1); saveTags(); renderTagEditList(); }; div.appendChild(inp); div.appendChild(del); container.appendChild(div); }); }
+  function addNewTag(){ const newTag=document.getElementById("newTagInput").value.trim(); if(!newTag) return; let tags=currentTagType==="freq"?userFreqTags:(currentTagType==="dur"?userDurTags:userHowTags); if(!tags.includes(newTag)) tags.push(newTag); saveTags(); renderTagEditList(); document.getElementById("newTagInput").value=""; }
+  function saveTagEditAndClose(){ saveTags(); if(currentTagType==="freq") renderTagGroup("freqTagsContainer", userFreqTags, "freq"); else if(currentTagType==="dur") renderTagGroup("durTagsContainer", userDurTags, "dur"); else renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("tagEditModal").style.display="none"; }
+  function showAllMedsPicker(){ const container=document.getElementById("allMedsListContainer"); container.innerHTML=medicines.map(med=>`<div class="picker-item" data-med-id="${med.id}">${escapeHtml(med.name)} <span style="color:#6b7280; font-size:0.7rem;">${med.dosage}</span></div>`).join(""); document.querySelectorAll("#allMedsListContainer .picker-item").forEach(el=>{ el.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); document.getElementById("allMedsPickerModal").style.display="none"; }); }); document.getElementById("allMedsPickerModal").style.display="block"; }
+  function showAllAdvicePicker(){ const container=document.getElementById("allAdviceListContainer"); container.innerHTML=adviceTags.map(tag=>`<div class="picker-item" data-advice="${escapeHtml(tag)}">${escapeHtml(tag)}</div>`).join(""); document.querySelectorAll("#allAdviceListContainer .picker-item").forEach(el=>{ el.addEventListener("click",()=>{ addAdvice(el.dataset.advice); document.getElementById("allAdvicePickerModal").style.display="none"; }); }); document.getElementById("allAdvicePickerModal").style.display="block"; }
+  function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
+  function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
+
+  // ========== AUTHENTICATION WITH SEGMENTED TABS & SMART INTERCEPT ==========
+  let currentAuthMode = 'signin'; // 'signin' or 'register'
+  const signinPill = document.getElementById('signinPill');
+  const registerPill = document.getElementById('registerPill');
+  const newUserBadge = document.getElementById('newUserBadge');
+  const actionBtn = document.getElementById('actionBtn');
+  const loginEmail = document.getElementById('loginEmail');
+  const loginPassword = document.getElementById('loginPassword');
+  const errorDiv = document.getElementById('loginErrorMsg');
+  const interceptModal = document.getElementById('interceptModal');
+  let pendingInterceptEmail = "";
+
+  function updateAuthUI() {
+    if (currentAuthMode === 'signin') {
+      signinPill.classList.add('active'); signinPill.classList.remove('inactive');
+      registerPill.classList.add('inactive'); registerPill.classList.remove('active');
+      newUserBadge.style.display = 'inline-flex';
+      actionBtn.innerText = 'Secure Log In';
+    } else {
+      registerPill.classList.add('active'); registerPill.classList.remove('inactive');
+      signinPill.classList.add('inactive'); signinPill.classList.remove('active');
+      newUserBadge.style.display = 'none';
+      actionBtn.innerText = 'Create Account & Register';
+    }
+  }
+
+  signinPill.addEventListener('click', () => { currentAuthMode = 'signin'; updateAuthUI(); });
+  registerPill.addEventListener('click', () => { currentAuthMode = 'register'; updateAuthUI(); });
+
+  // Password visibility toggle
+  const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+  let passwordVisible = false;
+  togglePasswordBtn.addEventListener('click', () => {
+    passwordVisible = !passwordVisible;
+    loginPassword.type = passwordVisible ? 'text' : 'password';
+    togglePasswordBtn.innerHTML = passwordVisible ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+  });
+
+  // Intercept modal controls
+  function showInterceptModal(email) {
+    pendingInterceptEmail = email;
+    interceptModal.classList.add('visible');
+  }
+  function hideInterceptModal() { interceptModal.classList.remove('visible'); }
+  document.getElementById('closeInterceptBtn').addEventListener('click', hideInterceptModal);
+  document.getElementById('interceptFixEmailBtn').addEventListener('click', hideInterceptModal);
+  document.getElementById('interceptRegisterBtn').addEventListener('click', () => {
+    if (pendingInterceptEmail) loginEmail.value = pendingInterceptEmail;
+    currentAuthMode = 'register';
+    updateAuthUI();
+    hideInterceptModal();
+  });
+
+  // Main auth handler
+  async function handleAuthSubmit() {
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value;
+    errorDiv.style.display = 'none';
+    errorDiv.innerText = '';
+
+    if (!email || !password) {
+      errorDiv.innerText = "Enter email and password";
+      errorDiv.style.display = 'block';
+      return;
+    }
+    if (password.length < 6) {
+      errorDiv.innerText = "Password must be at least 6 characters";
+      errorDiv.style.display = 'block';
+      return;
+    }
+    const emailPattern = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
+    if (!emailPattern.test(email)) {
+      errorDiv.innerText = "Please enter a valid email address";
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    showLoading(true);
+    try {
+      if (currentAuthMode === 'signin') {
+        // Try sign in
+        await auth.signInWithEmailAndPassword(email, password);
       } else {
-        currentUser = null;
-        document.getElementById('mainApp').style.display = 'none';
-        loginOverlay.style.display = 'flex';
+        // Register mode: create account
+        const userCred = await auth.createUserWithEmailAndPassword(email, password);
+        await db.collection('users').doc(userCred.user.uid).set({ email, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        // Auto-login happens via onAuthStateChanged
       }
-    });
+    } catch (err) {
+      if (err.code === 'auth/user-not-found' && currentAuthMode === 'signin') {
+        // Intercept: account doesn't exist, show modal
+        showInterceptModal(email);
+      } else if (err.code === 'auth/wrong-password') {
+        errorDiv.innerText = "Incorrect password. Try again or reset.";
+        errorDiv.style.display = 'block';
+      } else if (err.code === 'auth/email-already-in-use' && currentAuthMode === 'register') {
+        errorDiv.innerText = "Email already registered. Please sign in instead.";
+        errorDiv.style.display = 'block';
+      } else {
+        errorDiv.innerText = err.message;
+        errorDiv.style.display = 'block';
+      }
+      showLoading(false);
+    }
+  }
 
-    // ========== EVENT BINDINGS (full original) ==========
-    document.getElementById('quickMedicineBtn')?.addEventListener('click', openQuickPopup);
-    document.getElementById('bulkTriggerBtn')?.addEventListener('click', () => document.getElementById('bulkMedFile').click());
-    document.getElementById('bulkMedFile')?.addEventListener('change', e => { if(e.target.files[0]) importMedicinesFromFile(e.target.files[0]); });
-    document.getElementById('showHistoryBtn')?.addEventListener('click', showHistoryModal);
-    document.getElementById('analysisBtn')?.addEventListener('click', showAnalysis);
-    document.getElementById('helpBtn')?.addEventListener('click', showHelp);
-    document.getElementById('settingsBtn')?.addEventListener('click', openSettingsModal);
-    document.getElementById('savePrescriptionBtn')?.addEventListener('click', saveCurrentPrescription);
-    document.getElementById('printPreviewBtn')?.addEventListener('click', printWithMargin);
-    document.getElementById('clearCurrentBtn')?.addEventListener('click', resetCurrentDraft);
-    document.getElementById('clearAllMedicinesBtn')?.addEventListener('click', () => { currentMedicines = []; renderMedicinesTable(); updatePreview(); });
-    document.getElementById('addCustomAdviceBtn')?.addEventListener('click', () => { const val = document.getElementById('customAdviceInput').value; if(val) addAdvice(val); document.getElementById('customAdviceInput').value = ''; });
-    document.getElementById('allMedsButton')?.addEventListener('click', showAllMedsPicker);
-    document.getElementById('allAdviceButton')?.addEventListener('click', showAllAdvicePicker);
-    document.getElementById('manageMedsBtn')?.addEventListener('click', openMedicineInventory);
-    document.getElementById('manageAdviceBtn')?.addEventListener('click', openAdviceInventory);
-    document.getElementById('diseasePickerBtn')?.addEventListener('click', showDiseaseModal);
-    document.getElementById('searchMedicine')?.addEventListener('input', e => renderMedicineList(e.target.value));
-    document.querySelectorAll('input[name="paperStyle"]').forEach(r => r.addEventListener('change', () => updatePreview()));
-    document.getElementById('applySettingsBtn')?.addEventListener('click', applySettings);
-    document.getElementById('closeSettingsModal')?.addEventListener('click', () => document.getElementById('settingsModal').style.display='none');
-    document.getElementById('applyHistoryFilter')?.addEventListener('click', () => renderHistoryList());
-    document.getElementById('resetHistoryFilter')?.addEventListener('click', resetHistoryFilters);
-    document.getElementById('closeHistoryModal')?.addEventListener('click', () => document.getElementById('historyModal').style.display='none');
-    document.getElementById('closeAnalysisModal')?.addEventListener('click', () => document.getElementById('analysisModal').style.display='none');
-    document.getElementById('applyAnalysisFilter')?.addEventListener('click', updateAnalysisDashboard);
-    document.getElementById('resetAnalysisFilter')?.addEventListener('click', resetAnalysisFilters);
-    document.getElementById('modalConfirmBtn')?.addEventListener('click', addMedicineFromPopup);
-    document.getElementById('modalCancelBtn')?.addEventListener('click', () => document.getElementById('medicineModal').style.display='none');
-    document.getElementById('quickConfirmBtn')?.addEventListener('click', addQuickMedicine);
-    document.getElementById('quickCancelBtn')?.addEventListener('click', () => document.getElementById('quickModal').style.display='none');
-    document.getElementById('adminPanelBtn')?.addEventListener('click', showAdminPanel);
-    document.getElementById('closeSubModal')?.addEventListener('click', () => document.getElementById('subscriptionModal').style.display='none');
-    document.getElementById('submitTransactionBtn')?.addEventListener('click', () => { alert("Transaction submitted for approval"); document.getElementById('subscriptionModal').style.display='none'; });
-    window.addEventListener('click', e => { if(e.target.classList.contains('modal')) e.target.style.display='none'; });
+  async function handleGoogleSignIn() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      await auth.signInWithPopup(provider);
+    } catch(e) {
+      errorDiv.innerText = e.message;
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  async function handleForgotPassword() {
+    const email = loginEmail.value.trim();
+    if (!email) {
+      errorDiv.innerText = "Enter your email address";
+      errorDiv.style.display = 'block';
+      return;
+    }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      alert("Password reset email sent. Check your inbox.");
+    } catch(e) {
+      errorDiv.innerText = e.message;
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  document.getElementById('actionBtn').addEventListener('click', handleAuthSubmit);
+  document.getElementById('googleLoginBtn').addEventListener('click', handleGoogleSignIn);
+  document.getElementById('forgotPasswordLink').addEventListener('click', handleForgotPassword);
+
+  // Auth state observer
+  function openLoginOverlay() { document.getElementById('loginOverlay').classList.remove('hidden'); }
+  function closeLoginOverlay() { document.getElementById('loginOverlay').classList.add('hidden'); }
+
+  function onAuthStateChanged(user) {
+    if (user) {
+      currentUser = user;
+      document.getElementById('mainApp').style.display = 'block';
+      const isAdmin = user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      document.getElementById('userWidget').innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
+      document.getElementById('logoutBtn')?.addEventListener('click', () => auth.signOut());
+      const adminBtn = document.getElementById('adminPanelBtn');
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+      loadUserData();
+      closeLoginOverlay();
+    } else {
+      currentUser = null;
+      document.getElementById('mainApp').style.display = 'none';
+      document.getElementById('userWidget').innerHTML = `<button id="showLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
+      document.getElementById('showLoginBtn')?.addEventListener('click', openLoginOverlay);
+      openLoginOverlay();
+    }
+  }
+  auth.onAuthStateChanged(onAuthStateChanged);
+
+  // ========== EVENT BINDINGS (original) ==========
+  document.addEventListener("DOMContentLoaded", () => {
+    bindEvents();
     setupSearchSuggestions();
-    updateTabUI();
+    updateAuthUI(); // initial state
+  });
 
-    // Inject missing modals HTML (subscription, settings, history, analysis, medicine, quick)
-    const modalsHTML = `
-      <div id="subscriptionModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"><div class="bg-white rounded-2xl p-6 max-w-md w-full"><h3 class="text-xl font-bold">Upgrade to PRO</h3><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro" class="mx-auto my-4"><div class="flex gap-2 justify-center"><label><input type="radio" name="planSelect" value="monthly"> Monthly ₹199</label><label><input type="radio" name="planSelect" value="yearly"> Yearly ₹2000</label></div><input id="transactionId" placeholder="12-digit transaction ID" class="border rounded w-full p-2 my-2"><button id="submitTransactionBtn" class="bg-cyan-600 text-white px-4 py-2 rounded-full w-full">Submit</button><button id="closeSubModal" class="mt-2 text-sm text-slate-500 w-full">Cancel</button></div></div>
-      <div id="settingsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"><div class="bg-white rounded-2xl p-6 max-w-md w-full"><h3 class="font-bold text-lg mb-3">Settings</h3><label><input type="checkbox" id="settingShowDate" checked> Show Date</label><br><label><input type="checkbox" id="settingShowTime" checked> Show Time</label><br><label><input type="checkbox" id="settingShowSignature" checked> Signature</label><br><div class="mt-3"><span>Preview Style:</span><label><input type="radio" name="settingStyle" value="plain" checked> Simple</label><label><input type="radio" name="settingStyle" value="split"> Split</label></div><div class="mt-3"><span>Prescription Type:</span><label><input type="radio" name="prescType" value="standard" checked> Standard</label><label><input type="radio" name="prescType" value="professional"> Professional</label></div><div id="practiceInfoCard" class="mt-3 hidden"><input id="doctorName" placeholder="Doctor Name" class="border rounded p-1 w-full my-1"><input id="doctorRegNo" placeholder="Reg No" class="border rounded p-1 w-full my-1"><input id="doctorDegree" placeholder="Degree" class="border rounded p-1 w-full my-1"><input id="chamberName" placeholder="Clinic" class="border rounded p-1 w-full my-1"><input id="doctorAddress" placeholder="Address" class="border rounded p-1 w-full my-1"></div><button id="applySettingsBtn" class="bg-cyan-600 text-white px-4 py-2 rounded-full mt-3 w-full">Apply</button><button id="closeSettingsModal" class="mt-2 text-sm text-slate-500 w-full">Cancel</button></div></div>
-      <div id="historyModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"><div class="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-auto"><div class="flex justify-between"><h3 class="font-bold">Prescription History</h3><button id="closeHistoryModal" class="text-slate-500"><i class="fas fa-times"></i></button></div><div class="flex flex-wrap gap-2 my-3"><input id="historySearchName" placeholder="Name" class="border rounded p-1"><input type="date" id="historyFromDate"><input type="date" id="historyToDate"><input id="historyYear" placeholder="Year" class="border rounded p-1 w-20"><select id="historyMonth"><option value="">Month</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select><button id="applyHistoryFilter" class="bg-slate-200 px-3 rounded-full">Apply</button><button id="resetHistoryFilter" class="bg-slate-200 px-3 rounded-full">Reset</button></div><div id="historyListContainer"></div></div></div>
-      <div id="analysisModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"><div class="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-auto"><div class="flex justify-between"><h3 class="font-bold">Practice Analytics</h3><button id="closeAnalysisModal" class="text-slate-500"><i class="fas fa-times"></i></button></div><div class="flex gap-2 my-3"><input type="date" id="analysisFromDate"><input type="date" id="analysisToDate"><button id="applyAnalysisFilter" class="bg-slate-200 px-3 rounded-full">Apply</button><button id="resetAnalysisFilter" class="bg-slate-200 px-3 rounded-full">Reset</button></div><div id="analysisCards" class="flex flex-wrap gap-3 my-3"></div><canvas id="monthlyChart" width="400" height="200"></canvas></div></div>
-      <div id="medicineModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"><div class="bg-white rounded-2xl p-6 w-96"><h3 id="modalMedName" class="font-bold text-lg">Medicine</h3><input id="modalDosage" placeholder="Dosage" class="border rounded p-2 w-full my-2"><input id="modalFrequency" placeholder="Frequency" class="border rounded p-2 w-full my-2"><input id="modalDuration" placeholder="Duration" class="border rounded p-2 w-full my-2"><input id="modalHowToTake" placeholder="How to take" class="border rounded p-2 w-full my-2"><div class="flex gap-2"><button id="modalConfirmBtn" class="bg-cyan-600 text-white px-4 py-2 rounded-full flex-1">Add</button><button id="modalCancelBtn" class="border px-4 py-2 rounded-full flex-1">Cancel</button></div></div></div>
-      <div id="quickModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"><div class="bg-white rounded-2xl p-6 w-96"><h3 class="font-bold text-lg">Quick Medicine</h3><input id="quickName" placeholder="Medicine name" class="border rounded p-2 w-full my-2"><input id="quickDosage" placeholder="Dosage" class="border rounded p-2 w-full my-2"><div class="flex gap-2"><button id="quickConfirmBtn" class="bg-cyan-600 text-white px-4 py-2 rounded-full flex-1">Add</button><button id="quickCancelBtn" class="border px-4 py-2 rounded-full flex-1">Cancel</button></div></div></div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalsHTML);
-    // attach dynamic close for settings practice info toggle
-    document.querySelectorAll('input[name="prescType"]').forEach(r => r.addEventListener('change', function() {
-      const practiceDiv = document.getElementById('practiceInfoCard');
-      if(practiceDiv) practiceDiv.style.display = this.value === 'professional' ? 'block' : 'none';
-    }));
-    document.querySelector('input[name="prescType"][value="standard"]')?.dispatchEvent(new Event('change'));
-  </script>
+  function bindEvents() {
+    document.getElementById("searchMedicine")?.addEventListener("input",e=>renderMedicineList(e.target.value));
+    document.getElementById("clearAllMedicinesBtn")?.addEventListener("click",()=>{currentMedicines=[]; renderMedicinesTable(); updatePreview();});
+    document.getElementById("quickMedicineBtn")?.addEventListener("click",openQuickPopup);
+    document.getElementById("bulkTriggerBtn")?.addEventListener("click",()=>document.getElementById("bulkMedFile").click());
+    document.getElementById("bulkMedFile")?.addEventListener("change",e=>{if(e.target.files[0]) importMedicinesFromFile(e.target.files[0]); e.target.value="";});
+    document.getElementById("addCustomAdviceBtn")?.addEventListener("click",()=>{const val=document.getElementById("customAdviceInput").value.trim(); if(val) addAdvice(val); document.getElementById("customAdviceInput").value="";});
+    document.getElementById("showHistoryBtn")?.addEventListener("click",showHistoryModal);
+    document.getElementById("analysisBtn")?.addEventListener("click",showAnalysis);
+    document.getElementById("helpBtn")?.addEventListener("click",showHelp);
+    document.getElementById("settingsBtn")?.addEventListener("click",openSettingsModal);
+    document.getElementById("savePrescriptionBtn")?.addEventListener("click",saveCurrentPrescription);
+    document.getElementById("printPreviewBtn")?.addEventListener("click",printWithMargin);
+    document.getElementById("clearCurrentBtn")?.addEventListener("click",resetCurrentDraft);
+    document.getElementById("modalConfirmBtn")?.addEventListener("click",addMedicineFromPopup);
+    document.getElementById("modalCancelBtn")?.addEventListener("click",closeModal);
+    document.getElementById("quickConfirmBtn")?.addEventListener("click",addQuickMedicine);
+    document.getElementById("quickCancelBtn")?.addEventListener("click",closeQuickPopup);
+    document.getElementById("applyHistoryFilter")?.addEventListener("click",()=>renderHistoryList());
+    document.getElementById("resetHistoryFilter")?.addEventListener("click",resetHistoryFilters);
+    document.getElementById("closeHistoryModal")?.addEventListener("click",()=>document.getElementById("historyModal").style.display="none");
+    document.getElementById("closeAnalysisModal")?.addEventListener("click",()=>document.getElementById("analysisModal").style.display="none");
+    document.getElementById("applyAnalysisFilter")?.addEventListener("click",updateAnalysisDashboard);
+    document.getElementById("resetAnalysisFilter")?.addEventListener("click",resetAnalysisFilters);
+    document.getElementById("closeSettingsModal")?.addEventListener("click",()=>document.getElementById("settingsModal").style.display="none");
+    document.getElementById("applySettingsBtn")?.addEventListener("click",()=>{ applySettings(); document.getElementById("settingsModal").style.display="none"; });
+    document.getElementById("cancelSettingsBtn")?.addEventListener("click",()=>document.getElementById("settingsModal").style.display="none");
+    document.getElementById("closeMedsPickerModal")?.addEventListener("click",()=>document.getElementById("allMedsPickerModal").style.display="none");
+    document.getElementById("closeAdvicePickerModal")?.addEventListener("click",()=>document.getElementById("allAdvicePickerModal").style.display="none");
+    document.getElementById("allMedsButton")?.addEventListener("click",showAllMedsPicker);
+    document.getElementById("allAdviceButton")?.addEventListener("click",showAllAdvicePicker);
+    document.getElementById("manageMedsBtn")?.addEventListener("click",openMedicineInventory);
+    document.getElementById("closeInventoryModal")?.addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
+    document.getElementById("closeInventoryBtn")?.addEventListener("click",()=>document.getElementById("medicineInventoryModal").style.display="none");
+    document.getElementById("deleteAllMedsBtn")?.addEventListener("click",deleteAllMedicines);
+    document.getElementById("addInventoryMedicineBtn")?.addEventListener("click",addInventoryMedicine);
+    document.getElementById("manageAdviceBtn")?.addEventListener("click",openAdviceInventory);
+    document.getElementById("closeAdviceInventoryModal")?.addEventListener("click",()=>document.getElementById("adviceInventoryModal").style.display="none");
+    document.getElementById("closeAdviceInventoryBtn")?.addEventListener("click",()=>document.getElementById("adviceInventoryModal").style.display="none");
+    document.getElementById("deleteAllAdviceBtn")?.addEventListener("click",deleteAllAdvice);
+    document.getElementById("editFreqTagsBtn")?.addEventListener("click",()=>openTagEditModal("freq","Edit Frequency Tags"));
+    document.getElementById("editDurTagsBtn")?.addEventListener("click",()=>openTagEditModal("dur","Edit Duration Tags"));
+    document.getElementById("editHowTagsBtn")?.addEventListener("click",()=>openTagEditModal("how","Edit 'How to take' Tags"));
+    document.getElementById("addNewTagBtn")?.addEventListener("click",addNewTag);
+    document.getElementById("saveTagEditBtn")?.addEventListener("click",saveTagEditAndClose);
+    document.getElementById("cancelTagEditBtn")?.addEventListener("click",()=>document.getElementById("tagEditModal").style.display="none");
+    ["firstName","lastName","patientAge","patientGender","diagnosisField"].forEach(id=>document.getElementById(id)?.addEventListener("input",updatePreview));
+    document.querySelectorAll('input[name="paperStyle"]').forEach(r=>r.addEventListener("change",()=>updatePreview()));
+    document.getElementById("diseasePickerBtn")?.addEventListener("click",showDiseaseModal);
+    document.getElementById("closeDiseaseModal")?.addEventListener("click",()=>document.getElementById("diseaseModal").style.display="none");
+    document.getElementById("addNewDiseaseBtn")?.addEventListener("click",addNewDiseaseFromModal);
+    document.getElementById("submitTransactionBtn")?.addEventListener("click",()=>{ const plan=document.querySelector('input[name="planSelect"]:checked')?.value; const txn=document.getElementById("transactionId").value.trim(); if(plan && txn) submitTransaction(plan, txn, false); else alert("Select plan and enter 12-digit transaction ID"); });
+    document.getElementById("submitRenewalBtn")?.addEventListener("click",()=>{ const plan=document.querySelector('input[name="renewPlan"]:checked')?.value; const txn=document.getElementById("renewTransactionId").value.trim(); if(plan && txn) submitTransaction(plan, txn, true); else alert("Select plan and enter transaction ID"); });
+    document.getElementById("closeRenewalModal")?.addEventListener("click",()=>document.getElementById("renewalModal").style.display="none");
+    document.getElementById("closeRenewalBtn")?.addEventListener("click",()=>document.getElementById("renewalModal").style.display="none");
+    document.getElementById("closeSubModal")?.addEventListener("click",()=>document.getElementById("subscriptionModal").style.display="none");
+    document.getElementById("cancelSubBtn")?.addEventListener("click",()=>document.getElementById("subscriptionModal").style.display="none");
+    document.getElementById("adminPanelBtn")?.addEventListener("click",showAdminPanel);
+    document.getElementById("closeAdminModal")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
+    document.getElementById("closeAdminBtn")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
+    document.getElementById("refreshPendingBtn")?.addEventListener("click",()=>{ if(document.querySelector(".admin-tab.active").dataset.tab === "pending") loadPendingTransactions(); else loadAllUsers(); });
+    window.addEventListener("click",e=>{ if(e.target.classList.contains("modal")) e.target.style.display="none"; });
+  }
+</script>
 </body>
 </html>
