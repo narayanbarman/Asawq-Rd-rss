@@ -120,7 +120,7 @@
     @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
     @media (max-width: 800px) { .right-panel { min-width: auto; } }
 
-    /* ========== ENHANCED LANDING PAGE STYLES (dark theme, premium) ========== */
+    /* ========== ENHANCED LANDING PAGE STYLES (benefits without boxes, modern) ========== */
     .landing-page {
       position: fixed;
       top: 0;
@@ -135,41 +135,39 @@
     }
     .landing-page.hidden { display: none; }
     .landing-container { max-width: 1200px; margin: 0 auto; padding: 1.2rem 1.5rem; }
-    /* Navbar */
     .landing-nav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 2rem; }
     .logo-brand { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #2dd4bf, #14b8a6); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.3px; }
     .logo-brand i { color: #2dd4bf; margin-right: 6px; }
     .login-btn-outline { background: rgba(45, 212, 191, 0.1); border: 1px solid #2dd4bf; color: #2dd4bf; padding: 0.4rem 1.2rem; border-radius: 40px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(4px); }
     .login-btn-outline:hover { background: rgba(45, 212, 191, 0.2); transform: scale(0.96); }
-    /* Hero */
     .hero-section { text-align: center; margin-bottom: 1.5rem; }
     .hero-section h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.02em; background: linear-gradient(to right, #ffffff, #94a3b8); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 0.5rem; }
     .hero-section p { font-size: 1.1rem; color: #94a3b8; margin-bottom: 1.8rem; }
     .video-container { max-width: 960px; margin: 0 auto 1.2rem; aspect-ratio: 16 / 9; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 40px -12px rgba(0,0,0,0.6); border: 1px solid rgba(45,212,191,0.3); }
     .video-container iframe { width: 100%; height: 100%; }
-    /* Pulse animation for CTA button */
     @keyframes softPulse { 0% { box-shadow: 0 0 0 0 rgba(45,212,191,0.4); } 70% { box-shadow: 0 0 0 12px rgba(45,212,191,0); } 100% { box-shadow: 0 0 0 0 rgba(45,212,191,0); } }
     .cta-btn { background: linear-gradient(105deg, #0f4c5f, #1a6e5c); border: none; padding: 0.8rem 2.2rem; border-radius: 60px; font-weight: 700; font-size: 1.1rem; color: white; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 2rem; box-shadow: 0 10px 20px -8px rgba(0,0,0,0.4); animation: softPulse 2s infinite; }
     .cta-btn:hover { transform: translateY(-3px); background: linear-gradient(105deg, #1a6e5c, #0f4c5f); box-shadow: 0 18px 28px -12px rgba(0,0,0,0.5); animation: none; }
-    /* Benefits row */
-    .benefits-row { display: flex; justify-content: center; gap: 1.8rem; flex-wrap: wrap; margin-bottom: 2rem; }
-    .benefit { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(8px); padding: 0.7rem 1.3rem; border-radius: 60px; font-size: 0.9rem; border: 1px solid rgba(45,212,191,0.3); transition: all 0.2s; }
-    .benefit strong { color: #2dd4bf; }
-    .benefit:hover { border-color: #2dd4bf; transform: translateY(-2px); }
-    /* Footer */
+    /* Benefits: no boxes, clean inline text */
+    .benefits-row { display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2rem; text-align: center; font-size: 0.95rem; color: #cbd5e1; }
+    .benefit { background: none; border: none; padding: 0; font-weight: 400; }
+    .benefit strong { color: #2dd4bf; font-weight: 700; }
     .landing-footer { border-top: 1px solid #1e293b; text-align: center; padding: 1rem 0; margin-top: 1rem; font-size: 0.8rem; color: #94a3b8; }
     .landing-footer a { color: #2dd4bf; text-decoration: none; }
-    /* Auth Modal (glassmorphic) */
+
+    /* Auth Modal with differentiated buttons */
     .auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 4000; visibility: hidden; opacity: 0; transition: all 0.3s; }
     .auth-modal.visible { visibility: visible; opacity: 1; }
     .auth-card { background: rgba(15, 23, 42, 0.95); border-radius: 32px; max-width: 440px; width: 90%; padding: 2rem; border: 1px solid rgba(45,212,191,0.4); box-shadow: 0 25px 40px rgba(0,0,0,0.5); }
     .auth-card h3 { font-size: 1.6rem; margin-bottom: 1.2rem; text-align: center; color: white; }
     .auth-card input { width: 100%; padding: 12px 16px; background: #1e293b; border: 1px solid #334155; border-radius: 32px; margin-bottom: 1rem; color: white; font-size: 0.9rem; transition: 0.2s; }
     .auth-card input:focus { outline: none; border-color: #2dd4bf; box-shadow: 0 0 0 2px rgba(45,212,191,0.2); }
-    .auth-card button { width: 100%; padding: 12px; background: linear-gradient(105deg, #0f4c5f, #1a6e5c); border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer; margin-top: 0.5rem; transition: 0.2s; }
-    .auth-card button:hover { transform: translateY(-1px); }
-    .google-auth-btn { background: #1e293b; border: 1px solid #334155; margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 12px; }
-    .google-auth-btn:hover { background: #2d3748; }
+    /* Primary action button (teal gradient) */
+    .auth-card .primary-btn { width: 100%; padding: 12px; background: linear-gradient(105deg, #0f4c5f, #1a6e5c); border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer; margin-top: 0.5rem; transition: 0.2s; }
+    .auth-card .primary-btn:hover { transform: translateY(-1px); background: linear-gradient(105deg, #1a6e5c, #0f4c5f); }
+    /* Google button: white background, subtle border, Google colours on hover */
+    .google-auth-btn { background: white; border: 1px solid #cbd5e1; border-radius: 40px; padding: 12px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: all 0.2s; color: #1f2937; font-weight: 500; margin-top: 1rem; }
+    .google-auth-btn:hover { background: #f8fafc; border-color: #2dd4bf; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .google-icon-svg { width: 20px; height: 20px; }
     .close-modal-icon { float: right; font-size: 1.4rem; cursor: pointer; color: #94a3b8; transition: 0.2s; }
     .close-modal-icon:hover { color: white; }
@@ -178,7 +176,7 @@
     @media (max-width: 640px) {
       .hero-section h1 { font-size: 1.8rem; }
       .cta-btn { font-size: 0.9rem; padding: 0.6rem 1.6rem; }
-      .benefit { font-size: 0.7rem; padding: 0.4rem 1rem; }
+      .benefits-row { gap: 1rem; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -271,7 +269,7 @@
   </div>
 </div>
 
-<!-- ========== AUTH MODAL (with forgot password) ========== -->
+<!-- ========== AUTH MODAL (differentiated buttons) ========== -->
 <div id="authModal" class="auth-modal">
   <div class="auth-card">
     <span id="closeAuthModal" class="close-modal-icon">&times;</span>
@@ -279,7 +277,7 @@
     <input type="text" id="modalFullName" placeholder="Full Name / Doctor Name">
     <input type="email" id="modalEmail" placeholder="Email address">
     <input type="password" id="modalPassword" placeholder="Create password (min 6 characters)">
-    <button id="modalCreateAccountBtn">Create Account</button>
+    <button id="modalCreateAccountBtn" class="primary-btn">Create Account</button>
     <button id="modalGoogleBtn" class="google-auth-btn">
       <svg class="google-icon-svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
       Sign in with Google
@@ -291,7 +289,7 @@
   </div>
 </div>
 
-<!-- ========== ALL ORIGINAL MODALS (disease, subscription, settings, history, analysis, inventory, medicine, quick, tagEdit) ========== -->
+<!-- ========== ALL ORIGINAL MODALS (unchanged) ========== -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
 <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
@@ -310,7 +308,7 @@
 <div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
 <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
 <div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
-<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th><tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
+<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
 <div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
 <div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
 <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
@@ -361,7 +359,7 @@
   async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
 
-  // Subscription & admin functions (unchanged, kept for brevity but fully functional)
+  // Subscription & admin functions (unchanged, kept functional)
   async function loadSubscriptionData() { if(!currentUser) return; const subDoc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').get(); if(subDoc.exists) subscription = subDoc.data(); else { subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true }; await saveSubscriptionData(); } const today = new Date().toDateString(); if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; await saveSubscriptionData(); } if(subscription.expiryDate && new Date(subscription.expiryDate) < new Date()) subscription.isActive = false; else if(subscription.expiryDate && new Date(subscription.expiryDate) >= new Date()) subscription.isActive = true; await saveSubscriptionData(); if(subscription.expiryDate) { const daysLeft = Math.ceil((new Date(subscription.expiryDate) - new Date()) / (1000*60*60*24)); if(daysLeft <= 2 && daysLeft > 0) showRenewalModal(daysLeft); } updateSubscriptionBadge(); return subscription.isActive; }
   async function saveSubscriptionData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('subscription').set(subscription); }
   async function incrementDailyCount() { const today = new Date().toDateString(); if(subscription.lastResetDate !== today) { subscription.dailyCount = 0; subscription.lastResetDate = today; } subscription.dailyCount++; await saveSubscriptionData(); }
@@ -388,7 +386,6 @@
   function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
   function renderPinnedSection(){ const pinned=medicines.filter(m=>m.pinned); const section=document.getElementById("pinnedSection"); const container=document.getElementById("pinnedList"); if(pinned.length===0){ section.style.display="none"; return; } section.style.display="block"; container.innerHTML=pinned.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon pinned" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
   function renderMostUsed(){ const sorted=[...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5); const container=document.getElementById("mostUsedContainer"); if(container) container.innerHTML=`<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")+`</div>`; document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); })); }
-  // CRITICAL FIX: openPopup must render tag groups and show medicine modal
   function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; renderTagGroup("freqTagsContainer", userFreqTags, "freq"); renderTagGroup("durTagsContainer", userDurTags, "dur"); renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("medicineModal").style.display="block"; }
   function renderTagGroup(containerId, tags, type){ const container=document.getElementById(containerId); if(!container) return; container.innerHTML=tags.map(t=>`<span class="tag" data-tag="${escapeHtml(t)}" data-type="${type}">${escapeHtml(t)}</span>`).join(""); container.querySelectorAll(".tag").forEach(el=>el.addEventListener("click",()=>{ if(type==="freq") document.getElementById("modalFrequency").value=el.dataset.tag; else if(type==="dur") document.getElementById("modalDuration").value=el.dataset.tag; else document.getElementById("modalHowToTake").value=el.dataset.tag; })); }
   async function addMedicineFromPopup(){ if(pendingMedicine){ currentMedicines.push({ name:pendingMedicine.name, dosage:document.getElementById("modalDosage").value.trim()||"As directed", frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); const med=medicines.find(m=>m.id===pendingMedicine.id); if(med) med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMedicinesTable(); updatePreview(); closeModal(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); } }
@@ -396,6 +393,8 @@
   function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); if(!container) return; container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
   function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
   function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(!container) return; container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
+  
+  // FIXED: Left line view – only disease on left, advice stays in main column
   function getPreviewHTML(splitMode) {
     const firstName=document.getElementById("firstName").value.trim(), lastName=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diagnosis=document.getElementById("diagnosisField").value.trim();
     const patientName=(firstName||lastName)?`${firstName} ${lastName}`.trim():"";
@@ -406,14 +405,19 @@
     let dateTimeHtml="";
     if(settings.showDate||settings.showTime){ let dateStr=settings.showDate?new Date().toLocaleDateString():""; let timeStr=settings.showTime?formatTimeNoSeconds():""; let display=[dateStr,timeStr].filter(s=>s).join(" "); dateTimeHtml=`<div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${display}</span></div>`; } else dateTimeHtml=`<div><strong>${currentSerial}</strong></div>`;
     let medBlocks="";
-    if(currentMedicines.length===0) medBlocks="<p><i>No medicines added.</i></p>";
+    if(currentMedicines.length===0) medBlocks="<p style='margin-top:8px;'><i>No medicines added.</i></p>";
     else medBlocks=currentMedicines.map(item=>`<div class="preview-med-item"><div class="preview-med-name">${escapeHtml(item.name)} ${escapeHtml(item.dosage)}</div><div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}${item.howToTake?` • ${escapeHtml(item.howToTake)}`:''}</div></div>`).join("");
     let adviceHtml=currentAdvices.length?`<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:"";
     let signatureHtml=settings.showSignature?`<div class="signature-right" style="margin-top:20px; padding-top:10px; border-top:1px dashed #aaa; text-align:right;">Doctor Signature: ___________________</div>`:"";
     const mainContent=`${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}`;
-    if(splitMode){ let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>${signatureHtml}`; }
+    if(splitMode){ 
+      let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; 
+      // Advice is NOT on left – only disease
+      return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}</div><div style="flex:1;">${mainContent}</div></div>${adviceHtml}${signatureHtml}`; 
+    }
     else return `<div>${headerHtml}</div>${mainContent}${adviceHtml}${signatureHtml}`;
   }
+  
   function updatePreview(){ const splitMode=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(splitMode); const cont=document.getElementById("previewContainer"); if(splitMode) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
   async function saveSettingsToFirestore() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').set({ settings, practiceInfo }); }
   async function loadSettingsFromFirestore() { if(!currentUser) return; const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').get(); if(doc.exists){ const data=doc.data(); if(data.settings) settings={...settings,...data.settings}; if(data.practiceInfo) practiceInfo={...practiceInfo,...data.practiceInfo}; } document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; updatePreview(); }
