@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>FastRx Pro – Professional Prescription System</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>FastRx Pro – Prescription Maker | Modern SaaS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ORIGINAL STYLES (unchanged) ========== */
+    /* ========== ORIGINAL DASHBOARD STYLES (unchanged) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -106,313 +106,243 @@
     .settings-group { margin-bottom: 20px; }
     .settings-group h4 { margin-bottom: 12px; font-size: 0.9rem; color: #0a4c6e; border-left: 3px solid #0a7e8c; padding-left: 8px; }
     .radio-group { display: flex; gap: 16px; margin-top: 8px; }
-    /* IMPROVED LOGIN OVERLAY WITH SEGMENTED TABS + BREATHING BADGE */
-    .login-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 25, 35, 0.85);
-      backdrop-filter: blur(12px);
-      z-index: 2000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 1;
-      visibility: visible;
-      transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    }
-    .login-overlay.hidden {
-      opacity: 0;
-      visibility: hidden;
-      backdrop-filter: blur(0);
-    }
-    .login-modal {
-      background: rgba(255, 255, 255, 0.98);
-      border-radius: 48px;
-      width: 90%;
-      max-width: 460px;
-      padding: 40px 36px;
-      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.2);
-      transform: scale(0.96);
-      transition: transform 0.3s ease;
-      text-align: center;
-    }
-    .login-overlay:not(.hidden) .login-modal {
-      transform: scale(1);
-    }
-    .login-modal h2 {
-      font-size: 2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #0f4c5f, #2c9a7a);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 8px;
-    }
-    .login-sub {
-      color: #5b7c93;
-      font-size: 0.85rem;
-      margin-bottom: 28px;
-      border-bottom: 1px solid #e2edf2;
-      display: inline-block;
-      padding-bottom: 6px;
-    }
-    /* Segmented pill tabs */
-    .segmented-pills {
-      background: #eef2f8;
-      padding: 4px;
-      border-radius: 60px;
-      display: flex;
-      margin-bottom: 28px;
-    }
-    .pill {
-      flex: 1;
-      text-align: center;
-      padding: 10px 0;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .pill.active {
-      background: white;
-      color: #0f4c5f;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .pill.inactive {
-      color: #6b7c8f;
-    }
-    .new-user-badge {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: linear-gradient(105deg, #0f4c5f, #1a6e5c);
-      color: white;
-      font-size: 10px;
-      font-weight: bold;
-      padding: 2px 8px;
-      border-radius: 30px;
-      white-space: nowrap;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      animation: breatheGlow 2s ease-in-out infinite;
-    }
-    @keyframes breatheGlow {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4); }
-      50% { transform: scale(1.05); box-shadow: 0 0 12px 2px rgba(34, 211, 238, 0.7); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
-    }
-    .input-group {
-      text-align: left;
-      margin-bottom: 20px;
-    }
-    .input-group label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #1e4a62;
-      display: block;
-      margin-bottom: 6px;
-      letter-spacing: 0.3px;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 14px 18px;
-      background: #f8fafc;
-      border: 1.5px solid #e2edf2;
-      border-radius: 32px;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-      outline: none;
-    }
-    .input-group input:focus {
-      border-color: #2c9a7a;
-      box-shadow: 0 0 0 3px rgba(44, 154, 122, 0.2);
-      background: white;
-    }
-    .password-wrapper {
-      position: relative;
-    }
-    .password-wrapper input {
-      padding-right: 48px;
-    }
-    .toggle-password {
-      position: absolute;
-      right: 18px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #8ba3b5;
-      font-size: 1.1rem;
-    }
-    .btn-login {
-      background: linear-gradient(105deg, #0f4c5f, #1a6e5c);
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 44px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      width: 100%;
-      cursor: pointer;
-      transition: 0.2s;
-      margin-top: 10px;
-      box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.2);
-    }
-    .btn-login:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.25);
-    }
-    .divider {
-      margin: 24px 0 16px;
-      font-size: 0.7rem;
-      color: #8ba3b5;
-      position: relative;
-    }
-    .divider::before,
-    .divider::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      width: 42%;
-      height: 1px;
-      background: #e2e8f0;
-    }
-    .divider::before { left: 0; }
-    .divider::after { right: 0; }
-    .btn-google {
-      background: white;
-      border: 1.5px solid #dce5ef;
-      border-radius: 44px;
-      padding: 12px;
-      width: 100%;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: 0.2s;
-      color: #1f3b4c;
-      font-size: 0.85rem;
-    }
-    .btn-google i { font-size: 1.2rem; color: #DB4437; }
-    .btn-google:hover {
-      background: #f8fafd;
-      border-color: #bdd3e8;
-    }
-    .footer-links {
-      margin-top: 20px;
-      font-size: 0.75rem;
-      text-align: right;
-    }
-    .footer-links a {
-      color: #1a6e5c;
-      text-decoration: none;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .error-msg {
-      background: #fee2e2;
-      color: #b91c1c;
-      padding: 8px 12px;
-      border-radius: 40px;
-      font-size: 0.7rem;
-      margin-top: 12px;
-      text-align: center;
-    }
-    /* Subscription badge & premium button */
-    .subscription-badge { 
-      background: #0f2c38; 
-      color: #ffd966; 
-      border-radius: 40px; 
-      padding: 4px 12px; 
-      font-size: 0.7rem; 
-      font-weight: bold;
-      border: 1px solid #ffd966;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      margin-left: 8px;
-    }
+    .subscription-badge { background: #0f2c38; color: #ffd966; border-radius: 40px; padding: 4px 12px; font-size: 0.7rem; font-weight: bold; border: 1px solid #ffd966; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-left: 8px; }
     .subscription-badge.expired { background: #5a1e1e; color: #ffaaaa; border-color: #ffaaaa; }
     .subscription-badge.active { background: #145c33; color: #c6ffb3; border-color: #b3ffb3; }
-    .premium-btn {
-      background: linear-gradient(135deg, #f5b042, #e67e22);
-      color: white;
-      border: none;
-      border-radius: 40px;
-      padding: 4px 14px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-      margin-left: 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
+    .premium-btn { background: linear-gradient(135deg, #f5b042, #e67e22); color: white; border: none; border-radius: 40px; padding: 4px 14px; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-left: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
     .premium-btn:hover { transform: scale(1.02); background: linear-gradient(135deg, #e67e22, #d35400); }
     .admin-tabs { display: flex; gap: 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
     .admin-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; transition: 0.1s; }
     .admin-tab:hover { background: #e6f4f5; }
     .admin-tab.active { background: #0a7e8c; color: white; }
     .subscription-user-card { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
-    .admin-badge {
-      background: #dc2626;
-      color: white;
-      border-radius: 20px;
-      padding: 2px 8px;
-      font-size: 0.6rem;
-      font-weight: bold;
-      margin-left: 6px;
-    }
-    /* Intercept Modal */
-    .intercept-modal {
+    .admin-badge { background: #dc2626; color: white; border-radius: 20px; padding: 2px 8px; font-size: 0.6rem; font-weight: bold; margin-left: 6px; }
+    @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
+    @media (max-width: 800px) { .right-panel { min-width: auto; } }
+
+    /* ========== NEW LANDING PAGE STYLES (dark theme, minimal) ========== */
+    .landing-page {
       position: fixed;
-      inset: 0;
-      z-index: 2100;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0f1a;
+      color: #eef2ff;
+      overflow-y: auto;
+      z-index: 3000;
+      transition: opacity 0.4s ease;
+    }
+    .landing-page.hidden {
+      display: none;
+    }
+    .landing-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+    }
+    /* Navbar */
+    .landing-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .logo-brand {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .logo-brand i {
+      color: #2dd4bf;
+      margin-right: 6px;
+    }
+    .login-btn-outline {
+      background: transparent;
+      border: 1px solid #2dd4bf;
+      color: #2dd4bf;
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .login-btn-outline:hover {
+      background: #2dd4bf20;
+      transform: scale(0.96);
+    }
+    /* Hero */
+    .hero-section {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .hero-section h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .hero-section p {
+      font-size: 1rem;
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+    }
+    .video-container {
+      max-width: 960px;
+      margin: 0 auto 1rem;
+      aspect-ratio: 16 / 9;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5);
+      border: 1px solid #2dd4bf30;
+    }
+    .video-container iframe {
+      width: 100%;
+      height: 100%;
+    }
+    .cta-btn {
+      background: linear-gradient(105deg, #0f4c5f, #1a6e5c);
+      border: none;
+      padding: 0.7rem 2rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 20px -8px rgba(0,0,0,0.3);
+    }
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(105deg, #1a6e5c, #0f4c5f);
+    }
+    /* Benefits row (no bullets) */
+    .benefits-row {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .benefit {
+      background: #111827;
+      padding: 0.8rem 1.2rem;
+      border-radius: 60px;
+      font-size: 0.85rem;
+      border: 1px solid #2dd4bf30;
+    }
+    .benefit strong {
+      color: #2dd4bf;
+    }
+    /* Footer */
+    .landing-footer {
+      border-top: 1px solid #1e293b;
+      text-align: center;
+      padding: 1rem 0;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+    }
+    .landing-footer a {
+      color: #2dd4bf;
+      text-decoration: none;
+    }
+    /* Modal (registration) */
+    .auth-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
-      background: rgba(15, 25, 35, 0.7);
-      backdrop-filter: blur(8px);
+      z-index: 4000;
       visibility: hidden;
       opacity: 0;
       transition: all 0.3s;
     }
-    .intercept-modal.visible {
+    .auth-modal.visible {
       visibility: visible;
       opacity: 1;
     }
-    .intercept-card {
-      background: white;
-      border-radius: 2rem;
+    .auth-card {
+      background: #0f172a;
+      border-radius: 32px;
       max-width: 420px;
+      width: 90%;
+      padding: 2rem;
+      border: 1px solid #2dd4bf40;
+      box-shadow: 0 25px 40px rgba(0,0,0,0.5);
+    }
+    .auth-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .auth-card input {
       width: 100%;
-      padding: 1.5rem;
-      box-shadow: 0 30px 40px rgba(0,0,0,0.2);
-      transform: scale(0.95);
-      transition: transform 0.2s;
+      padding: 12px 16px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 28px;
+      margin-bottom: 1rem;
+      color: white;
+      font-size: 0.9rem;
     }
-    .intercept-modal.visible .intercept-card {
-      transform: scale(1);
+    .auth-card input:focus {
+      outline: none;
+      border-color: #2dd4bf;
     }
-    @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
-    @media (max-width: 800px) { .right-panel { min-width: auto; } }
+    .auth-card button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(105deg, #0f4c5f, #1a6e5c);
+      border: none;
+      border-radius: 40px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .google-auth-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .close-modal-icon {
+      float: right;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: #94a3b8;
+    }
+    @media (max-width: 640px) {
+      .login-btn-outline { padding: 0.2rem 0.8rem; font-size: 0.7rem; }
+      .hero-section h1 { font-size: 1.6rem; }
+      .benefit { font-size: 0.7rem; padding: 0.5rem 1rem; }
+    }
   </style>
 </head>
 <body>
+
+<!-- ========== ORIGINAL DASHBOARD (hidden until login) ========== -->
 <div class="dashboard" id="app">
   <div class="header">
     <div class="logo"><h1><i class="fas fa-stethoscope"></i> FastRx Pro</h1><p>Professional Cloud System</p></div>
     <div id="userWidget"></div>
   </div>
-
   <div id="mainApp" style="display: none;">
     <div class="top-actions">
       <button class="top-btn" id="quickMedicineBtn"><i class="fas fa-plus-circle"></i> Add Medicine</button>
@@ -424,7 +354,6 @@
       <button class="top-btn" id="adminPanelBtn" style="display:none; background:#dc2626; color:white;"><i class="fas fa-user-shield"></i> Admin Panel</button>
       <input type="file" id="bulkMedFile" accept=".json,.csv" style="display:none">
     </div>
-
     <div class="prescription-layout">
       <div class="left-panel">
         <div class="card-title"><span><i class="fas fa-pills"></i> Medicine Library</span></div>
@@ -438,7 +367,6 @@
         <div class="flex-between"><input type="text" id="customAdviceInput" placeholder="Type new advice, then Add" style="flex:3;"><button class="btn-sm" id="addCustomAdviceBtn">Add</button></div>
         <div id="currentAdvicesList" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px;"></div>
       </div>
-
       <div class="right-panel">
         <div class="card">
           <div class="card-title"><span><i class="fas fa-user"></i> Patient (optional)</span></div>
@@ -454,13 +382,11 @@
             <datalist id="diseaseSuggestions"></datalist>
           </div>
         </div>
-
         <div class="card">
           <div class="card-title"><span><i class="fas fa-prescription-bottle"></i> Prescribed Items <span class="editable-hint">(click any field to edit)</span></span></div>
           <div style="overflow-x:auto;"><table id="medicinesTable"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="medicinesTableBody"></tbody></table></div>
           <div class="flex-between" style="margin-top:8px;"><button class="btn-sm" id="clearAllMedicinesBtn">Clear all</button></div>
         </div>
-
         <div class="card">
           <div class="flex-between"><div class="card-title" style="margin-bottom:0;"><span><i class="fas fa-eye"></i> Preview</span></div><div class="layout-toggle"><label><input type="radio" name="paperStyle" value="plain" checked> Simple</label><label><input type="radio" name="paperStyle" value="split"> Left line</label></div></div>
           <div class="margin-control"><label><i class="fas fa-arrows-alt-v"></i> Print top margin (mm):</label><input type="number" id="printTopMargin" value="20" step="2" min="0" max="60"> mm</div>
@@ -470,73 +396,76 @@
       </div>
     </div>
   </div>
+</div>
 
-  <!-- PREMIUM LOGIN OVERLAY WITH SEGMENTED TABS -->
-  <div id="loginOverlay" class="login-overlay">
-    <div class="login-modal">
-      <h2><i class="fas fa-stethoscope"></i> FastRx Pro</h2>
-      <div class="login-sub">Professional Cloud System</div>
-      
-      <!-- Segmented Pills -->
-      <div class="segmented-pills">
-        <div id="signinPill" class="pill active">Sign In</div>
-        <div id="registerPill" class="pill inactive">Register <span id="newUserBadge" class="new-user-badge">✨ New User</span></div>
+<!-- ========== NEW LANDING PAGE (dark themed) ========== -->
+<div id="landingPage" class="landing-page">
+  <div class="landing-container">
+    <div class="landing-nav">
+      <div class="logo-brand"><i class="fas fa-stethoscope"></i> FastRx Pro</div>
+      <button id="landingLoginBtn" class="login-btn-outline">Login</button>
+    </div>
+    <div class="hero-section">
+      <h1>Prescription Maker</h1>
+      <p>Make your prescription easy and fast</p>
+      <div class="video-container">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=J6n0pKqsZzL5aDZJ" title="FastRx Pro Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
       </div>
-      
-      <div id="loginErrorMsg" class="error-msg" style="display:none;"></div>
-      <div class="input-group"><label>Email</label><input type="email" id="loginEmail" placeholder="doctor@example.com"></div>
-      <div class="input-group"><label>Password</label><div class="password-wrapper"><input type="password" id="loginPassword" placeholder="••••••••"><button type="button" id="togglePasswordBtn" class="toggle-password"><i class="fas fa-eye-slash"></i></button></div></div>
-      <button id="actionBtn" class="btn-login">Secure Log In</button>
-      
-      <div class="divider">or</div>
-      <button id="googleLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in with Google</button>
-      <div class="footer-links"><a id="forgotPasswordLink">Forgot password?</a></div>
+      <button id="getStartedBtn" class="cta-btn">GET STARTED FREE</button>
+    </div>
+    <div class="benefits-row">
+      <div class="benefit">✨ <strong>Lightning Fast</strong> – Create prescriptions in seconds</div>
+      <div class="benefit">⚡ <strong>Smart Library</strong> – Auto‑suggest medicines & dosages</div>
+      <div class="benefit">🔒 <strong>Secure Cloud</strong> – HIPAA‑ready, encrypted storage</div>
+    </div>
+    <div class="landing-footer">
+      📬 Need assistance? Contact support at: <a href="mailto:narayanbarman3210@gmail.com">narayanbarman3210@gmail.com</a>
     </div>
   </div>
+</div>
 
-  <!-- Intercept Modal (Account Not Found) -->
-  <div id="interceptModal" class="intercept-modal">
-    <div class="intercept-card">
-      <div class="flex justify-end"><button id="closeInterceptBtn" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button></div>
-      <div class="text-center my-3">
-        <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-user-shield text-amber-600 text-2xl"></i></div>
-        <h3 class="text-xl font-bold text-slate-800">Account Not Found</h3>
-        <p class="text-sm text-slate-500 mt-2">You are a new user. You need to <strong>register your chamber profile</strong> before accessing the prescription printer app.</p>
-        <div class="mt-6 flex flex-col sm:flex-row gap-3">
-          <button id="interceptRegisterBtn" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white font-semibold py-2.5 rounded-xl">Click to Open Register Page</button>
-          <button id="interceptFixEmailBtn" class="flex-1 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 py-2.5 rounded-xl">Fix Email Entry</button>
-        </div>
-      </div>
-    </div>
+<!-- ========== AUTH MODAL (used by landing page) ========== -->
+<div id="authModal" class="auth-modal">
+  <div class="auth-card">
+    <span id="closeAuthModal" class="close-modal-icon">&times;</span>
+    <h3>Welcome to FastRx Pro</h3>
+    <input type="text" id="modalFullName" placeholder="Full Name / Doctor Name">
+    <input type="email" id="modalEmail" placeholder="Email address">
+    <input type="password" id="modalPassword" placeholder="Create password (min 6 characters)">
+    <button id="modalCreateAccountBtn">Create Account</button>
+    <div class="divider" style="margin: 16px 0; text-align:center; color:#64748b;">or</div>
+    <button id="modalGoogleBtn" class="google-auth-btn"><i class="fab fa-google"></i> Sign in with Google</button>
+    <p style="font-size:0.7rem; margin-top:1rem; text-align:center;">Already have an account? <a href="#" id="switchToLoginLink" style="color:#2dd4bf;">Login here</a></p>
   </div>
+</div>
 
-  <!-- ALL ORIGINAL MODALS (unchanged) -->
-  <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
-  <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
-  <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
-  <div id="settingsModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeSettingsModal">&times;</span><h3><i class="fas fa-sliders-h"></i> Prescription Settings</h3>
-    <div class="settings-group"><h4>Layout & Display</h4><div class="settings-row"><label class="settings-row-item"><input type="checkbox" id="settingShowDate" checked> Show Date</label><label class="settings-row-item"><input type="checkbox" id="settingShowTime" checked> Show Time</label><label class="settings-row-item"><input type="checkbox" id="settingShowSignature" checked> Doctor Signature</label></div><div class="settings-row"><span style="margin-right:12px;">Preview Style:</span><div class="radio-group"><label><input type="radio" name="settingStyle" value="plain" checked> Simple</label><label><input type="radio" name="settingStyle" value="split"> Left line</label></div></div></div>
-    <div class="settings-group"><h4>Prescription Type</h4><div class="radio-group"><label><input type="radio" name="prescType" value="standard" checked> Standard (no header)</label><label><input type="radio" name="prescType" value="professional"> Professional (with practice header)</label></div></div>
-    <div class="settings-group" id="practiceInfoCard"><h4>Practice Information</h4><div class="settings-row" style="flex-wrap:wrap; gap:16px;"><div style="flex:1; min-width:180px;"><label>Doctor Name</label><input type="text" id="doctorName" placeholder="Dr. John Doe"></div><div style="flex:1; min-width:180px;"><label>Registration No.</label><input type="text" id="doctorRegNo" placeholder="MCI/12345"></div><div style="flex:1; min-width:180px;"><label>Degree(s)</label><input type="text" id="doctorDegree" placeholder="MBBS, MD"></div></div><div class="settings-row" style="flex-wrap:wrap; gap:16px; margin-top:12px;"><div style="flex:1; min-width:200px;"><label>Chamber / Clinic Name</label><input type="text" id="chamberName" placeholder="City Hospital"></div><div style="flex:2; min-width:250px;"><label>Address</label><input type="text" id="doctorAddress" placeholder="123 Main Street, City"></div></div></div>
-    <div class="flex-between" style="margin-top:20px;"><button class="btn-primary" id="applySettingsBtn">Apply Settings</button><button class="btn-sm btn-outline" id="cancelSettingsBtn">Cancel</button></div>
-  </div></div>
-  <div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
-    <div class="admin-tabs"><div class="admin-tab active" data-tab="pending">Pending Approvals</div><div class="admin-tab" data-tab="users">All Users & Subscriptions</div></div>
-    <div id="pendingTransactionsList" style="max-height:400px; overflow-y:auto; margin:16px 0;"></div><div id="allUsersList" style="max-height:400px; overflow-y:auto; margin:16px 0; display:none;"></div>
-    <div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div>
-  </div></div>
-  <div id="allMedsPickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeMedsPickerModal">&times;</span><h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3><div id="allMedsListContainer" class="scrollable-picker"></div></div></div>
-  <div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
-  <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
-  <div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
-  <div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
-  <div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
-  <div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
-  <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
-  <div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin:16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
+<!-- ========== ALL ORIGINAL MODALS (subscription, settings, history, etc.) ========== -->
+<div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
+<div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
+<div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
+<div id="settingsModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeSettingsModal">&times;</span><h3><i class="fas fa-sliders-h"></i> Prescription Settings</h3>
+  <div class="settings-group"><h4>Layout & Display</h4><div class="settings-row"><label class="settings-row-item"><input type="checkbox" id="settingShowDate" checked> Show Date</label><label class="settings-row-item"><input type="checkbox" id="settingShowTime" checked> Show Time</label><label class="settings-row-item"><input type="checkbox" id="settingShowSignature" checked> Doctor Signature</label></div><div class="settings-row"><span style="margin-right:12px;">Preview Style:</span><div class="radio-group"><label><input type="radio" name="settingStyle" value="plain" checked> Simple</label><label><input type="radio" name="settingStyle" value="split"> Left line</label></div></div></div>
+  <div class="settings-group"><h4>Prescription Type</h4><div class="radio-group"><label><input type="radio" name="prescType" value="standard" checked> Standard (no header)</label><label><input type="radio" name="prescType" value="professional"> Professional (with practice header)</label></div></div>
+  <div class="settings-group" id="practiceInfoCard"><h4>Practice Information</h4><div class="settings-row" style="flex-wrap:wrap; gap:16px;"><div style="flex:1; min-width:180px;"><label>Doctor Name</label><input type="text" id="doctorName" placeholder="Dr. John Doe"></div><div style="flex:1; min-width:180px;"><label>Registration No.</label><input type="text" id="doctorRegNo" placeholder="MCI/12345"></div><div style="flex:1; min-width:180px;"><label>Degree(s)</label><input type="text" id="doctorDegree" placeholder="MBBS, MD"></div></div><div class="settings-row" style="flex-wrap:wrap; gap:16px; margin-top:12px;"><div style="flex:1; min-width:200px;"><label>Chamber / Clinic Name</label><input type="text" id="chamberName" placeholder="City Hospital"></div><div style="flex:2; min-width:250px;"><label>Address</label><input type="text" id="doctorAddress" placeholder="123 Main Street, City"></div></div></div>
+  <div class="flex-between" style="margin-top:20px;"><button class="btn-primary" id="applySettingsBtn">Apply Settings</button><button class="btn-sm btn-outline" id="cancelSettingsBtn">Cancel</button></div>
+</div></div>
+<div id="adminPanelModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdminModal">&times;</span><h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
+  <div class="admin-tabs"><div class="admin-tab active" data-tab="pending">Pending Approvals</div><div class="admin-tab" data-tab="users">All Users & Subscriptions</div></div>
+  <div id="pendingTransactionsList" style="max-height:400px; overflow-y:auto; margin:16px 0;"></div><div id="allUsersList" style="max-height:400px; overflow-y:auto; margin:16px 0; display:none;"></div>
+  <div class="flex-between"><button class="btn-primary" id="refreshPendingBtn">Refresh</button><button class="btn-sm btn-outline" id="closeAdminBtn">Close</button></div>
+</div></div>
+<div id="allMedsPickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeMedsPickerModal">&times;</span><h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3><div id="allMedsListContainer" class="scrollable-picker"></div></div></div>
+<div id="allAdvicePickerModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdvicePickerModal">&times;</span><h3><i class="fas fa-comment-dots"></i> All Advice Tags (click to add)</h3><div id="allAdviceListContainer" class="scrollable-picker"></div></div></div>
+<div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name</label><input type="text" id="historySearchName"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
+<div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
+<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></td></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
+<div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
+<div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
+<div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
+<div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin:16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
 
 <script>
-  // ========== FIREBASE CONFIG (unchanged) ==========
+  // ========== ORIGINAL FIREBASE & DASHBOARD CODE (preserved) ==========
   const firebaseConfig = {
     apiKey: "AIzaSyCFXO8oEPLTGdE_MykCDlcDfZKdcd0s59o",
     authDomain: "test-website-22778.firebaseapp.com",
@@ -550,8 +479,7 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
-
-  // ========== GLOBAL VARIABLES (all original) ==========
+  
   let currentUser = null;
   let medicines = [], adviceTags = [], prescriptions = [];
   let userFreqTags = ["1-1-1","1-0-0","0-1-0","0-0-1","BD","TID","OD"];
@@ -564,14 +492,13 @@
   let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
   let subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true };
   const ADMIN_EMAIL = "narayanbarman3210@gmail.com";
-
-  // Helper functions (unchanged)
+  
   function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
   function showLoading(show) { let el = document.getElementById('loadingOverlay'); if(show) { if(!el) { let d = document.createElement('div'); d.id='loadingOverlay'; d.className='loading-overlay'; d.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Loading...'; document.body.appendChild(d); } } else if(el) el.remove(); }
   function showError(msg) { alert(msg); }
   function generateSerial() { let max=0; prescriptions.forEach(p=>{let m=p.serial.match(/\d+/); if(m) max=Math.max(max,parseInt(m[0]));}); return `RX${(max+1).toString().padStart(3,'0')}`; }
   function formatTimeNoSeconds() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
-
+  
   // ========== AUTO-SUGGEST STORAGE ==========
   async function saveAutoCompleteData() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('autoNames').set({ firstNames: savedFirstNames, lastNames: savedLastNames, diseases: savedDiseases }); }
   async function loadAutoCompleteData() {
@@ -589,7 +516,7 @@
   async function addNewFirstName(name) { if(name && !savedFirstNames.includes(name)) { savedFirstNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewLastName(name) { if(name && !savedLastNames.includes(name)) { savedLastNames.push(name); await saveAutoCompleteData(); updateDatalists(); } }
   async function addNewDisease(name) { if(name && !savedDiseases.includes(name)) { savedDiseases.push(name); await saveAutoCompleteData(); updateDatalists(); } }
-
+  
   // ========== SUBSCRIPTION FUNCTIONS ==========
   async function loadSubscriptionData() {
     if(!currentUser) return;
@@ -643,7 +570,7 @@
     document.getElementById("renewalMsg").innerText = `Your plan expires in ${daysLeft} day(s). Please recharge to continue.`;
     document.getElementById("renewalModal").style.display = "block";
   }
-
+  
   // ========== TRANSACTION & ADMIN FUNCTIONS ==========
   async function submitTransaction(plan, transactionId, isRenewal=false) {
     if(!transactionId || transactionId.length!==12 || isNaN(transactionId)) { alert("Enter valid 12-digit transaction ID"); return; }
@@ -735,7 +662,7 @@
       });
     } 
   }
-
+  
   // ========== DISEASE MODAL ==========
   function showDiseaseModal() {
     const container = document.getElementById("diseaseListContainer");
@@ -766,7 +693,7 @@
     const val = document.getElementById("newDiseaseInput").value.trim();
     if(val && !savedDiseases.includes(val)) { savedDiseases.push(val); await saveAutoCompleteData(); updateDatalists(); showDiseaseModal(); document.getElementById("newDiseaseInput").value = ""; }
   }
-
+  
   // ========== CORE DATA LOAD FUNCTIONS ==========
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); if(medSnap.empty){ const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}]; for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m); } medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()})); const advDoc=await db.collection('users').doc(uid).collection('settings').doc('adviceTags').get(); adviceTags=advDoc.exists?advDoc.data().tags:["Take plenty of fluids","Avoid driving","Review after 3 days"]; if(!advDoc.exists) await db.collection('users').doc(uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); const freqDoc=await db.collection('users').doc(uid).collection('settings').doc('freqTags').get(); if(freqDoc.exists) userFreqTags=freqDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); const durDoc=await db.collection('users').doc(uid).collection('settings').doc('durTags').get(); if(durDoc.exists) userDurTags=durDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); const howDoc=await db.collection('users').doc(uid).collection('settings').doc('howTags').get(); if(howDoc.exists) userHowTags=howDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').orderBy('createdAt','desc').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()})); await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview(); } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
   async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
@@ -785,6 +712,8 @@
   function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); if(!container) return; container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
   function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
   function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(!container) return; container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
+  
+  // MODIFIED getPreviewHTML: Doctor signature moved to the very end (after advice, bottom-right)
   function getPreviewHTML(splitMode) {
     const firstName=document.getElementById("firstName").value.trim(), lastName=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diagnosis=document.getElementById("diagnosisField").value.trim();
     const patientName=(firstName||lastName)?`${firstName} ${lastName}`.trim():"";
@@ -798,11 +727,19 @@
     if(currentMedicines.length===0) medBlocks="<p><i>No medicines added.</i></p>";
     else medBlocks=currentMedicines.map(item=>`<div class="preview-med-item"><div class="preview-med-name">${escapeHtml(item.name)} ${escapeHtml(item.dosage)}</div><div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}${item.howToTake?` • ${escapeHtml(item.howToTake)}`:''}</div></div>`).join("");
     let adviceHtml=currentAdvices.length?`<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:"";
-    let signatureHtml=settings.showSignature?`<div class="signature-right">Doctor Signature: ___________________</div>`:"";
-    const mainContent=`${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}${signatureHtml}`;
-    if(splitMode){ let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>`; }
-    else return `<div>${headerHtml}</div>${mainContent}${adviceHtml}`;
+    // SIGNATURE MOVED TO VERY END, RIGHT ALIGNED
+    let signatureHtml=settings.showSignature?`<div class="signature-right" style="margin-top:20px; padding-top:10px; border-top:1px dashed #aaa; text-align:right;">Doctor Signature: ___________________</div>`:"";
+    const mainContent=`${dateTimeHtml}${patientLine}${diagnosisHtml}${medBlocks}`;
+    
+    if(splitMode){ 
+      let leftDisease=diagnosis?`<div style="margin-bottom:12px;"><strong>Disease:</strong><br>${escapeHtml(diagnosis)}</div>`:""; 
+      let leftAdvice=currentAdvices.length?`<div><strong>Advice:</strong><ul style="padding-left:16px;">${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:""; 
+      // In split mode, signature goes after the right column content
+      return `<div>${headerHtml}</div><div style="display:flex; gap:20px;"><div style="width:130px; border-right:2px solid #0a7e8c; padding-right:12px;">${leftDisease}${leftAdvice}</div><div style="flex:1;">${mainContent}</div></div>${signatureHtml}`; 
+    }
+    else return `<div>${headerHtml}</div>${mainContent}${adviceHtml}${signatureHtml}`;
   }
+  
   function updatePreview(){ const splitMode=document.querySelector('input[name="paperStyle"]:checked').value==="split"; document.getElementById("livePreviewArea").innerHTML=getPreviewHTML(splitMode); const cont=document.getElementById("previewContainer"); if(splitMode) cont.classList.add("split-line"); else cont.classList.remove("split-line"); }
   async function saveSettingsToFirestore() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').set({ settings, practiceInfo }); }
   async function loadSettingsFromFirestore() { if(!currentUser) return; const doc=await db.collection('users').doc(currentUser.uid).collection('settings').doc('appSettings').get(); if(doc.exists){ const data=doc.data(); if(data.settings) settings={...settings,...data.settings}; if(data.practiceInfo) practiceInfo={...practiceInfo,...data.practiceInfo}; } document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; updatePreview(); }
@@ -840,149 +777,87 @@
   function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
   function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
 
-  // ========== AUTHENTICATION WITH SEGMENTED TABS & SMART INTERCEPT ==========
-  let currentAuthMode = 'signin'; // 'signin' or 'register'
-  const signinPill = document.getElementById('signinPill');
-  const registerPill = document.getElementById('registerPill');
-  const newUserBadge = document.getElementById('newUserBadge');
-  const actionBtn = document.getElementById('actionBtn');
-  const loginEmail = document.getElementById('loginEmail');
-  const loginPassword = document.getElementById('loginPassword');
-  const errorDiv = document.getElementById('loginErrorMsg');
-  const interceptModal = document.getElementById('interceptModal');
-  let pendingInterceptEmail = "";
+  // ========== AUTHENTICATION: LANDING PAGE + MODAL ==========
+  const landingPage = document.getElementById('landingPage');
+  const authModal = document.getElementById('authModal');
+  const landingLoginBtn = document.getElementById('landingLoginBtn');
+  const getStartedBtn = document.getElementById('getStartedBtn');
+  const closeAuthModal = document.getElementById('closeAuthModal');
+  const modalCreateAccount = document.getElementById('modalCreateAccountBtn');
+  const modalGoogleBtn = document.getElementById('modalGoogleBtn');
+  const switchToLoginLink = document.getElementById('switchToLoginLink');
+  const modalFullName = document.getElementById('modalFullName');
+  const modalEmail = document.getElementById('modalEmail');
+  const modalPassword = document.getElementById('modalPassword');
+  let modalMode = 'register'; // 'register' or 'login'
 
-  function updateAuthUI() {
-    if (currentAuthMode === 'signin') {
-      signinPill.classList.add('active'); signinPill.classList.remove('inactive');
-      registerPill.classList.add('inactive'); registerPill.classList.remove('active');
-      newUserBadge.style.display = 'inline-flex';
-      actionBtn.innerText = 'Secure Log In';
+  function showAuthModal(mode) {
+    modalMode = mode;
+    if (mode === 'register') {
+      modalCreateAccount.innerText = 'Create Account';
+      switchToLoginLink.innerText = 'Login here';
+      modalFullName.placeholder = 'Full Name / Doctor Name';
     } else {
-      registerPill.classList.add('active'); registerPill.classList.remove('inactive');
-      signinPill.classList.add('inactive'); signinPill.classList.remove('active');
-      newUserBadge.style.display = 'none';
-      actionBtn.innerText = 'Create Account & Register';
+      modalCreateAccount.innerText = 'Sign In';
+      switchToLoginLink.innerText = 'Create an account';
+      modalFullName.placeholder = 'Full Name (optional)';
     }
+    authModal.classList.add('visible');
   }
+  function hideAuthModal() { authModal.classList.remove('visible'); }
 
-  signinPill.addEventListener('click', () => { currentAuthMode = 'signin'; updateAuthUI(); });
-  registerPill.addEventListener('click', () => { currentAuthMode = 'register'; updateAuthUI(); });
-
-  // Password visibility toggle
-  const togglePasswordBtn = document.getElementById('togglePasswordBtn');
-  let passwordVisible = false;
-  togglePasswordBtn.addEventListener('click', () => {
-    passwordVisible = !passwordVisible;
-    loginPassword.type = passwordVisible ? 'text' : 'password';
-    togglePasswordBtn.innerHTML = passwordVisible ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+  landingLoginBtn.addEventListener('click', () => showAuthModal('login'));
+  getStartedBtn.addEventListener('click', () => showAuthModal('register'));
+  closeAuthModal.addEventListener('click', hideAuthModal);
+  switchToLoginLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (modalMode === 'register') showAuthModal('login');
+    else showAuthModal('register');
   });
 
-  // Intercept modal controls
-  function showInterceptModal(email) {
-    pendingInterceptEmail = email;
-    interceptModal.classList.add('visible');
-  }
-  function hideInterceptModal() { interceptModal.classList.remove('visible'); }
-  document.getElementById('closeInterceptBtn').addEventListener('click', hideInterceptModal);
-  document.getElementById('interceptFixEmailBtn').addEventListener('click', hideInterceptModal);
-  document.getElementById('interceptRegisterBtn').addEventListener('click', () => {
-    if (pendingInterceptEmail) loginEmail.value = pendingInterceptEmail;
-    currentAuthMode = 'register';
-    updateAuthUI();
-    hideInterceptModal();
-  });
-
-  // Main auth handler
-  async function handleAuthSubmit() {
-    const email = loginEmail.value.trim();
-    const password = loginPassword.value;
-    errorDiv.style.display = 'none';
-    errorDiv.innerText = '';
-
-    if (!email || !password) {
-      errorDiv.innerText = "Enter email and password";
-      errorDiv.style.display = 'block';
-      return;
-    }
-    if (password.length < 6) {
-      errorDiv.innerText = "Password must be at least 6 characters";
-      errorDiv.style.display = 'block';
-      return;
-    }
-    const emailPattern = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
-    if (!emailPattern.test(email)) {
-      errorDiv.innerText = "Please enter a valid email address";
-      errorDiv.style.display = 'block';
-      return;
-    }
-
+  async function handleModalAuth() {
+    const email = modalEmail.value.trim();
+    const password = modalPassword.value;
+    const name = modalFullName.value.trim();
+    if (!email || !password) { alert('Email and password required'); return; }
+    if (password.length < 6) { alert('Password must be at least 6 characters'); return; }
     showLoading(true);
     try {
-      if (currentAuthMode === 'signin') {
-        // Try sign in
-        await auth.signInWithEmailAndPassword(email, password);
-      } else {
-        // Register mode: create account
+      if (modalMode === 'register') {
         const userCred = await auth.createUserWithEmailAndPassword(email, password);
-        await db.collection('users').doc(userCred.user.uid).set({ email, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        // Auto-login happens via onAuthStateChanged
+        await db.collection('users').doc(userCred.user.uid).set({ email, name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        hideAuthModal();
+      } else {
+        await auth.signInWithEmailAndPassword(email, password);
+        hideAuthModal();
       }
     } catch (err) {
-      if (err.code === 'auth/user-not-found' && currentAuthMode === 'signin') {
-        // Intercept: account doesn't exist, show modal
-        showInterceptModal(email);
-      } else if (err.code === 'auth/wrong-password') {
-        errorDiv.innerText = "Incorrect password. Try again or reset.";
-        errorDiv.style.display = 'block';
-      } else if (err.code === 'auth/email-already-in-use' && currentAuthMode === 'register') {
-        errorDiv.innerText = "Email already registered. Please sign in instead.";
-        errorDiv.style.display = 'block';
+      if (err.code === 'auth/user-not-found' && modalMode === 'login') {
+        alert('Account not found. Please register first.');
+      } else if (err.code === 'auth/email-already-in-use' && modalMode === 'register') {
+        alert('Email already registered. Please sign in instead.');
       } else {
-        errorDiv.innerText = err.message;
-        errorDiv.style.display = 'block';
+        alert(err.message);
       }
+    } finally {
       showLoading(false);
     }
   }
-
-  async function handleGoogleSignIn() {
+  modalCreateAccount.addEventListener('click', handleModalAuth);
+  modalGoogleBtn.addEventListener('click', async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
-      await auth.signInWithPopup(provider);
-    } catch(e) {
-      errorDiv.innerText = e.message;
-      errorDiv.style.display = 'block';
-    }
-  }
+      const result = await auth.signInWithPopup(provider);
+      await db.collection('users').doc(result.user.uid).set({ email: result.user.email, name: result.user.displayName, createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      hideAuthModal();
+    } catch (e) { alert(e.message); }
+  });
 
-  async function handleForgotPassword() {
-    const email = loginEmail.value.trim();
-    if (!email) {
-      errorDiv.innerText = "Enter your email address";
-      errorDiv.style.display = 'block';
-      return;
-    }
-    try {
-      await auth.sendPasswordResetEmail(email);
-      alert("Password reset email sent. Check your inbox.");
-    } catch(e) {
-      errorDiv.innerText = e.message;
-      errorDiv.style.display = 'block';
-    }
-  }
-
-  document.getElementById('actionBtn').addEventListener('click', handleAuthSubmit);
-  document.getElementById('googleLoginBtn').addEventListener('click', handleGoogleSignIn);
-  document.getElementById('forgotPasswordLink').addEventListener('click', handleForgotPassword);
-
-  // Auth state observer
-  function openLoginOverlay() { document.getElementById('loginOverlay').classList.remove('hidden'); }
-  function closeLoginOverlay() { document.getElementById('loginOverlay').classList.add('hidden'); }
-
+  // Auth state observer to switch between landing page and dashboard
   function onAuthStateChanged(user) {
     if (user) {
       currentUser = user;
+      landingPage.classList.add('hidden');
       document.getElementById('mainApp').style.display = 'block';
       const isAdmin = user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
       document.getElementById('userWidget').innerHTML = `<div class="user-area"><div class="user-avatar"><img src="${user.photoURL || 'https://ui-avatars.com/api/?background=0a7e8c&color=fff&name='+user.displayName?.charAt(0)}"></div><span>${user.displayName || user.email}${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</span><button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button></div>`;
@@ -990,13 +865,10 @@
       const adminBtn = document.getElementById('adminPanelBtn');
       if (adminBtn) adminBtn.style.display = isAdmin ? 'inline-flex' : 'none';
       loadUserData();
-      closeLoginOverlay();
     } else {
       currentUser = null;
+      landingPage.classList.remove('hidden');
       document.getElementById('mainApp').style.display = 'none';
-      document.getElementById('userWidget').innerHTML = `<button id="showLoginBtn" class="btn-google"><i class="fab fa-google"></i> Sign in</button>`;
-      document.getElementById('showLoginBtn')?.addEventListener('click', openLoginOverlay);
-      openLoginOverlay();
     }
   }
   auth.onAuthStateChanged(onAuthStateChanged);
@@ -1005,7 +877,6 @@
   document.addEventListener("DOMContentLoaded", () => {
     bindEvents();
     setupSearchSuggestions();
-    updateAuthUI(); // initial state
   });
 
   function bindEvents() {
