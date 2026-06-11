@@ -133,7 +133,14 @@
     .feedback-star { font-size: 28px; cursor: pointer; color: #cbd5e1; transition: 0.1s; }
     .feedback-star:hover, .feedback-star.active { color: #f5b042; text-shadow: 0 0 2px #f5b042; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; } @page { margin: 0; } }
+    @media print { 
+      body * { visibility: hidden; } 
+      .print-area, .print-area * { visibility: visible; } 
+      .print-area { position: absolute; top: 0; left: 0; } 
+      @page { margin: 0; }
+      /* Ensure the border line above first medicine appears in print */
+      .preview-med-item.medicines-start-line { border-top: 1px solid #000; margin-top: 8px; padding-top: 8px; }
+    }
     @media (max-width: 800px) { .right-panel { min-width: auto; } }
 
     /* ========== LANDING PAGE & AUTH MODAL STYLES (unchanged) ========== */
@@ -381,7 +388,7 @@
 </div>
 
 <!-- ========== ALL ORIGINAL MODALS (unchanged) ========== -->
-<div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="tag-group" style="margin:16px 0; max-height:300px; overflow-y:auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
+<div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="disease-list-flex" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; max-height: 300px; overflow-y: auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
 <div id="renewalModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeRenewalModal">&times;</span><h3><i class="fas fa-bell"></i> Subscription Expiring Soon</h3><p id="renewalMsg" style="margin:10px 0;"></p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="renewPlan" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="renewPlan" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="renewTransactionId" maxlength="12"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitRenewalBtn">Submit for Renewal</button><button class="btn-sm btn-outline" id="closeRenewalBtn">Close</button></div></div></div>
 <div id="settingsModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeSettingsModal">&times;</span><h3><i class="fas fa-sliders-h"></i> Prescription Settings</h3>
@@ -428,7 +435,7 @@
   let savedFirstNames = [], savedLastNames = [], savedDiseases = [];
   let currentMedicines = [], currentAdvices = [], currentSerial = "";
   let pendingMedicine = null, currentTagType = "";
-  let settings = { showDate: true, showTime: true, showSignature: true, style: "plain", prescType: "standard" };
+  let settings = { showDate: true, showTime: true, showSignature: true, style: "plain", prescType: "standard", printTopMargin: 20 };
   let practiceInfo = { doctorName: "", regNo: "", degree: "", chamberName: "", address: "" };
   let subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0, lastResetDate: null, pendingTransaction: null, approved: true };
   const ADMIN_EMAIL = "narayanbarman3210@gmail.com";
@@ -476,28 +483,28 @@
   async function loadAllUsers() { if(!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return; const usersSnap = await db.collection('users').get(); const usersList = []; for(const userDoc of usersSnap.docs) { const subDoc = await db.collection('users').doc(userDoc.id).collection('settings').doc('subscription').get(); const userData = { email: userDoc.data()?.email || userDoc.id, uid: userDoc.id }; if(subDoc.exists) userData.subscription = subDoc.data(); else userData.subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0 }; usersList.push(userData); } const container = document.getElementById("allUsersList"); if(usersList.length===0) { container.innerHTML = "<p>No users found.</p>"; return; } container.innerHTML = usersList.map(u => { const expiry = u.subscription.expiryDate ? new Date(u.subscription.expiryDate).toLocaleDateString() : 'Never'; const status = u.subscription.expiryDate && new Date(u.subscription.expiryDate) >= new Date() ? 'Active' : (u.subscription.expiryDate ? 'Expired' : 'Free'); const planBadge = u.subscription.plan === 'monthly' ? '📅 Monthly' : (u.subscription.plan === 'yearly' ? '📆 Yearly' : 'Free'); return `<div class="subscription-user-card"><div><strong>${escapeHtml(u.email)}</strong></div><div>Plan: ${planBadge} | Status: ${status} | Expires: ${expiry}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-uid="${u.uid}" data-action="extend_monthly">+1 Month</button><button class="btn-sm" data-uid="${u.uid}" data-action="extend_yearly">+1 Year</button><button class="btn-sm btn-danger" data-uid="${u.uid}" data-action="cancel">Cancel Subscription</button></div></div>`; }).join(""); container.querySelectorAll("button[data-uid]").forEach(btn => { btn.addEventListener("click", async () => { const uid = btn.dataset.uid; const action = btn.dataset.action; const subRef = db.collection('users').doc(uid).collection('settings').doc('subscription'); const subDoc = await subRef.get(); let currentExpiry = subDoc.exists ? (subDoc.data().expiryDate ? new Date(subDoc.data().expiryDate) : new Date()) : new Date(); if(currentExpiry < new Date()) currentExpiry = new Date(); if(action === 'extend_monthly') { currentExpiry.setMonth(currentExpiry.getMonth() + 1); await subRef.update({ isActive: true, plan: 'monthly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 }); alert("Extended by 1 month!"); } else if(action === 'extend_yearly') { currentExpiry.setFullYear(currentExpiry.getFullYear() + 1); await subRef.update({ isActive: true, plan: 'yearly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 }); alert("Extended by 1 year!"); } else if(action === 'cancel') { await subRef.update({ isActive: false, expiryDate: null, plan: null }); alert("Subscription cancelled."); } loadAllUsers(); }); }); }
   function showAdminPanel() { if(currentUser && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) { loadPendingTransactions(); loadAllUsers(); document.getElementById("adminPanelModal").style.display = "block"; document.querySelectorAll(".admin-tab").forEach(tab => { tab.addEventListener("click", () => { document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active")); tab.classList.add("active"); if(tab.dataset.tab === "pending") { document.getElementById("pendingTransactionsList").style.display = "block"; document.getElementById("allUsersList").style.display = "none"; loadPendingTransactions(); } else { document.getElementById("pendingTransactionsList").style.display = "none"; document.getElementById("allUsersList").style.display = "block"; loadAllUsers(); } }); }); } }
 
-  // Disease modal - FIXED: red cross icon for delete, proper event separation
+  // Disease modal - red cross outside tag
   function showDiseaseModal() {
     const container = document.getElementById("diseaseListContainer");
     container.innerHTML = savedDiseases.map(d => `
-      <span class="tag" data-disease="${escapeHtml(d)}" style="display:inline-flex; align-items:center; gap:6px;">
-        ${escapeHtml(d)}
+      <div style="display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; border-radius: 40px; padding: 4px 12px;">
+        <span style="cursor: pointer;" data-disease="${escapeHtml(d)}">${escapeHtml(d)}</span>
         <i class="fas fa-times-circle" style="color:#dc2626; cursor:pointer; font-size:0.9rem;" data-disease="${escapeHtml(d)}"></i>
-      </span>
+      </div>
     `).join("");
-    container.querySelectorAll(".tag").forEach(el => {
-      // Click on the tag (but not on the delete icon) -> select disease
-      el.addEventListener("click", (e) => {
-        if(e.target.classList.contains("fa-times-circle")) return;
-        document.getElementById("diagnosisField").value = el.getAttribute("data-disease");
+    // Attach click event for disease selection (on the span)
+    container.querySelectorAll("span[data-disease]").forEach(span => {
+      span.addEventListener("click", () => {
+        document.getElementById("diagnosisField").value = span.getAttribute("data-disease");
         updatePreview();
         document.getElementById("diseaseModal").style.display = "none";
       });
-      // Delete icon handler
-      const delIcon = el.querySelector(".fa-times-circle");
-      if(delIcon) delIcon.addEventListener("click", async (e) => {
+    });
+    // Attach delete event for red cross icon
+    container.querySelectorAll(".fa-times-circle").forEach(icon => {
+      icon.addEventListener("click", async (e) => {
         e.stopPropagation();
-        const disease = delIcon.getAttribute("data-disease");
+        const disease = icon.getAttribute("data-disease");
         if(confirm(`Delete "${disease}"?`)) {
           const idx = savedDiseases.indexOf(disease);
           if(idx !== -1) savedDiseases.splice(idx,1);
@@ -534,7 +541,15 @@
     const feedbackPref = await db.collection('users').doc(uid).collection('settings').doc('feedbackPref').get();
     if(feedbackPref.exists) feedbackOptOut = feedbackPref.data().optOut || false;
     await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview();
-    bindAutoSaveFields(); // attach auto-save listeners
+    bindAutoSaveFields();
+    // Set the print margin input value from saved settings
+    const marginInput = document.getElementById('printTopMargin');
+    if(marginInput) marginInput.value = settings.printTopMargin;
+    marginInput?.addEventListener('change', async (e) => {
+      settings.printTopMargin = parseInt(e.target.value) || 20;
+      await saveSettingsToFirestore();
+      updatePreview();
+    });
     } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
   async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
@@ -557,7 +572,7 @@
   function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
   function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(!container) return; container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
   
-  // Updated preview: disease appears in simple view, line above first medicine
+  // Updated preview: disease appears in simple view, line above first medicine, margin from settings
   function getPreviewHTML(splitMode) {
     const firstName=document.getElementById("firstName").value.trim(), lastName=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diagnosis=document.getElementById("diagnosisField").value.trim();
     const patientName=(firstName||lastName)?`${firstName} ${lastName}`.trim():"";
@@ -606,7 +621,7 @@
     currentMedicines.push({name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"–"}); let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing){ existing.usageCount=(existing.usageCount||0)+1; await saveMedicines(); } else { await addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"–", usageCount:1, pinned:false }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
   function closeModal(){ document.getElementById("medicineModal").style.display="none"; pendingMedicine=null; }
   function closeQuickPopup(){ document.getElementById("quickModal").style.display="none"; }
-  function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=parseInt(document.getElementById("printTopMargin").value)||0; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.prescription-content{max-width:800px;margin:0 auto;}.preview-med-item{margin-bottom:0.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.3rem;}.preview-med-name{font-weight:700; color:#0c4e6e; font-size:0.85rem;}.preview-med-detail{font-size:0.75rem; color:#334155; margin-top:2px;}.signature-right{text-align:right; margin-top:20px; padding-top:10px; border-top:1px dashed #aaa;}.practice-header{margin-bottom:20px; text-align:center; border-bottom:2px solid #0a7e8c; padding-bottom:12px; width:100%;}.practice-name{font-size:1.4rem; font-weight:700; color:#0a4c6e;}.practice-details{font-size:0.75rem; color:#4b6b87; margin-top:6px;}@media print{body{padding:${margin}mm 10mm 10mm 10mm;}}</style></head><body><div class="prescription-content">${html}</div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
+  function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=settings.printTopMargin; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.prescription-content{max-width:800px;margin:0 auto;}.preview-med-item{margin-bottom:0.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.3rem;}.preview-med-name{font-weight:700; color:#0c4e6e; font-size:0.85rem;}.preview-med-detail{font-size:0.75rem; color:#334155; margin-top:2px;}.signature-right{text-align:right; margin-top:20px; padding-top:10px; border-top:1px dashed #aaa;}.practice-header{margin-bottom:20px; text-align:center; border-bottom:2px solid #0a7e8c; padding-bottom:12px; width:100%;}.practice-name{font-size:1.4rem; font-weight:700; color:#0a4c6e;}.practice-details{font-size:0.75rem; color:#4b6b87; margin-top:6px;}.preview-med-item.medicines-start-line { border-top: 1px solid #000; margin-top: 8px; padding-top: 8px; }@media print{body{padding:${margin}mm 10mm 10mm 10mm;}}</style></head><body><div class="prescription-content">${html}</div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
   function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
   async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"–", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"–", usageCount:0, pinned:false }); } } alert("Imported."); }
