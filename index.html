@@ -233,7 +233,7 @@
       </div>
       <div class="right-panel">
         <div class="card">
-          <div class="card-title"><span><i class="fas fa-user"></i> Patient (optional)</span></div>
+          <div class="card-title"><span><i class="fas fa-user"></i> Patient</span></div>
           <div class="patient-row">
             <div class="name-field"><input type="text" id="firstName" placeholder="First name" list="firstNamesSuggestions" autocomplete="off"><datalist id="firstNamesSuggestions"></datalist></div>
             <div class="lastname-field"><input type="text" id="lastName" placeholder="Last name" list="lastNamesSuggestions" autocomplete="off"><datalist id="lastNamesSuggestions"></datalist></div>
@@ -273,7 +273,7 @@
       <h1>Prescription Maker</h1>
       <p>Make your prescription easy and fast</p>
       <div class="video-container">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=J6n0pKqsZzL5aDZJ" title="FastRx Pro Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe width="560" height="315" src="https://youtu.be/lznNs7mm1fs" title="FastRx Pro Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
       </div>
       <button id="getStartedBtn" class="cta-btn">🚀 GET STARTED FREE</button>
     </div>
@@ -338,7 +338,7 @@
 
 <!-- All Medicines Popup -->
 <div id="allMedsPickerModal" class="modal">
-  <div class="modal-content" style="max-width: 1200px;">
+  <div class="modal-content" style="max-width: 1000px;">
     <span class="close-modal" id="closeMedsPickerModal">&times;</span>
     <h3><i class="fas fa-pills"></i> All Medicines (click to add)</h3>
     <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="allMedsSearch" placeholder="Search medicine..."></div>
@@ -562,7 +562,7 @@
   function renderMedicineList(search=""){ let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount-a.usageCount); const container=document.getElementById("medicineListContainer"); if(!container) return; container.innerHTML=filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); attachMedEvents(); }
   function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
   function renderPinnedSection(){ const pinned=medicines.filter(m=>m.pinned); const section=document.getElementById("pinnedSection"); const container=document.getElementById("pinnedList"); if(pinned.length===0){ section.style.display="none"; return; } section.style.display="block"; container.innerHTML=pinned.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon pinned" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
-  function renderMostUsed(){ const sorted=[...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5); const container=document.getElementById("mostUsedContainer"); if(container) container.innerHTML=`<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")+`</div>`; document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); })); }
+  function renderMostUsed(){ const sorted=[...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5); const container=document.getElementById("mostUsedContainer"); if(container) container.innerHTML=`<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}"> ${m.name}</span>`).join("")+`</div>`; document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); })); }
   function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalDosage").value=med.dosage||""; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; renderTagGroup("freqTagsContainer", userFreqTags, "freq"); renderTagGroup("durTagsContainer", userDurTags, "dur"); renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("medicineModal").style.display="block"; }
   function renderTagGroup(containerId, tags, type){ const container=document.getElementById(containerId); if(!container) return; container.innerHTML=tags.map(t=>`<span class="tag" data-tag="${escapeHtml(t)}" data-type="${type}">${escapeHtml(t)}</span>`).join(""); container.querySelectorAll(".tag").forEach(el=>el.addEventListener("click",()=>{ if(type==="freq") document.getElementById("modalFrequency").value=el.dataset.tag; else if(type==="dur") document.getElementById("modalDuration").value=el.dataset.tag; else document.getElementById("modalHowToTake").value=el.dataset.tag; })); }
   async function addMedicineFromPopup(){ if(pendingMedicine){ let dosage = document.getElementById("modalDosage").value.trim() || "–";
