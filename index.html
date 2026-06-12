@@ -49,7 +49,9 @@
     .pin-icon { cursor: pointer; font-size: 1rem; width: 28px; text-align: center; color: #94a3b8; transition: 0.1s; margin-left: 8px; }
     .pin-icon.pinned { color: #f59e0b; }
     .pin-icon:hover { color: #eab308; transform: scale(1.1); }
-    .most-used { background: #fef9e3; padding: 8px; border-radius: 16px; margin: 12px 0; }
+    .most-used-preview { max-height: 100px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .most-used-preview span, .pinned-preview span { background: #eef2ff; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; cursor: pointer; white-space: nowrap; }
+    .pinned-preview { max-height: 100px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
     .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
     .btn-sm { background: #ecfdf5; border: none; padding: 5px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
     .btn-primary { background: #0a7e8c; color: white; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
@@ -220,9 +222,24 @@
       <div class="left-panel">
         <div class="card-title"><span><i class="fas fa-pills"></i> Medicine Library</span></div>
         <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="searchMedicine" placeholder="Search medicine..."><div id="suggestionsBox" class="suggestions-dropdown"></div></div>
-        <div id="pinnedSection" style="margin-bottom:16px; display:none;"><div style="font-weight:600; font-size:0.8rem;">⭐ Pinned Favourites</div><div id="pinnedList" class="med-grid" style="max-height:200px;"></div></div>
-        <div style="font-weight:600; font-size:0.8rem;">🔥 Most Used</div><div id="mostUsedContainer" class="most-used"></div>
-        <div class="flex-between"><span class="clickable-title" id="allMedsButton" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;"><i class="fas fa-expand-alt"></i> 📚 All Medicines</span><button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button></div>
+        
+        <!-- Pinned Favourites Section (with expand button) -->
+        <div class="flex-between" style="margin-top: 8px;">
+          <span class="clickable-title" id="pinnedExpandBtn" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;">
+            <i class="fas fa-star"></i> Pinned Favourites <i class="fas fa-expand-alt"></i>
+          </span>
+        </div>
+        <div id="pinnedPreview" class="pinned-preview"></div>
+        
+        <!-- Most Used Section (with expand button) -->
+        <div class="flex-between" style="margin-top: 8px;">
+          <span class="clickable-title" id="mostUsedExpandBtn" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;">
+            🔥 Most Used <i class="fas fa-expand-alt"></i>
+          </span>
+        </div>
+        <div id="mostUsedPreview" class="most-used-preview"></div>
+        
+        <div class="flex-between" style="margin-top: 16px;"><span class="clickable-title" id="allMedsButton" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;"><i class="fas fa-expand-alt"></i> 📚 All Medicines</span><button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button></div>
         <div id="medicineListContainer" class="med-grid"></div>
         <div class="flex-between" style="margin-top:16px;"><span class="clickable-title" id="allAdviceButton" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;"><i class="fas fa-expand-alt"></i> <i class="fas fa-comment-dots"></i> Quick Advice</span><button class="btn-sm" id="manageAdviceBtn"><i class="fas fa-edit"></i> Manage</button></div>
         <div id="adviceTagList" class="advice-tag-list-scroll"></div>
@@ -316,10 +333,10 @@
       <div class="bulk-tab" data-bulk-tab="advices">💬 Advices</div>
     </div>
     <div id="bulkMedicinesPanel">
-      <p class="text-sm text-slate-600 mb-2">Paste one medicine per line. Format: <code>Name, Frequency, Duration, How to take</code> (e.g., <code>Azithromycin, OD, 3 days, Empty stomach</code>). You can also upload CSV/Excel file.</p>
-      <textarea id="bulkMedicinesText" class="bulk-textarea" placeholder="Azithromycin, OD, 3 days, Empty stomach&#10;Paracetamol, 1-1-1, 5 days, After meals"></textarea>
+      <p class="text-sm text-slate-600 mb-2">Paste one medicine per line. Use optional dosage after comma: <code>Paracetamol,500mg</code> or just <code>Amoxicillin</code></p>
+      <textarea id="bulkMedicinesText" class="bulk-textarea" placeholder="Azithromycin,500mg&#10;Paracetamol&#10;Amoxicillin,250mg"></textarea>
       <div class="flex-between mt-3">
-        <label class="btn-sm cursor-pointer bg-white border"><i class="fas fa-file-alt"></i> Upload File (CSV/TXT) <input type="file" id="bulkMedicinesFile" accept=".csv,.txt,.xlsx" style="display:none"></label>
+        <label class="btn-sm cursor-pointer bg-white border"><i class="fas fa-file-alt"></i> Upload File (CSV/TXT) <input type="file" id="bulkMedicinesFile" accept=".csv,.txt" style="display:none"></label>
         <button id="bulkAddMedicinesBtn" class="btn-primary">➕ Add Medicines</button>
       </div>
     </div>
@@ -385,6 +402,27 @@
   </div>
 </div>
 
+<!-- ========== NEW MODALS FOR EXPANDED VIEWS ========== -->
+<!-- Most Used & Recent Medicines Modal -->
+<div id="mostUsedModal" class="modal">
+  <div class="modal-content" style="max-width: 900px;">
+    <span class="close-modal" id="closeMostUsedModal">&times;</span>
+    <h3><i class="fas fa-fire"></i> Most Used & Recent Medicines</h3>
+    <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="mostUsedSearch" placeholder="Search medicine..."></div>
+    <div id="mostUsedFullList" class="med-grid-2col"></div>
+  </div>
+</div>
+
+<!-- Pinned Medicines Modal -->
+<div id="pinnedModal" class="modal">
+  <div class="modal-content" style="max-width: 900px;">
+    <span class="close-modal" id="closePinnedModal">&times;</span>
+    <h3><i class="fas fa-star"></i> Pinned Favourites</h3>
+    <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="pinnedSearch" placeholder="Search pinned medicine..."></div>
+    <div id="pinnedFullList" class="med-grid-2col"></div>
+  </div>
+</div>
+
 <!-- ========== ALL ORIGINAL MODALS (unchanged) ========== -->
 <div id="diseaseModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeDiseaseModal">&times;</span><h3><i class="fas fa-book"></i> All Diseases</h3><div id="diseaseListContainer" class="disease-list-flex" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; max-height: 300px; overflow-y: auto;"></div><div class="flex-between"><input type="text" id="newDiseaseInput" placeholder="New disease" style="flex:3;"><button class="btn-sm" id="addNewDiseaseBtn">Add</button></div></div></div>
 <div id="subscriptionModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeSubModal">&times;</span><h3><i class="fas fa-lock"></i> Free Limit Reached (10/day)</h3><p style="margin:10px 0;">Upgrade to continue unlimited prescriptions.</p><div style="text-align:center; margin:15px 0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI%3Apay%40fastrxpro%26pn%3DFastRx%20Pro%26am%3D199%26cu%3DINR" style="width:150px; border-radius:12px;"><p style="font-size:0.7rem;">Scan to pay ₹199/month or ₹2000/year</p></div><div class="radio-group" style="justify-content:center; margin-bottom:15px;"><label><input type="radio" name="planSelect" value="monthly"> Monthly (₹199)</label><label><input type="radio" name="planSelect" value="yearly"> Yearly (₹2000)</label></div><div class="input-group"><label>Transaction ID (12 digits)</label><input type="text" id="transactionId" maxlength="12" placeholder="e.g., 123456789012"></div><div class="flex-between" style="margin-top:15px;"><button class="btn-primary" id="submitTransactionBtn">Submit for Approval</button><button class="btn-sm btn-outline" id="cancelSubBtn">Cancel</button></div></div></div>
@@ -402,14 +440,9 @@
 </div></div>
 <div id="historyModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeHistoryModal">&times;</span><h3><i class="fas fa-history"></i> Prescription History</h3><div class="history-filters"><div class="filter-group"><label>Name / Prescription No.</label><input type="text" id="historySearchName" placeholder="Search by name or RX number"></div><div class="filter-group"><label>From</label><input type="date" id="historyFromDate"></div><div class="filter-group"><label>To</label><input type="date" id="historyToDate"></div><div class="filter-group"><label>Year</label><input type="number" id="historyYear" placeholder="YYYY"></div><div class="filter-group"><label>Month</label><select id="historyMonth"><option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div><button class="btn-sm" id="applyHistoryFilter">Apply</button><button class="btn-sm" id="resetHistoryFilter">Reset</button></div><div id="historyListContainer" class="history-list"></div></div></div>
 <div id="analysisModal" class="modal"><div class="modal-content" style="max-width:900px;"><span class="close-modal" id="closeAnalysisModal">&times;</span><h3><i class="fas fa-chart-line"></i> Practice Analytics</h3><div class="analysis-filters"><div class="filter-group"><label>From Date</label><input type="date" id="analysisFromDate"></div><div class="filter-group"><label>To Date</label><input type="date" id="analysisToDate"></div><button class="btn-sm" id="applyAnalysisFilter">Apply Range</button><button class="btn-sm" id="resetAnalysisFilter">Reset</button></div><div id="analysisCards" class="analysis-cards"></div><canvas id="monthlyChart" width="400" height="220" style="max-height:250px; width:100%;"></canvas><div id="analysisStats" style="margin-top:16px;"></div></div></div>
-<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Frequency</th><th>Duration</th><th>How to take</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
+<div id="medicineInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Medicine Inventory</h3><div style="overflow-x:auto;"><table class="inventory-table" id="inventoryMedTable"><thead><tr><th>Medicine Name</th><th>Dosage</th><th></th></tr></thead><tbody id="inventoryMedBody"></tbody></table></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm" id="addInventoryMedicineBtn">+ Add Medicine</button><button class="btn-sm btn-danger" id="deleteAllMedsBtn">Delete All</button><button class="btn-primary" id="closeInventoryBtn">Close</button></div></div></div>
 <div id="adviceInventoryModal" class="modal"><div class="modal-content"><span class="close-modal" id="closeAdviceInventoryModal">&times;</span><h3><i class="fas fa-edit"></i> Advice Inventory</h3><div id="adviceInventoryList"></div><div class="flex-between" style="margin-top:16px;"><button class="btn-sm btn-danger" id="deleteAllAdviceBtn">Delete All</button><button class="btn-primary" id="closeAdviceInventoryBtn">Close</button></div></div></div>
-<div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3>
-  <label>Frequency</label><div class="flex-between"><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency">
-  <label>Duration</label><div class="flex-between"><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration">
-  <label>How to take</label><div class="flex-between"><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake">
-  <div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div>
-</div></div>
+<div id="medicineModal" class="modal"><div class="modal-content"><h3 id="modalMedName">Medicine</h3><label>Dosage</label><input type="text" id="modalDosage"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="freqTagsContainer"></div><input type="text" id="modalFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="durTagsContainer"></div><input type="text" id="modalDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="howTagsContainer"></div><input type="text" id="modalHowToTake"><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn-primary" id="modalConfirmBtn">Add</button><button class="btn-sm btn-outline" id="modalCancelBtn">Cancel</button></div></div></div>
 <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><label>Dosage</label><input type="text" id="quickDosage"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
 <div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin:16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
 
@@ -528,10 +561,10 @@
     }
   }
 
-  // Core data load
+  // Core data load with additional fields: lastUsed
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()}));
     if(medSnap.empty && prescriptions.length===0){
-      const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false}];
+      const defaultMeds=[{name:"Paracetamol",dosage:"500mg",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false,lastUsed:new Date().toISOString()},{name:"Amoxicillin",dosage:"250mg",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false,lastUsed:new Date().toISOString()},{name:"Azithromycin",dosage:"500mg",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false,lastUsed:new Date().toISOString()},{name:"Losartan",dosage:"50mg",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false,lastUsed:new Date().toISOString()},{name:"Cetirizine",dosage:"10mg",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false,lastUsed:new Date().toISOString()}];
       for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m);
     }
     medicines=(await db.collection('users').doc(uid).collection('medicines').get()).docs.map(d=>({id:d.id,...d.data()}));
@@ -541,7 +574,7 @@
     const howDoc=await db.collection('users').doc(uid).collection('settings').doc('howTags').get(); if(howDoc.exists) userHowTags=howDoc.data().tags; else await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags});
     const feedbackPref = await db.collection('users').doc(uid).collection('settings').doc('feedbackPref').get();
     if(feedbackPref.exists) feedbackOptOut = feedbackPref.data().optOut || false;
-    await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); renderAdviceTags(); resetCurrentDraft(); updatePreview();
+    await loadAutoCompleteData(); await loadSettingsFromFirestore(); await loadSubscriptionData(); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); renderAdviceTags(); resetCurrentDraft(); updatePreview();
     bindAutoSaveFields();
     const marginInput = document.getElementById('printTopMargin');
     if(marginInput) marginInput.value = settings.printTopMargin;
@@ -551,25 +584,133 @@
       updatePreview();
     });
     } catch(e){ console.error(e); showError("Load failed: "+e.message); } finally{ showLoading(false); } }
-  async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned}); }); await batch.commit(); }
+  async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,dosage:m.dosage,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned,lastUsed:m.lastUsed}); }); await batch.commit(); }
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
   async function saveTags() { if(!currentUser) return; const uid=currentUser.uid; await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); }
-  async function updateMedicineUsage(medId) { const med=medicines.find(m=>m.id===medId); if(med){ med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMostUsed(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); } }
-  async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsed(); renderPinnedSection(); }
-  async function deleteMedicineById(medId) { const index = medicines.findIndex(m=>m.id===medId); if(index!==-1){ medicines.splice(index,1); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(medId).delete(); renderMedicineList(); renderMostUsed(); renderPinnedSection(); } }
+  async function updateMedicineUsage(medId) { const med=medicines.find(m=>m.id===medId); if(med){ med.usageCount=(med.usageCount||0)+1; med.lastUsed = new Date().toISOString(); await saveMedicines(); renderMostUsedPreview(); renderPinnedPreview(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); } }
+  async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false,lastUsed:medObj.lastUsed||new Date().toISOString()}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); }
+  async function deleteMedicineById(medId) { const index = medicines.findIndex(m=>m.id===medId); if(index!==-1){ medicines.splice(index,1); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(medId).delete(); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); } }
   
-  function renderMedicineList(search=""){ let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount-a.usageCount); const container=document.getElementById("medicineListContainer"); if(!container) return; container.innerHTML=filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.frequency} • ${med.duration} • ${med.howToTake}</div></div><div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); attachMedEvents(); }
-  function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
-  function renderPinnedSection(){ const pinned=medicines.filter(m=>m.pinned); const section=document.getElementById("pinnedSection"); const container=document.getElementById("pinnedList"); if(pinned.length===0){ section.style.display="none"; return; } section.style.display="block"; container.innerHTML=pinned.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.frequency} • ${med.duration} • ${med.howToTake}</div></div><div class="pin-icon pinned" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); document.querySelectorAll("#pinnedList .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#pinnedList .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=false; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); renderMostUsed(); }})); }
-  function renderMostUsed(){ const sorted=[...medicines].sort((a,b)=>b.usageCount-a.usageCount).slice(0,5); const container=document.getElementById("mostUsedContainer"); if(container) container.innerHTML=`<div style="display:flex; flex-wrap:wrap; gap:6px;">`+sorted.map(m=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; cursor:pointer; font-size:0.7rem;" data-mid="${m.id}">🔥 ${m.name}</span>`).join("")+`</div>`; document.querySelectorAll("#mostUsedContainer span").forEach(span=>span.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===span.dataset.mid); if(med) openPopup(med); })); }
-  function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; renderTagGroup("freqTagsContainer", userFreqTags, "freq"); renderTagGroup("durTagsContainer", userDurTags, "dur"); renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("medicineModal").style.display="block"; }
-  function renderTagGroup(containerId, tags, type){ const container=document.getElementById(containerId); if(!container) return; container.innerHTML=tags.map(t=>`<span class="tag" data-tag="${escapeHtml(t)}" data-type="${type}">${escapeHtml(t)}</span>`).join(""); container.querySelectorAll(".tag").forEach(el=>el.addEventListener("click",()=>{ if(type==="freq") document.getElementById("modalFrequency").value=el.dataset.tag; else if(type==="dur") document.getElementById("modalDuration").value=el.dataset.tag; else document.getElementById("modalHowToTake").value=el.dataset.tag; })); }
-  async function addMedicineFromPopup(){ if(pendingMedicine){ currentMedicines.push({ name:pendingMedicine.name, dosage:"–", frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); const med=medicines.find(m=>m.id===pendingMedicine.id); if(med) med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMedicinesTable(); updatePreview(); closeModal(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); } }
+  // Render pinned preview (scrollable)
+  function renderPinnedPreview() {
+    const pinned = medicines.filter(m => m.pinned).slice(0, 5);
+    const container = document.getElementById("pinnedPreview");
+    if(!container) return;
+    if(pinned.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No pinned medicines</div>'; return; }
+    container.innerHTML = pinned.map(med => `<span data-id="${med.id}" class="cursor-pointer hover:bg-cyan-100">${escapeHtml(med.name)}</span>`).join('');
+    container.querySelectorAll('span').forEach(span => {
+      span.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const med = medicines.find(m => m.id === span.dataset.id);
+        if(med) openPopup(med);
+      });
+    });
+  }
+  
+  // Render most used preview (scrollable) - shows top 5 by usageCount
+  function renderMostUsedPreview() {
+    const mostUsed = [...medicines].sort((a,b) => b.usageCount - a.usageCount).slice(0,5);
+    const container = document.getElementById("mostUsedPreview");
+    if(!container) return;
+    if(mostUsed.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No usage data yet</div>'; return; }
+    container.innerHTML = mostUsed.map(med => `<span data-id="${med.id}" class="cursor-pointer hover:bg-cyan-100">🔥 ${escapeHtml(med.name)}</span>`).join('');
+    container.querySelectorAll('span').forEach(span => {
+      span.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const med = medicines.find(m => m.id === span.dataset.id);
+        if(med) openPopup(med);
+      });
+    });
+  }
+  
+  // Expand modals
+  function showMostUsedModal() {
+    renderMostUsedFullList();
+    document.getElementById("mostUsedModal").style.display = "block";
+  }
+  function renderMostUsedFullList(search = "") {
+    // Recent medicines (last used within 7 days) + most used (usageCount > 2)
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const recent = medicines.filter(m => m.lastUsed && new Date(m.lastUsed) > weekAgo);
+    const mostUsedFiltered = medicines.filter(m => m.usageCount > 2);
+    const combined = [...new Map([...recent, ...mostUsedFiltered].map(m => [m.id, m])).values()];
+    let filtered = combined.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+    filtered.sort((a,b) => (b.usageCount - a.usageCount) || (new Date(b.lastUsed) - new Date(a.lastUsed)));
+    const container = document.getElementById("mostUsedFullList");
+    container.innerHTML = filtered.map(med => `<div class="picker-item" data-id="${med.id}"><div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">Used ${med.usageCount} times${med.lastUsed ? ` · Last ${new Date(med.lastUsed).toLocaleDateString()}` : ''}</span></div><i class="fas fa-plus-circle text-cyan-600"></i></div>`).join('');
+    container.querySelectorAll('.picker-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const med = medicines.find(m => m.id === el.dataset.id);
+        if(med) openPopup(med);
+        document.getElementById("mostUsedModal").style.display = "none";
+      });
+    });
+  }
+  function showPinnedModal() {
+    renderPinnedFullList();
+    document.getElementById("pinnedModal").style.display = "block";
+  }
+  function renderPinnedFullList(search = "") {
+    let filtered = medicines.filter(m => m.pinned && m.name.toLowerCase().includes(search.toLowerCase()));
+    const container = document.getElementById("pinnedFullList");
+    container.innerHTML = filtered.map(med => `<div class="picker-item" data-id="${med.id}"><div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.dosage}</span></div><button class="btn-sm btn-outline unpin-btn" data-id="${med.id}" style="margin-left:8px;">Unpin</button></div>`).join('');
+    container.querySelectorAll('.picker-item').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if(e.target.classList.contains('unpin-btn')) return;
+        const med = medicines.find(m => m.id === el.dataset.id);
+        if(med) openPopup(med);
+        document.getElementById("pinnedModal").style.display = "none";
+      });
+    });
+    container.querySelectorAll('.unpin-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const med = medicines.find(m => m.id === id);
+        if(med) { med.pinned = false; await saveMedicines(); renderPinnedPreview(); renderPinnedFullList(document.getElementById("pinnedSearch")?.value || ""); renderMedicineList(); }
+      });
+    });
+  }
+  
+  document.getElementById('mostUsedExpandBtn')?.addEventListener('click', showMostUsedModal);
+  document.getElementById('pinnedExpandBtn')?.addEventListener('click', showPinnedModal);
+  document.getElementById('closeMostUsedModal')?.addEventListener('click', () => document.getElementById('mostUsedModal').style.display = 'none');
+  document.getElementById('closePinnedModal')?.addEventListener('click', () => document.getElementById('pinnedModal').style.display = 'none');
+  document.getElementById('mostUsedSearch')?.addEventListener('input', (e) => renderMostUsedFullList(e.target.value));
+  document.getElementById('pinnedSearch')?.addEventListener('input', (e) => renderPinnedFullList(e.target.value));
+  
+  // No delete button in main library – only star and click
+  function renderMedicineList(search=""){ let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount-a.usageCount); const container=document.getElementById("medicineListContainer"); if(!container) return; container.innerHTML=filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.dosage}</div></div><div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); attachMedEvents(); }
+  function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedPreview(); renderMostUsedPreview(); }})); }
+  
+  // FAST MEDICINE ADD: popup closes immediately, medicine added to table instantly, Firestore update in background
+  async function addMedicineFromPopup(){ 
+    if(pendingMedicine){ 
+      let dosage = document.getElementById("modalDosage").value.trim() || "–";
+      currentMedicines.push({ name:pendingMedicine.name, dosage:dosage, frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); 
+      renderMedicinesTable(); 
+      updatePreview(); 
+      closeModal(); 
+      // Background updates
+      const med = medicines.find(m=>m.id===pendingMedicine.id); 
+      if(med){ 
+        med.usageCount=(med.usageCount||0)+1; 
+        med.lastUsed = new Date().toISOString(); 
+        await saveMedicines(); 
+        renderMostUsedPreview(); 
+        renderPinnedPreview(); 
+        renderMedicineList(document.getElementById("searchMedicine").value); 
+      } 
+    } 
+  }
+  
   function renderMedicinesTable(){ const tbody=document.getElementById("medicinesTableBody"); if(!tbody) return; tbody.innerHTML=""; currentMedicines.forEach((item,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input value="${escapeHtml(item.name)}" class="med-field" data-idx="${idx}" data-field="name">`; row.insertCell(1).innerHTML=`<input value="${escapeHtml(item.dosage)}" class="med-field" data-idx="${idx}" data-field="dosage">`; row.insertCell(2).innerHTML=`<input value="${escapeHtml(item.frequency)}" class="med-field" data-idx="${idx}" data-field="frequency">`; row.insertCell(3).innerHTML=`<input value="${escapeHtml(item.duration)}" class="med-field" data-idx="${idx}" data-field="duration">`; row.insertCell(4).innerHTML=`<input value="${escapeHtml(item.howToTake)}" class="med-field" data-idx="${idx}" data-field="howToTake">`; let del=document.createElement("button"); del.innerHTML='<i class="fas fa-trash"></i>'; del.className="btn-sm"; del.onclick=()=>{currentMedicines.splice(idx,1); renderMedicinesTable(); updatePreview();}; row.insertCell(5).appendChild(del); }); document.querySelectorAll(".med-field").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx),field=this.dataset.field; if(currentMedicines[idx]){ currentMedicines[idx][field]=this.value; updatePreview(); }})); }
   function renderAdviceTags(){ const container=document.getElementById("adviceTagList"); if(!container) return; container.innerHTML=adviceTags.map(t=>`<span class="advice-tag" data-advice="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join(""); document.querySelectorAll(".advice-tag").forEach(el=>el.addEventListener("click",()=>addAdvice(el.dataset.advice))); }
   function addAdvice(t){ if(t.trim()){ currentAdvices.push(t.trim()); renderCurrentAdvices(); updatePreview(); if(!adviceTags.includes(t.trim())){ adviceTags.push(t.trim()); saveAdviceTags(); renderAdviceTags(); } } }
   function renderCurrentAdvices(){ const container=document.getElementById("currentAdvicesList"); if(!container) return; container.innerHTML=currentAdvices.map((adv,idx)=>`<span style="background:#eef2ff; padding:3px 10px; border-radius:30px; display:inline-flex; align-items:center; gap:6px; font-size:0.7rem;">${escapeHtml(adv)} <i class="fas fa-times-circle" style="cursor:pointer; color:#dc2626;" data-adv-idx="${idx}"></i></span>`).join(""); document.querySelectorAll("#currentAdvicesList i[data-adv-idx]").forEach(icon=>icon.addEventListener("click",(e)=>{const idx=parseInt(icon.dataset.advIdx); currentAdvices.splice(idx,1); renderCurrentAdvices(); updatePreview();})); }
   
+  // Updated preview
   function getPreviewHTML(splitMode) {
     const firstName=document.getElementById("firstName").value.trim(), lastName=document.getElementById("lastName").value.trim(), age=document.getElementById("patientAge").value.trim(), gender=document.getElementById("patientGender").value, diagnosis=document.getElementById("diagnosisField").value.trim();
     const patientName=(firstName||lastName)?`${firstName} ${lastName}`.trim():"";
@@ -581,7 +722,7 @@
     if(settings.showDate||settings.showTime){ let dateStr=settings.showDate?new Date().toLocaleDateString():""; let timeStr=settings.showTime?formatTimeNoSeconds():""; let display=[dateStr,timeStr].filter(s=>s).join(" "); dateTimeHtml=`<div style="display:flex; justify-content:space-between; font-size:0.8rem;"><span><strong>${currentSerial}</strong></span><span>${display}</span></div>`; } else dateTimeHtml=`<div><strong>${currentSerial}</strong></div>`;
     let medBlocks="";
     if(currentMedicines.length===0) medBlocks="<p style='margin-top:8px;'><i>No medicines added.</i></p>";
-    else medBlocks=currentMedicines.map((item,idx)=>`<div class="preview-med-item ${idx===0 ? 'medicines-start-line' : ''}"><div class="preview-med-name">${escapeHtml(item.name)}</div><div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}${item.howToTake?` • ${escapeHtml(item.howToTake)}`:''}</div></div>`).join("");
+    else medBlocks=currentMedicines.map((item,idx)=>`<div class="preview-med-item ${idx===0 ? 'medicines-start-line' : ''}"><div class="preview-med-name">${escapeHtml(item.name)} ${escapeHtml(item.dosage)}</div><div class="preview-med-detail">${escapeHtml(item.frequency)} • ${escapeHtml(item.duration)}${item.howToTake?` • ${escapeHtml(item.howToTake)}`:''}</div></div>`).join("");
     let adviceHtml=currentAdvices.length?`<div style="margin-top:16px;"><strong>Advice:</strong><ul>${currentAdvices.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`:"";
     let signatureHtml=settings.showSignature?`<div class="signature-right" style="margin-top:20px; padding-top:10px; border-top:1px dashed #aaa; text-align:right;">Doctor Signature: ___________________</div>`:"";
     
@@ -615,21 +756,21 @@
   function resetHistoryFilters(){ document.getElementById("historySearchName").value=""; document.getElementById("historyFromDate").value=""; document.getElementById("historyToDate").value=""; document.getElementById("historyYear").value=""; document.getElementById("historyMonth").value=""; renderHistoryList(); }
   function openQuickPopup(){ document.getElementById("quickModal").style.display="block"; }
   async function addQuickMedicine(){ let name=document.getElementById("quickName").value.trim(); let dosage=document.getElementById("quickDosage").value.trim()||"–";
-    currentMedicines.push({name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"–"}); let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing){ existing.usageCount=(existing.usageCount||0)+1; await saveMedicines(); } else { await addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"–", usageCount:1, pinned:false }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
+    currentMedicines.push({name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"–"}); let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); if(existing){ existing.usageCount=(existing.usageCount||0)+1; existing.lastUsed = new Date().toISOString(); await saveMedicines(); renderMostUsedPreview(); renderPinnedPreview(); } else { await addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"–", usageCount:1, pinned:false, lastUsed:new Date().toISOString() }); } renderMedicinesTable(); updatePreview(); document.getElementById("quickModal").style.display="none"; }
   function closeModal(){ document.getElementById("medicineModal").style.display="none"; pendingMedicine=null; }
   function closeQuickPopup(){ document.getElementById("quickModal").style.display="none"; }
   function printWithMargin(){ const split=document.querySelector('input[name="paperStyle"]:checked').value==="split"; const margin=settings.printTopMargin; const html=getPreviewHTML(split); const win=window.open('','_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Prescription</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Inter',sans-serif; padding:${margin}mm 10mm 10mm 10mm; background:white;}.prescription-content{max-width:800px;margin:0 auto;}.preview-med-item{margin-bottom:0.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.3rem;}.preview-med-name{font-weight:700; color:#0c4e6e; font-size:0.85rem;}.preview-med-detail{font-size:0.75rem; color:#334155; margin-top:2px;}.signature-right{text-align:right; margin-top:20px; padding-top:10px; border-top:1px dashed #aaa;}.practice-header{margin-bottom:20px; text-align:center; border-bottom:2px solid #0a7e8c; padding-bottom:12px; width:100%;}.practice-name{font-size:1.4rem; font-weight:700; color:#0a4c6e;}.practice-details{font-size:0.75rem; color:#4b6b87; margin-top:6px;}.preview-med-item.medicines-start-line { border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px; }@media print{body{padding:${margin}mm 10mm 10mm 10mm;}}</style></head><body><div class="prescription-content">${html}</div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},500)}<\/script></body></html>`); win.document.close(); }
   function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.dosage})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
-  async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")||file.name.endsWith(".txt")||file.name.endsWith(".xlsx")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=4){ let name=vals[0].trim(); let freq=vals[1].trim(); let dur=vals[2].trim(); let how=vals[3].trim(); if(name) newMeds.push({ name, dosage:"–", frequency:freq||"1-1-1", duration:dur||"5 days", howToTake:how||"–", usageCount:0, pinned:false }); } else if(vals.length>=1){ let name=vals[0].trim(); if(name) newMeds.push({ name, dosage:"–", frequency:"1-1-1", duration:"5 days", howToTake:"–", usageCount:0, pinned:false }); } } await mergeMedicines(newMeds); } }; reader.readAsText(file); }
-  async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine(med); } } alert("Imported."); }
+  async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=2){newMeds.push({id:"m"+Date.now()+i, name:vals[0], dosage:vals[1]||"", frequency:vals[2]||"", duration:vals[3]||"", howToTake:vals[4]||"", usageCount:0, pinned:false, lastUsed:new Date().toISOString()});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
+  async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, dosage:med.dosage||"–", frequency:med.frequency||"1-1-1", duration:med.duration||"5 days", howToTake:med.howToTake||"–", usageCount:0, pinned:false, lastUsed:new Date().toISOString() }); } } alert("Imported."); }
   function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required (login as narayanbarman3210@gmail.com)\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
   function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
   function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
   function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
   function openMedicineInventory(){ renderSimpleInventory(); document.getElementById("medicineInventoryModal").style.display="block"; }
-  function renderSimpleInventory(){ const tbody=document.getElementById("inventoryMedBody"); tbody.innerHTML=""; medicines.forEach((med,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input type="text" value="${escapeHtml(med.name)}" class="inv-name" data-idx="${idx}">`; row.insertCell(1).innerHTML=`<input type="text" value="${escapeHtml(med.frequency)}" class="inv-freq" data-idx="${idx}">`; row.insertCell(2).innerHTML=`<input type="text" value="${escapeHtml(med.duration)}" class="inv-dur" data-idx="${idx}">`; row.insertCell(3).innerHTML=`<input type="text" value="${escapeHtml(med.howToTake)}" class="inv-how" data-idx="${idx}">`; let delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ deleteMedicineById(med.id); renderSimpleInventory(); }; row.insertCell(4).appendChild(delBtn); }); document.querySelectorAll(".inv-name, .inv-freq, .inv-dur, .inv-how").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx); if(!isNaN(idx) && medicines[idx]){ if(this.classList.contains("inv-name")) medicines[idx].name=this.value; else if(this.classList.contains("inv-freq")) medicines[idx].frequency=this.value; else if(this.classList.contains("inv-dur")) medicines[idx].duration=this.value; else medicines[idx].howToTake=this.value; saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsed(); renderPinnedSection(); renderSimpleInventory(); }})); }
-  function addInventoryMedicine(){ let name=prompt("Medicine name:"); if(!name) return; let freq=prompt("Frequency (e.g., 1-1-1, BD, OD):")||"1-1-1"; let dur=prompt("Duration (e.g., 5 days):")||"5 days"; let how=prompt("How to take:")||"–"; addNewMedicine({ name, dosage:"–", frequency:freq, duration:dur, howToTake:how, usageCount:0, pinned:false }); renderSimpleInventory(); }
-  function deleteAllMedicines(){ if(confirm("Delete ALL medicines permanently?")){ for(const med of medicines) if(currentUser) db.collection('users').doc(currentUser.uid).collection('medicines').doc(med.id).delete(); medicines=[]; saveMedicines(); renderSimpleInventory(); renderMedicineList(""); renderMostUsed(); renderPinnedSection(); } }
+  function renderSimpleInventory(){ const tbody=document.getElementById("inventoryMedBody"); tbody.innerHTML=""; medicines.forEach((med,idx)=>{ let row=tbody.insertRow(); row.insertCell(0).innerHTML=`<input type="text" value="${escapeHtml(med.name)}" class="inv-name" data-idx="${idx}">`; row.insertCell(1).innerHTML=`<input type="text" value="${escapeHtml(med.dosage)}" class="inv-dosage" data-idx="${idx}">`; let delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ deleteMedicineById(med.id); renderSimpleInventory(); }; row.insertCell(2).appendChild(delBtn); }); document.querySelectorAll(".inv-name, .inv-dosage").forEach(inp=>inp.addEventListener("change",function(){ let idx=parseInt(this.dataset.idx); if(!isNaN(idx) && medicines[idx]){ if(this.classList.contains("inv-name")) medicines[idx].name=this.value; else medicines[idx].dosage=this.value; saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderMostUsedPreview(); renderPinnedPreview(); renderSimpleInventory(); }})); }
+  function addInventoryMedicine(){ let name=prompt("Medicine name:"); if(!name) return; let dosage=prompt("Dosage:")||"–"; addNewMedicine({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"–", usageCount:0, pinned:false, lastUsed:new Date().toISOString() }); renderSimpleInventory(); }
+  function deleteAllMedicines(){ if(confirm("Delete ALL medicines permanently?")){ for(const med of medicines) if(currentUser) db.collection('users').doc(currentUser.uid).collection('medicines').doc(med.id).delete(); medicines=[]; saveMedicines(); renderSimpleInventory(); renderMedicineList(""); renderMostUsedPreview(); renderPinnedPreview(); } }
   function openAdviceInventory(){ renderAdviceInventory(); document.getElementById("adviceInventoryModal").style.display="block"; }
   function renderAdviceInventory(){ const container=document.getElementById("adviceInventoryList"); container.innerHTML=""; adviceTags.forEach((tag,idx)=>{ const div=document.createElement("div"); div.style.display="flex"; div.style.alignItems="center"; div.style.gap="8px"; div.style.marginBottom="8px"; const input=document.createElement("input"); input.type="text"; input.value=tag; input.style.flex="1"; input.addEventListener("change",()=>{ adviceTags[idx]=input.value; saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); }); const delBtn=document.createElement("button"); delBtn.innerHTML='<i class="fas fa-trash"></i>'; delBtn.className="btn-sm btn-danger"; delBtn.onclick=()=>{ adviceTags.splice(idx,1); saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); }; div.appendChild(input); div.appendChild(delBtn); container.appendChild(div); }); const addBtn=document.createElement("button"); addBtn.innerText="+ Add New Advice"; addBtn.className="btn-sm"; addBtn.onclick=()=>{ const newAdv=prompt("New advice:"); if(newAdv && newAdv.trim()){ adviceTags.push(newAdv.trim()); saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); } }; container.appendChild(addBtn); }
   function deleteAllAdvice(){ if(confirm("Delete ALL advice tags?")){ adviceTags=[]; saveAdviceTags(); renderAdviceTags(); renderAdviceInventory(); } }
@@ -639,7 +780,7 @@
   function saveTagEditAndClose(){ saveTags(); if(currentTagType==="freq") renderTagGroup("freqTagsContainer", userFreqTags, "freq"); else if(currentTagType==="dur") renderTagGroup("durTagsContainer", userDurTags, "dur"); else renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("tagEditModal").style.display="none"; }
   
   function showAllMedsPicker(){ renderAllMedsList(); document.getElementById("allMedsPickerModal").style.display="block"; }
-  function renderAllMedsList(search=""){ const container=document.getElementById("allMedsListContainer"); if(!container) return; let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); container.innerHTML=filtered.map(med=>`<div class="picker-item" data-med-id="${med.id}"><div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${escapeHtml(med.frequency)} • ${escapeHtml(med.duration)} • ${escapeHtml(med.howToTake)}</span></div><i class="fas fa-plus-circle text-cyan-600"></i></div>`).join(""); document.querySelectorAll("#allMedsListContainer .picker-item").forEach(el=>{ el.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); document.getElementById("allMedsPickerModal").style.display="none"; }); }); }
+  function renderAllMedsList(search=""){ const container=document.getElementById("allMedsListContainer"); if(!container) return; let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); container.innerHTML=filtered.map(med=>`<div class="picker-item" data-med-id="${med.id}"><div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.dosage}</span></div><i class="fas fa-plus-circle text-cyan-600"></i></div>`).join(""); document.querySelectorAll("#allMedsListContainer .picker-item").forEach(el=>{ el.addEventListener("click",()=>{ const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); document.getElementById("allMedsPickerModal").style.display="none"; }); }); }
   const allMedsSearch = document.getElementById('allMedsSearch'); if(allMedsSearch) allMedsSearch.addEventListener('input',(e)=>renderAllMedsList(e.target.value));
   
   function showAllAdvicePicker(){ renderAllAdviceList(); document.getElementById("allAdvicePickerModal").style.display="block"; }
@@ -662,7 +803,7 @@
   const bulkAddAdvBtn = document.getElementById('bulkAddAdvicesBtn');
   const closeBulkModal = document.getElementById('closeBulkModal');
   bulkTabs.forEach(tab => { tab.addEventListener('click', () => { bulkTabs.forEach(t=>t.classList.remove('active')); tab.classList.add('active'); if(tab.dataset.bulkTab === 'medicines') { bulkMedPanel.style.display = 'block'; bulkAdvPanel.style.display = 'none'; } else { bulkMedPanel.style.display = 'none'; bulkAdvPanel.style.display = 'block'; } }); });
-  bulkAddMedBtn.addEventListener('click', async () => { const text = bulkMedText.value; if(!text.trim()) { alert("Paste medicine list first"); return; } const lines = text.split(/\r?\n/); const newMeds = []; for(let line of lines) { line=line.trim(); if(!line) continue; let parts = line.split(','); let name = parts[0].trim(); let freq = parts.length>1 ? parts[1].trim() : "1-1-1"; let dur = parts.length>2 ? parts[2].trim() : "5 days"; let how = parts.length>3 ? parts[3].trim() : "–"; if(name) newMeds.push({ name, dosage:"–", frequency:freq, duration:dur, howToTake:how, usageCount:0, pinned:false }); } let added=0; for(let med of newMeds) { if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())) { await addNewMedicine(med); added++; } } alert(`Added ${added} new medicines.`); renderMedicineList(); renderMostUsed(); renderPinnedSection(); bulkMedText.value=""; bulkModal.style.display = "none"; });
+  bulkAddMedBtn.addEventListener('click', async () => { const text = bulkMedText.value; if(!text.trim()) { alert("Paste medicine list first"); return; } const lines = text.split(/\r?\n/); const newMeds = []; for(let line of lines) { line=line.trim(); if(!line) continue; let parts = line.split(','); let name = parts[0].trim(); let dosage = parts.length>1 ? parts[1].trim() : "–"; if(name) newMeds.push({ name, dosage, frequency:"1-1-1", duration:"5 days", howToTake:"–", usageCount:0, pinned:false, lastUsed:new Date().toISOString() }); } let added=0; for(let med of newMeds) { if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())) { await addNewMedicine(med); added++; } } alert(`Added ${added} new medicines.`); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); bulkMedText.value=""; bulkModal.style.display = "none"; });
   bulkAddAdvBtn.addEventListener('click', async () => { const text = bulkAdvText.value; if(!text.trim()) { alert("Paste advice list first"); return; } const lines = text.split(/\r?\n/); const newAdvs = lines.map(l=>l.trim()).filter(l=>l); let added=0; for(let adv of newAdvs) { if(!adviceTags.includes(adv)) { adviceTags.push(adv); added++; } } if(added) await saveAdviceTags(); renderAdviceTags(); alert(`Added ${added} new advice tags.`); bulkAdvText.value=""; bulkModal.style.display = "none"; });
   bulkMedFile.addEventListener('change', (e) => { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (ev) => { bulkMedText.value = ev.target.result; }; reader.readAsText(file); bulkMedFile.value = ""; });
   bulkAdvFile.addEventListener('change', (e) => { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (ev) => { bulkAdvText.value = ev.target.result; }; reader.readAsText(file); bulkAdvFile.value = ""; });
