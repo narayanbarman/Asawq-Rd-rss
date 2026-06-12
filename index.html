@@ -28,9 +28,10 @@
     .top-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; background: white; padding: 8px 16px; border-radius: 50px; width: fit-content; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
     .top-btn { background: #f1f5f9; border: none; padding: 5px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: 0.1s; }
     .top-btn:hover { background: #e2e8f0; }
-    /* Expand buttons for Most Used and Pinned */
-    .expand-btn { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 40px; padding: 6px 12px; font-size: 0.75rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.1s; width: 100%; justify-content: center; margin-top: 8px; }
-    .expand-btn:hover { background: #e6f4f5; border-color: #0a7e8c; }
+    /* Expand buttons */
+    .expand-section-btn { background: #f8fafc; border: 1px solid #e2edf2; border-radius: 60px; padding: 10px 16px; width: 100%; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.15s; margin-bottom: 12px; }
+    .expand-section-btn:hover { background: #e6f4f5; border-color: #0a7e8c; transform: translateY(-1px); }
+    .expand-section-btn i { color: #0a7e8c; font-size: 1rem; }
     .prescription-layout { display: flex; gap: 20px; flex-wrap: wrap; }
     .left-panel { flex: 1.2; min-width: 280px; background: white; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; height: fit-content; }
     .right-panel { flex: 2.5; min-width: 480px; display: flex; flex-direction: column; gap: 20px; }
@@ -223,15 +224,19 @@
         <div class="card-title"><span><i class="fas fa-pills"></i> Medicine Library</span></div>
         <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="searchMedicine" placeholder="Search medicine..."><div id="suggestionsBox" class="suggestions-dropdown"></div></div>
         
-        <!-- Pinned Favourites - now a button that opens modal -->
-        <div id="pinnedSection" style="margin-bottom:16px;">
-          <button id="showPinnedModalBtn" class="expand-btn"><i class="fas fa-star" style="color:#f59e0b;"></i> Pinned Favourites <i class="fas fa-expand-alt"></i></button>
+        <!-- Pinned Favourites - Expand Button -->
+        <div id="pinnedExpandBtn" class="expand-section-btn">
+          <span><i class="fas fa-star"></i> ⭐ Pinned Favourites</span>
+          <i class="fas fa-expand-alt"></i>
         </div>
+        <div id="pinnedSection" style="display: none;"></div> <!-- hidden original list -->
         
-        <!-- Most Used - now a button that opens modal -->
-        <div style="margin-bottom:16px;">
-          <button id="showMostUsedModalBtn" class="expand-btn"><i class="fas fa-fire" style="color:#e67e22;"></i> Most Used <i class="fas fa-expand-alt"></i></button>
+        <!-- Most Used - Expand Button -->
+        <div id="mostUsedExpandBtn" class="expand-section-btn">
+          <span><i class="fas fa-fire"></i> 🔥 Most Used</span>
+          <i class="fas fa-expand-alt"></i>
         </div>
+        <div id="mostUsedContainer" style="display: none;"></div> <!-- hidden original list -->
         
         <div class="flex-between"><span class="clickable-title" id="allMedsButton" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;"><i class="fas fa-expand-alt"></i> 📚 All Medicines</span><button class="btn-sm" id="manageMedsBtn"><i class="fas fa-edit"></i> Manage</button></div>
         <div id="medicineListContainer" class="med-grid"></div>
@@ -365,24 +370,23 @@
   </div>
 </div>
 
-<!-- Most Used Modal (shows medicines with usageCount >= 2 or all sorted by usageCount) -->
-<div id="mostUsedModal" class="modal">
-  <div class="modal-content" style="max-width: 1000px;">
-    <span class="close-modal" id="closeMostUsedModal">&times;</span>
-    <h3><i class="fas fa-fire"></i> Most Used Medicines</h3>
-    <p class="text-xs text-slate-500 mb-2">Medicines you use frequently (sorted by usage count)</p>
-    <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="mostUsedSearch" placeholder="Search in most used..."></div>
-    <div id="mostUsedListContainer" class="med-grid-2col"></div>
-  </div>
-</div>
-
-<!-- Pinned Favourites Modal -->
+<!-- Pinned Favourites Expand Modal -->
 <div id="pinnedModal" class="modal">
   <div class="modal-content" style="max-width: 1000px;">
     <span class="close-modal" id="closePinnedModal">&times;</span>
-    <h3><i class="fas fa-star" style="color:#f59e0b;"></i> Pinned Favourites</h3>
-    <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="pinnedSearch" placeholder="Search pinned..."></div>
-    <div id="pinnedListContainer" class="med-grid-2col"></div>
+    <h3><i class="fas fa-star"></i> ⭐ Pinned Favourites</h3>
+    <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="pinnedSearch" placeholder="Search pinned medicines..."></div>
+    <div id="pinnedListModal" class="med-grid-2col"></div>
+  </div>
+</div>
+
+<!-- Most Used Expand Modal (only medicines with usageCount > 2) -->
+<div id="mostUsedModal" class="modal">
+  <div class="modal-content" style="max-width: 1000px;">
+    <span class="close-modal" id="closeMostUsedModal">&times;</span>
+    <h3><i class="fas fa-fire"></i> 🔥 Most Used Medicines <span style="font-size:0.7rem; font-weight:normal;">(used more than 2 times)</span></h3>
+    <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="mostUsedSearch" placeholder="Search most used..."></div>
+    <div id="mostUsedListModal" class="med-grid-2col"></div>
   </div>
 </div>
 
@@ -593,47 +597,13 @@
   async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderPinnedSection(); }
   async function deleteMedicineById(medId) { const index = medicines.findIndex(m=>m.id===medId); if(index!==-1){ medicines.splice(index,1); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(medId).delete(); renderMedicineList(); renderPinnedSection(); } }
   
-  // Removed renderMostUsed (inline list) – replaced by modal button
-  function renderPinnedSection() { 
-    // No inline list, only button is already in HTML. This function can be empty or used to refresh nothing.
-  }
-  
-  // Show Most Used Modal (all medicines sorted by usageCount, all shown, but we can also filter to show those with usageCount>0)
-  function showMostUsedModal() {
-    renderMostUsedList();
-    document.getElementById("mostUsedModal").style.display = "block";
-  }
-  function renderMostUsedList(search = "") {
-    const container = document.getElementById("mostUsedListContainer");
-    if (!container) return;
-    let sorted = [...medicines].sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
-    if (search) sorted = sorted.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
-    container.innerHTML = sorted.map(med => `
-      <div class="picker-item" data-med-id="${med.id}" style="cursor:pointer;">
-        <div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${escapeHtml(med.frequency)} • ${escapeHtml(med.duration)} • ${escapeHtml(med.howToTake)}</span><br><span class="text-xs text-slate-400">Used ${med.usageCount || 0} times</span></div>
-        <i class="fas fa-plus-circle text-cyan-600"></i>
-      </div>
-    `).join("");
-    container.querySelectorAll(".picker-item").forEach(el => {
-      el.addEventListener("click", () => {
-        const med = medicines.find(m => m.id === el.dataset.medId);
-        if (med) openPopup(med);
-        document.getElementById("mostUsedModal").style.display = "none";
-      });
-    });
-  }
-  const mostUsedSearch = document.getElementById("mostUsedSearch");
-  if(mostUsedSearch) mostUsedSearch.addEventListener("input", (e) => renderMostUsedList(e.target.value));
-  const closeMostUsedModal = document.getElementById("closeMostUsedModal");
-  if(closeMostUsedModal) closeMostUsedModal.addEventListener("click", () => document.getElementById("mostUsedModal").style.display = "none");
-  
-  // Show Pinned Modal
+  // Pinned favourites expand modal
   function showPinnedModal() {
-    renderPinnedList();
+    renderPinnedModalList();
     document.getElementById("pinnedModal").style.display = "block";
   }
-  function renderPinnedList(search = "") {
-    const container = document.getElementById("pinnedListContainer");
+  function renderPinnedModalList(search = "") {
+    const container = document.getElementById("pinnedListModal");
     if (!container) return;
     let pinned = medicines.filter(m => m.pinned === true);
     if (search) pinned = pinned.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
@@ -652,12 +622,42 @@
     });
   }
   const pinnedSearch = document.getElementById("pinnedSearch");
-  if(pinnedSearch) pinnedSearch.addEventListener("input", (e) => renderPinnedList(e.target.value));
+  if(pinnedSearch) pinnedSearch.addEventListener("input", (e) => renderPinnedModalList(e.target.value));
   const closePinnedModal = document.getElementById("closePinnedModal");
   if(closePinnedModal) closePinnedModal.addEventListener("click", () => document.getElementById("pinnedModal").style.display = "none");
   
+  // Most used expand modal (usageCount > 2)
+  function showMostUsedModal() {
+    renderMostUsedModalList();
+    document.getElementById("mostUsedModal").style.display = "block";
+  }
+  function renderMostUsedModalList(search = "") {
+    const container = document.getElementById("mostUsedListModal");
+    if (!container) return;
+    let mostUsed = medicines.filter(m => (m.usageCount || 0) > 2).sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
+    if (search) mostUsed = mostUsed.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+    container.innerHTML = mostUsed.map(med => `
+      <div class="picker-item" data-med-id="${med.id}" style="cursor:pointer;">
+        <div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${escapeHtml(med.frequency)} • ${escapeHtml(med.duration)} • ${escapeHtml(med.howToTake)}</span><br><span class="text-xs text-amber-600">Used ${med.usageCount || 0} times</span></div>
+        <i class="fas fa-plus-circle text-cyan-600"></i>
+      </div>
+    `).join("");
+    container.querySelectorAll(".picker-item").forEach(el => {
+      el.addEventListener("click", () => {
+        const med = medicines.find(m => m.id === el.dataset.medId);
+        if (med) openPopup(med);
+        document.getElementById("mostUsedModal").style.display = "none";
+      });
+    });
+  }
+  const mostUsedSearch = document.getElementById("mostUsedSearch");
+  if(mostUsedSearch) mostUsedSearch.addEventListener("input", (e) => renderMostUsedModalList(e.target.value));
+  const closeMostUsedModal = document.getElementById("closeMostUsedModal");
+  if(closeMostUsedModal) closeMostUsedModal.addEventListener("click", () => document.getElementById("mostUsedModal").style.display = "none");
+  
   function renderMedicineList(search=""){ let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); filtered.sort((a,b)=>b.usageCount-a.usageCount); const container=document.getElementById("medicineListContainer"); if(!container) return; container.innerHTML=filtered.map(med=>`<div class="med-item" data-med-id="${med.id}"><div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${escapeHtml(med.frequency)} • ${escapeHtml(med.duration)} • ${escapeHtml(med.howToTake)}</div></div><div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}"><i class="fas fa-star"></i></div></div>`).join(""); attachMedEvents(); }
-  function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); }})); }
+  function attachMedEvents(){ document.querySelectorAll("#medicineListContainer .med-item").forEach(el=>{ el.addEventListener("click",(e)=>{ if(e.target.closest('.pin-icon')) return; const med=medicines.find(m=>m.id===el.dataset.medId); if(med) openPopup(med); }); }); document.querySelectorAll("#medicineListContainer .pin-icon").forEach(el=>el.addEventListener("click",async(e)=>{ e.stopPropagation(); const id=el.dataset.id; const med=medicines.find(m=>m.id===id); if(med){ med.pinned=!med.pinned; await saveMedicines(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); } })); }
+  function renderPinnedSection(){ /* No longer used, kept empty */ }
   function openPopup(med){ pendingMedicine=med; document.getElementById("modalMedName").innerText=med.name; document.getElementById("modalFrequency").value=med.frequency||""; document.getElementById("modalDuration").value=med.duration||""; document.getElementById("modalHowToTake").value=med.howToTake||""; renderTagGroup("freqTagsContainer", userFreqTags, "freq"); renderTagGroup("durTagsContainer", userDurTags, "dur"); renderTagGroup("howTagsContainer", userHowTags, "how"); document.getElementById("medicineModal").style.display="block"; }
   function renderTagGroup(containerId, tags, type){ const container=document.getElementById(containerId); if(!container) return; container.innerHTML=tags.map(t=>`<span class="tag" data-tag="${escapeHtml(t)}" data-type="${type}">${escapeHtml(t)}</span>`).join(""); container.querySelectorAll(".tag").forEach(el=>el.addEventListener("click",()=>{ if(type==="freq") document.getElementById("modalFrequency").value=el.dataset.tag; else if(type==="dur") document.getElementById("modalDuration").value=el.dataset.tag; else document.getElementById("modalHowToTake").value=el.dataset.tag; })); }
   async function addMedicineFromPopup(){ if(pendingMedicine){ currentMedicines.push({ name:pendingMedicine.name, dosage:"–", frequency:document.getElementById("modalFrequency").value.trim()||"1-1-1", duration:document.getElementById("modalDuration").value.trim()||"5 days", howToTake:document.getElementById("modalHowToTake").value.trim()||"" }); const med=medicines.find(m=>m.id===pendingMedicine.id); if(med) med.usageCount=(med.usageCount||0)+1; await saveMedicines(); renderMedicinesTable(); updatePreview(); closeModal(); renderMedicineList(document.getElementById("searchMedicine").value); renderPinnedSection(); document.getElementById("medicineModal").style.display="none"; } }
@@ -878,8 +878,10 @@
     document.getElementById("cancelSettingsBtn")?.addEventListener("click",()=>document.getElementById("settingsModal").style.display="none");
     document.getElementById("closeMedsPickerModal")?.addEventListener("click",()=>document.getElementById("allMedsPickerModal").style.display="none");
     document.getElementById("closeAdvicePickerModal")?.addEventListener("click",()=>document.getElementById("allAdvicePickerModal").style.display="none");
-    document.getElementById("closeMostUsedModal")?.addEventListener("click",()=>document.getElementById("mostUsedModal").style.display="none");
     document.getElementById("closePinnedModal")?.addEventListener("click",()=>document.getElementById("pinnedModal").style.display="none");
+    document.getElementById("closeMostUsedModal")?.addEventListener("click",()=>document.getElementById("mostUsedModal").style.display="none");
+    document.getElementById("pinnedExpandBtn")?.addEventListener("click",showPinnedModal);
+    document.getElementById("mostUsedExpandBtn")?.addEventListener("click",showMostUsedModal);
     document.getElementById("allMedsButton")?.addEventListener("click",showAllMedsPicker);
     document.getElementById("allAdviceButton")?.addEventListener("click",showAllAdvicePicker);
     document.getElementById("manageMedsBtn")?.addEventListener("click",openMedicineInventory);
@@ -912,9 +914,6 @@
     document.getElementById("closeAdminModal")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
     document.getElementById("closeAdminBtn")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
     document.getElementById("refreshPendingBtn")?.addEventListener("click",()=>{ if(document.querySelector(".admin-tab.active").dataset.tab === "pending") loadPendingTransactions(); else loadAllUsers(); });
-    // Pinned and Most Used buttons
-    document.getElementById("showPinnedModalBtn")?.addEventListener("click", showPinnedModal);
-    document.getElementById("showMostUsedModalBtn")?.addEventListener("click", showMostUsedModal);
     window.addEventListener("click",e=>{ if(e.target.classList.contains("modal")) e.target.style.display="none"; });
   }
 </script>
