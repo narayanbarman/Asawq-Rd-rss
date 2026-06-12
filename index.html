@@ -49,6 +49,8 @@
     .pin-icon { cursor: pointer; font-size: 1rem; width: 28px; text-align: center; color: #94a3b8; transition: 0.1s; margin-left: 8px; }
     .pin-icon.pinned { color: #f59e0b; }
     .pin-icon:hover { color: #eab308; transform: scale(1.1); }
+    .pin-icon i { color: #94a3b8; } /* new: star color */
+    .pin-icon.pinned i { color: #f59e0b; }
     .most-used-preview, .pinned-preview { max-height: 100px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
     .most-used-preview span, .pinned-preview span { background: #eef2ff; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; cursor: pointer; white-space: nowrap; }
     .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
@@ -611,7 +613,7 @@
     const container = document.getElementById("pinnedPreview");
     if(!container) return;
     if(pinned.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No pinned medicines</div>'; return; }
-    container.innerHTML = pinned.map(med => `<span data-id="${med.id}" class="cursor-pointer hover:bg-cyan-100">⭐ ${escapeHtml(med.name)}</span>`).join('');
+    container.innerHTML = pinned.map(med => `<span data-id="${med.id}" class="cursor-pointer hover:bg-cyan-100"><i class="fas fa-star" style="color:#f59e0b;"></i> ${escapeHtml(med.name)}</span>`).join('');
     container.querySelectorAll('span').forEach(span => {
       span.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -670,7 +672,7 @@
     container.innerHTML = filtered.map(med => `
       <div class="picker-item" data-id="${med.id}" style="display: flex; justify-content: space-between; align-items: center;">
         <div style="cursor: pointer; flex:1;"><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.frequency} · ${med.duration}</span></div>
-        <div class="pin-icon pinned" data-id="${med.id}" style="color: #f59e0b; cursor: pointer; font-size: 1rem; margin-left: 8px;"><i class="fas fa-star"></i></div>
+        <div class="pin-icon pinned" data-id="${med.id}" style="cursor: pointer; font-size: 1rem; margin-left: 8px;"><i class="fas fa-star"></i></div>
       </div>
     `).join('');
     container.querySelectorAll('.picker-item').forEach(el => {
@@ -696,7 +698,7 @@
   document.getElementById('mostUsedSearch')?.addEventListener('input', (e) => renderMostUsedFullList(e.target.value));
   document.getElementById('pinnedSearch')?.addEventListener('input', (e) => renderPinnedFullList(e.target.value));
   
-  // Main medicine list rendering (with star for pin/unpin)
+  // Main medicine list rendering (with star for pin/unpin) – updated with outline/filled star
   function renderMedicineList(search=""){ 
     let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); 
     filtered.sort((a,b)=>b.usageCount-a.usageCount); 
@@ -705,7 +707,7 @@
     container.innerHTML=filtered.map(med=>`
       <div class="med-item" data-med-id="${med.id}">
         <div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.frequency} · ${med.duration}</div></div>
-        <div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}"><i class="fas fa-star"></i></div>
+        <div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}">${med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'}</div>
       </div>
     `).join(""); 
     attachMedEvents(); 
@@ -725,7 +727,7 @@
     })); 
   }
   
-  // All Medicines Popup (with star for pin/unpin, name click opens popup)
+  // All Medicines Popup (with star for pin/unpin) – updated outline/filled star
   function showAllMedsPicker(){ renderAllMedsList(); document.getElementById("allMedsPickerModal").style.display="block"; }
   function renderAllMedsList(search=""){ 
     const container=document.getElementById("allMedsListContainer"); 
@@ -734,7 +736,7 @@
     container.innerHTML=filtered.map(med=>`
       <div class="picker-item" data-med-id="${med.id}" style="display: flex; justify-content: space-between; align-items: center;">
         <div style="cursor: pointer; flex:1;"><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.frequency} · ${med.duration}</span></div>
-        <div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}" style="cursor: pointer; font-size: 1rem; margin-left: 8px;"><i class="fas fa-star"></i></div>
+        <div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}" style="cursor: pointer; font-size: 1rem; margin-left: 8px;">${med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'}</div>
       </div>
     `).join(""); 
     container.querySelectorAll('.picker-item').forEach(el => {
@@ -809,7 +811,7 @@
     if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);}
     if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);}
     if(year&&!isNaN(parseInt(year))) filtered=filtered.filter(p=>new Date(p.dateTime).getFullYear()===parseInt(year));
-    if(month&&month!=="") filtered=filtered.filter(p=>(new Date(p.dateTime).getMonth()+1)===parseInt(month));
+    if(month&&month!="") filtered=filtered.filter(p=>(new Date(p.dateTime).getMonth()+1)===parseInt(month));
     const container=document.getElementById("historyListContainer"); if(filtered.length===0){container.innerHTML="<div class='history-item'>No records</div>"; return;} container.innerHTML=filtered.map(p=>`<div class="history-item" data-id="${p.id}"><div><strong>${p.serial}</strong> | ${`${p.patient.firstName||''} ${p.patient.lastName||''}`.trim()||"Anonymous"} | ${new Date(p.dateTime).toLocaleDateString()}</div><div><i class="fas fa-chevron-right"></i> Load</div></div>`).join(""); document.querySelectorAll("#historyListContainer .history-item").forEach(el=>el.addEventListener("click",()=>{const presc=prescriptions.find(p=>p.id===el.dataset.id); if(presc){ loadPrescription(presc); document.getElementById("historyModal").style.display="none";}})); }
   function loadPrescription(presc){ currentSerial=presc.serial; document.getElementById("firstName").value=presc.patient.firstName||""; document.getElementById("lastName").value=presc.patient.lastName||""; document.getElementById("patientAge").value=presc.patient.age||""; document.getElementById("patientGender").value=presc.patient.gender||""; document.getElementById("diagnosisField").value=presc.diagnosis||""; currentMedicines=JSON.parse(JSON.stringify(presc.medicines||[])); currentAdvices=[...(presc.advices||[])]; renderMedicinesTable(); renderCurrentAdvices(); updatePreview(); }
   function resetHistoryFilters(){ document.getElementById("historySearchName").value=""; document.getElementById("historyFromDate").value=""; document.getElementById("historyToDate").value=""; document.getElementById("historyYear").value=""; document.getElementById("historyMonth").value=""; renderHistoryList(); }
