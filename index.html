@@ -319,7 +319,7 @@
         </div>
         <div id="pinnedPreview" class="pinned-preview"></div>
         
-        <!-- Most Used Section (expandable) -->
+        <!-- Recent Used Section (expandable) -->
         <div class="flex-between" style="margin-top: 8px;">
           <span class="clickable-title" id="mostUsedExpandBtn" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;">
             🔥 Recent Used <i class="fas fa-expand-alt"></i>
@@ -1151,7 +1151,7 @@
     document.getElementById("addCustomAdviceBtn")?.addEventListener("click",()=>{const val=document.getElementById("customAdviceInput").value.trim(); if(val) addAdvice(val); document.getElementById("customAdviceInput").value="";});
     document.getElementById("showHistoryBtn")?.addEventListener("click",showHistoryModal);
     document.getElementById("analysisBtn")?.addEventListener("click",showAnalysis);
-    document.getElementById("helpBtn")?.addEventListener("click", openHelpModal); // updated
+    document.getElementById("helpBtn")?.addEventListener("click", openHelpModal);
     document.getElementById("settingsBtn")?.addEventListener("click",openSettingsModal);
     document.getElementById("savePrescriptionBtn")?.addEventListener("click",saveCurrentPrescription);
     document.getElementById("printPreviewBtn")?.addEventListener("click",printWithMargin);
