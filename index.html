@@ -676,7 +676,7 @@
   // Core data load (with permanent deletion support and lastUsed field)
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()}));
     if(medSnap.empty && prescriptions.length===0){
-      // CHANGED: default demo medicines now start with usageCount 0 (no recent usage)
+      // Default demo medicines now start with usageCount 0 (no recent usage shown until prescribed)
       const defaultMeds=[{name:"Paracetamol",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:0,pinned:false,lastUsed:null},{name:"Amoxicillin",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:0,pinned:false,lastUsed:null},{name:"Azithromycin",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:0,pinned:false,lastUsed:null},{name:"Losartan",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:0,pinned:false,lastUsed:null},{name:"Cetirizine",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:0,pinned:false,lastUsed:null}];
       for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m);
     }
