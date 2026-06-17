@@ -242,6 +242,28 @@
       height: 100%;
       border: none;
     }
+    .help-contact {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.8rem;
+    }
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+    .btn-whatsapp:hover { background: #1ebe5b; }
     @media (max-width: 768px) {
       .help-modal-content {
         flex-direction: column;
@@ -300,7 +322,7 @@
         <!-- Most Used Section (expandable) -->
         <div class="flex-between" style="margin-top: 8px;">
           <span class="clickable-title" id="mostUsedExpandBtn" style="font-weight:600; font-size:0.8rem; display:flex; align-items:center; gap:6px;">
-            🔥 Most Used <i class="fas fa-expand-alt"></i>
+            🔥 Recent Used <i class="fas fa-expand-alt"></i>
           </span>
         </div>
         <div id="mostUsedPreview" class="most-used-preview"></div>
@@ -474,8 +496,8 @@
 <div id="mostUsedModal" class="modal">
   <div class="modal-content" style="max-width: 900px;">
     <span class="close-modal" id="closeMostUsedModal">&times;</span>
-    <h3><i class="fas fa-fire"></i> Most Used & Recent Medicines</h3>
-    <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="mostUsedSearch" placeholder="Search medicine..."></div>
+    <h3><i class="fas fa-fire"></i> Most Used Medicines</h3>
+    <div class="search-bar" style="margin: 16px 0;"><i class="fas fa-search"></i><input type="text" id="mostUsedSearch" placeholder="Search most used medicines..."></div>
     <div id="mostUsedFullList" class="med-grid-2col"></div>
   </div>
 </div>
@@ -497,11 +519,16 @@
     <h3><i class="fas fa-question-circle"></i> Help & Tutorials</h3>
     <div class="help-modal-content">
       <div class="help-sidebar" id="helpSidebar">
-        <!-- Filled dynamically -->
+        <!-- Dynamically filled -->
       </div>
       <div class="help-video-container">
         <div class="help-video-wrapper" id="helpVideoWrapper">
           <iframe id="helpVideoFrame" src="" allowfullscreen></iframe>
+        </div>
+        <div class="help-contact">
+          <span>Need more help?</span>
+          <a href="https://wa.me/918101565420?text=Hello%20FastRx%20Pro%20Support" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+          <a href="mailto:narayanbarman3210@gmail.com" class="btn-sm btn-outline" style="padding:8px 16px;"><i class="fas fa-envelope"></i> Email</a>
         </div>
       </div>
     </div>
@@ -604,7 +631,7 @@
   async function loadAllUsers() { if(!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return; const usersSnap = await db.collection('users').get(); const usersList = []; for(const userDoc of usersSnap.docs) { const subDoc = await db.collection('users').doc(userDoc.id).collection('settings').doc('subscription').get(); const userData = { email: userDoc.data()?.email || userDoc.id, uid: userDoc.id }; if(subDoc.exists) userData.subscription = subDoc.data(); else userData.subscription = { isActive: true, plan: null, expiryDate: null, dailyCount: 0 }; usersList.push(userData); } const container = document.getElementById("allUsersList"); if(usersList.length===0) { container.innerHTML = "<p>No users found.</p>"; return; } container.innerHTML = usersList.map(u => { const expiry = u.subscription.expiryDate ? new Date(u.subscription.expiryDate).toLocaleDateString() : 'Never'; const status = u.subscription.expiryDate && new Date(u.subscription.expiryDate) >= new Date() ? 'Active' : (u.subscription.expiryDate ? 'Expired' : 'Free'); const planBadge = u.subscription.plan === 'monthly' ? '📅 Monthly' : (u.subscription.plan === 'yearly' ? '📆 Yearly' : 'Free'); return `<div class="subscription-user-card"><div><strong>${escapeHtml(u.email)}</strong></div><div>Plan: ${planBadge} | Status: ${status} | Expires: ${expiry}</div><div class="flex-between" style="margin-top:8px;"><button class="btn-sm" data-uid="${u.uid}" data-action="extend_monthly">+1 Month</button><button class="btn-sm" data-uid="${u.uid}" data-action="extend_yearly">+1 Year</button><button class="btn-sm btn-danger" data-uid="${u.uid}" data-action="cancel">Cancel Subscription</button></div></div>`; }).join(""); container.querySelectorAll("button[data-uid]").forEach(btn => { btn.addEventListener("click", async () => { const uid = btn.dataset.uid; const action = btn.dataset.action; const subRef = db.collection('users').doc(uid).collection('settings').doc('subscription'); const subDoc = await subRef.get(); let currentExpiry = subDoc.exists ? (subDoc.data().expiryDate ? new Date(subDoc.data().expiryDate) : new Date()) : new Date(); if(currentExpiry < new Date()) currentExpiry = new Date(); if(action === 'extend_monthly') { currentExpiry.setMonth(currentExpiry.getMonth() + 1); await subRef.update({ isActive: true, plan: 'monthly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 }); alert("Extended by 1 month!"); } else if(action === 'extend_yearly') { currentExpiry.setFullYear(currentExpiry.getFullYear() + 1); await subRef.update({ isActive: true, plan: 'yearly', expiryDate: currentExpiry.toISOString(), dailyCount: 0 }); alert("Extended by 1 year!"); } else if(action === 'cancel') { await subRef.update({ isActive: false, expiryDate: null, plan: null }); alert("Subscription cancelled."); } loadAllUsers(); }); }); }
   function showAdminPanel() { if(currentUser && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) { loadPendingTransactions(); loadAllUsers(); document.getElementById("adminPanelModal").style.display = "block"; document.querySelectorAll(".admin-tab").forEach(tab => { tab.addEventListener("click", () => { document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active")); tab.classList.add("active"); if(tab.dataset.tab === "pending") { document.getElementById("pendingTransactionsList").style.display = "block"; document.getElementById("allUsersList").style.display = "none"; loadPendingTransactions(); } else { document.getElementById("pendingTransactionsList").style.display = "none"; document.getElementById("allUsersList").style.display = "block"; loadAllUsers(); } }); }); } }
 
-  // Disease modal
+  // Disease modal - red cross outside tag
   function showDiseaseModal() {
     const container = document.getElementById("diseaseListContainer");
     container.innerHTML = savedDiseases.map(d => `
@@ -646,7 +673,7 @@
     }
   }
 
-  // Core data load
+  // Core data load (with permanent deletion support and lastUsed field)
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()}));
     if(medSnap.empty && prescriptions.length===0){
       const defaultMeds=[{name:"Paracetamol",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:12,pinned:false,lastUsed:new Date().toISOString()},{name:"Amoxicillin",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:8,pinned:false,lastUsed:new Date().toISOString()},{name:"Azithromycin",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:15,pinned:false,lastUsed:new Date().toISOString()},{name:"Losartan",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:5,pinned:false,lastUsed:new Date().toISOString()},{name:"Cetirizine",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:7,pinned:false,lastUsed:new Date().toISOString()}];
@@ -676,7 +703,7 @@
   async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false,lastUsed:medObj.lastUsed||new Date().toISOString()}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); }
   async function deleteMedicineById(medId) { const index = medicines.findIndex(m=>m.id===medId); if(index!==-1){ medicines.splice(index,1); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(medId).delete(); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); } }
   
-  // Toggle pin function
+  // Toggle pin function (reusable, updates UI and saves)
   async function togglePin(medId, refreshCallback) {
     const med = medicines.find(m => m.id === medId);
     if(med) {
@@ -713,7 +740,7 @@
                               .slice(0, 5);
     const container = document.getElementById("mostUsedPreview");
     if(!container) return;
-    if(recentMeds.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No usage data yet</div>'; return; }
+    if(recentMeds.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No recent usage data</div>'; return; }
     container.innerHTML = recentMeds.map(med => `<span data-id="${med.id}" class="cursor-pointer hover:bg-cyan-100">🔥 ${escapeHtml(med.name)}</span>`).join('');
     container.querySelectorAll('span').forEach(span => {
       span.addEventListener('click', (e) => {
@@ -768,7 +795,7 @@
   document.getElementById('mostUsedSearch')?.addEventListener('input', (e) => renderMostUsedFullList(e.target.value));
   document.getElementById('pinnedSearch')?.addEventListener('input', (e) => renderPinnedFullList(e.target.value));
   
-  // Main medicine list rendering
+  // Main medicine list rendering (with star for pin/unpin) – updated with outline/filled star
   function renderMedicineList(search=""){ 
     let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); 
     filtered.sort((a,b)=>b.usageCount-a.usageCount); 
@@ -797,7 +824,7 @@
     })); 
   }
   
-  // All Medicines Popup
+  // All Medicines Popup (with star for pin/unpin) – updated outline/filled star
   function showAllMedsPicker(){ renderAllMedsList(); document.getElementById("allMedsPickerModal").style.display="block"; }
   function renderAllMedsList(search=""){ 
     const container=document.getElementById("allMedsListContainer"); 
@@ -945,13 +972,12 @@
   async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=1){let name=vals[0].trim(); let freq=vals[1]?vals[1].trim():"1-1-1"; let dur=vals[2]?vals[2].trim():"5 days"; let how=vals[3]?vals[3].trim():"–"; if(name) newMeds.push({name, frequency:freq, duration:dur, howToTake:how, usageCount:0, pinned:false, lastUsed:new Date().toISOString()});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, frequency:med.frequency, duration:med.duration, howToTake:med.howToTake, usageCount:0, pinned:false, lastUsed:new Date().toISOString() }); } } alert("Imported."); }
   
-  // ========== HELP MODAL (NEW) ==========
+  // ========== HELP MODAL FUNCTIONS (NEW) ==========
   const helpTutorials = [
-    { title: "Getting Started", videoId: "lznNs7mm1fs" },
-    { title: "Managing Medicines", videoId: "lznNs7mm1fs" },
-    { title: "Creating Prescriptions", videoId: "lznNs7mm1fs" },
-    { title: "Printing & Export", videoId: "lznNs7mm1fs" },
-    { title: "Analytics Dashboard", videoId: "lznNs7mm1fs" }
+    { title: "How to make prescription", videoId: "lznNs7mm1fs" },
+    { title: "How to add medicine", videoId: "lznNs7mm1fs" },
+    { title: "How to add advice", videoId: "lznNs7mm1fs" },
+    { title: "Analytics & History", videoId: "lznNs7mm1fs" }
   ];
 
   function openHelpModal() {
@@ -1125,7 +1151,7 @@
     document.getElementById("addCustomAdviceBtn")?.addEventListener("click",()=>{const val=document.getElementById("customAdviceInput").value.trim(); if(val) addAdvice(val); document.getElementById("customAdviceInput").value="";});
     document.getElementById("showHistoryBtn")?.addEventListener("click",showHistoryModal);
     document.getElementById("analysisBtn")?.addEventListener("click",showAnalysis);
-    document.getElementById("helpBtn")?.addEventListener("click", openHelpModal);  // changed
+    document.getElementById("helpBtn")?.addEventListener("click", openHelpModal); // updated
     document.getElementById("settingsBtn")?.addEventListener("click",openSettingsModal);
     document.getElementById("savePrescriptionBtn")?.addEventListener("click",saveCurrentPrescription);
     document.getElementById("printPreviewBtn")?.addEventListener("click",printWithMargin);
