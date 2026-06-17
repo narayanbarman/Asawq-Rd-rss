@@ -197,6 +197,168 @@
       .cta-btn { font-size: 0.9rem; padding: 0.6rem 1.6rem; }
       .benefits-row { gap: 1rem; font-size: 0.8rem; }
     }
+
+    /* ========== HELP MODAL STYLES (new dark theme) ========== */
+    .help-modal-content {
+      background: #0b131f;
+      color: #ffffff;
+      border: 1px solid #1e293b;
+      max-width: 1000px;
+      width: 95%;
+      border-radius: 28px;
+      padding: 20px;
+    }
+    .help-modal-content .close-modal {
+      color: #94a3b8;
+      float: right;
+      font-size: 26px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .help-modal-content .close-modal:hover {
+      color: white;
+    }
+    .help-dark {
+      --text-muted: #94a3b8;
+      --primary-cyan: #0ea5e9;
+      --whatsapp-green: #25D366;
+      --border-color: #1e293b;
+      --card-bg: #111c2e;
+      --teal-submit: #14b8a6;
+    }
+    .help-dark .container {
+      padding: 0;
+    }
+    .help-dark .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .help-dark .header h1 {
+      font-size: 2.2rem;
+      font-weight: 600;
+      margin: 0;
+      color: white;
+    }
+    .help-dark .support-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .help-dark .card {
+      background-color: #111c2e;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .help-dark .card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 16px;
+      border-left: none;
+      padding-left: 0;
+      color: white;
+    }
+    .help-dark .card-title i {
+      color: #0ea5e9;
+    }
+    .help-dark .card p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .help-dark .whatsapp-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background-color: #25D366;
+      color: white;
+      text-decoration: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: 20px;
+      margin-bottom: 15px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .help-dark .whatsapp-btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.9;
+    }
+    .help-dark .video-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .help-dark .video-links li {
+      margin-bottom: 14px;
+    }
+    .help-dark .video-links a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      text-decoration: none;
+      font-size: 0.95rem;
+      padding: 12px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      transition: background 0.2s, color 0.2s;
+    }
+    .help-dark .video-links a:hover {
+      background: rgba(14, 165, 233, 0.1);
+      color: #0ea5e9;
+    }
+    .help-dark .video-links a i {
+      color: #94a3b8;
+    }
+    .help-dark .video-links a:hover i {
+      color: #0ea5e9;
+    }
+    .help-dark .full-width-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .help-dark .form-group {
+      margin-bottom: 15px;
+    }
+    .help-dark .form-group input, .help-dark .form-group textarea {
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px solid #1e293b;
+      padding: 12px;
+      border-radius: 6px;
+      color: white;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .help-dark .form-group textarea {
+      height: 120px;
+      resize: none;
+    }
+    .help-dark .submit-btn {
+      background-color: #14b8a6;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: opacity 0.2s;
+    }
+    .help-dark .submit-btn:hover {
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
@@ -289,8 +451,7 @@
       <h1>Prescription Maker</h1>
       <p>Make your prescription easy and fast</p>
       <div class="video-container">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=J6n0pKqsZzL5aDZJ" title="FastRx Pro Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      </div>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/lznNs7mm1fs?si=L4DaBl2dpA5p8p1i" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
       <button id="getStartedBtn" class="cta-btn">🚀 GET STARTED FREE</button>
     </div>
     <div class="benefits-row">
@@ -447,6 +608,52 @@
 <div id="quickModal" class="modal"><div class="modal-content"><h3>Quick Medicine</h3><label>Name</label><input type="text" id="quickName"><div class="flex-between"><label>Frequency</label><button class="btn-sm" id="editFreqTagsBtn">Edit Tags</button></div><div class="tag-group" id="quickFreqTagsContainer"></div><input type="text" id="quickFrequency"><div class="flex-between"><label>Duration</label><button class="btn-sm" id="editDurTagsBtn">Edit Tags</button></div><div class="tag-group" id="quickDurTagsContainer"></div><input type="text" id="quickDuration"><div class="flex-between"><label>How to take</label><button class="btn-sm" id="editHowTagsBtn">Edit Tags</button></div><div class="tag-group" id="quickHowTagsContainer"></div><input type="text" id="quickHowToTake"><div style="margin-top:20px;"><button class="btn-primary" id="quickConfirmBtn">Add</button><button class="btn-sm btn-outline" id="quickCancelBtn">Cancel</button></div></div></div>
 <div id="tagEditModal" class="modal"><div class="modal-content"><h3 id="tagEditTitle">Edit Tags</h3><div id="tagEditList" style="margin:16px 0;"></div><div class="flex-between"><input type="text" id="newTagInput" placeholder="New tag" style="flex:3;"><button class="btn-sm" id="addNewTagBtn">Add</button></div><div style="margin-top:16px;"><button class="btn-primary" id="saveTagEditBtn">Save & Close</button><button class="btn-sm btn-outline" id="cancelTagEditBtn">Cancel</button></div></div></div>
 
+<!-- ========== HELP MODAL ========== -->
+<div id="helpModal" class="modal">
+  <div class="modal-content help-modal-content help-dark">
+    <span class="close-modal" id="closeHelpModal">&times;</span>
+    <div class="container">
+      <div class="header">
+        <h1>Help & Support Center</h1>
+      </div>
+      <div class="support-grid">
+        <div class="card">
+          <h3 class="card-title"><i class="fa-solid fa-handshake-angle"></i> Instant Support & Custom Setup</h3>
+          <!-- REPLACE YOURPHONE WITH YOUR ACTUAL WHATSAPP NUMBER (including country code) -->
+          <a href="https://wa.me/YOURPHONE?text=Hi!%20I%20am%20using%20FastRx%20Pro%20and%20need%20help%20setting%20up%20my%20custom%20medicine%20library." class="whatsapp-btn" target="_blank">
+            <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+          </a>
+          <p>Click to open an instant chat. Our team can format and share a custom medicine library Excel file crafted specifically for your medical specialty!</p>
+        </div>
+        <div class="card">
+          <h3 class="card-title"><i class="fa-regular fa-file-video"></i> Getting Started Guides</h3>
+          <ul class="video-links">
+            <li><a href="#"><i class="fa-regular fa-circle-play"></i> Watch Tutorial: Creating your first prescription</a></li>
+            <li><a href="#"><i class="fa-regular fa-circle-play"></i> How to Bulk Upload Medicines</a></li>
+            <li><a href="#"><i class="fa-regular fa-circle-play"></i> Managing Pinned Favorites</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="full-width-grid">
+        <div class="card">
+          <h3 class="card-title" style="margin-bottom: 4px;"><i class="fa-regular fa-envelope"></i> Email Support</h3>
+          <p style="margin-top: 0; margin-bottom: 24px; font-size: 0.9rem;">support.fastrxpro@gmail.com</p>
+          <h4 style="margin-bottom: 12px; font-weight: 500; font-size: 1rem;">Send a Ticket</h4>
+          <form id="helpEmailForm">
+            <div class="form-group">
+              <input type="email" placeholder="Your Email Address" required>
+            </div>
+            <div class="form-group">
+              <textarea placeholder="Describe your issue or request here..." required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Send Ticket</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // ========== FIREBASE CONFIG ==========
   const firebaseConfig = {
@@ -598,7 +805,6 @@
     if(med) {
       med.pinned = !med.pinned;
       await saveMedicines();
-      // Refresh all relevant UI components
       renderMedicineList(document.getElementById("searchMedicine").value);
       renderPinnedPreview();
       if(document.getElementById("allMedsPickerModal").style.display === "block") renderAllMedsList(document.getElementById("allMedsSearch")?.value || "");
@@ -623,9 +829,9 @@
     });
   }
   
-  // Render most used preview (scrollable)
+  // Render most used preview – only medicines with usage > 0, sorted by most recent
   function renderMostUsedPreview() {
-    const mostUsed = [...medicines].sort((a,b) => b.usageCount - a.usageCount).slice(0,5);
+    const mostUsed = medicines.filter(m => m.usageCount > 0).sort((a,b) => new Date(b.lastUsed) - new Date(a.lastUsed)).slice(0,5);
     const container = document.getElementById("mostUsedPreview");
     if(!container) return;
     if(mostUsed.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No usage data yet</div>'; return; }
@@ -644,16 +850,18 @@
     renderMostUsedFullList();
     document.getElementById("mostUsedModal").style.display = "block";
   }
+  // Expanded list: all medicines with usage > 0, sorted by usage count descending
   function renderMostUsedFullList(search = "") {
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const recent = medicines.filter(m => m.lastUsed && new Date(m.lastUsed) > weekAgo);
-    const mostUsedFiltered = medicines.filter(m => m.usageCount > 2);
-    const combined = [...new Map([...recent, ...mostUsedFiltered].map(m => [m.id, m])).values()];
-    let filtered = combined.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
-    filtered.sort((a,b) => (b.usageCount - a.usageCount) || (new Date(b.lastUsed) - new Date(a.lastUsed)));
+    let filtered = medicines.filter(m => m.usageCount > 0);
+    if(search) filtered = filtered.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+    filtered.sort((a,b) => b.usageCount - a.usageCount);
     const container = document.getElementById("mostUsedFullList");
-    container.innerHTML = filtered.map(med => `<div class="picker-item" data-id="${med.id}"><div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">Used ${med.usageCount} times${med.lastUsed ? ` · Last ${new Date(med.lastUsed).toLocaleDateString()}` : ''}</span></div><i class="fas fa-plus-circle text-cyan-600"></i></div>`).join('');
+    container.innerHTML = filtered.map(med => `
+      <div class="picker-item" data-id="${med.id}">
+        <div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">Used ${med.usageCount} times${med.lastUsed ? ` · Last ${new Date(med.lastUsed).toLocaleDateString()}` : ''}</span></div>
+        <i class="fas fa-plus-circle text-cyan-600"></i>
+      </div>
+    `).join('');
     container.querySelectorAll('.picker-item').forEach(el => {
       el.addEventListener('click', () => {
         const med = medicines.find(m => m.id === el.dataset.id);
@@ -662,6 +870,7 @@
       });
     });
   }
+  
   function showPinnedModal() {
     renderPinnedFullList();
     document.getElementById("pinnedModal").style.display = "block";
@@ -698,7 +907,7 @@
   document.getElementById('mostUsedSearch')?.addEventListener('input', (e) => renderMostUsedFullList(e.target.value));
   document.getElementById('pinnedSearch')?.addEventListener('input', (e) => renderPinnedFullList(e.target.value));
   
-  // Main medicine list rendering (with star for pin/unpin) – updated with outline/filled star
+  // Main medicine list rendering (with star for pin/unpin)
   function renderMedicineList(search=""){ 
     let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); 
     filtered.sort((a,b)=>b.usageCount-a.usageCount); 
@@ -727,7 +936,7 @@
     })); 
   }
   
-  // All Medicines Popup (with star for pin/unpin) – updated outline/filled star
+  // All Medicines Popup
   function showAllMedsPicker(){ renderAllMedsList(); document.getElementById("allMedsPickerModal").style.display="block"; }
   function renderAllMedsList(search=""){ 
     const container=document.getElementById("allMedsListContainer"); 
@@ -882,7 +1091,12 @@
   function setupSearchSuggestions(){ const inp=document.getElementById("searchMedicine"); const box=document.getElementById("suggestionsBox"); inp.addEventListener("input",function(){ const val=this.value.toLowerCase(); if(val.length<1){box.style.display="none";return;} const matches=medicines.filter(m=>m.name.toLowerCase().includes(val)).slice(0,6); if(matches.length===0){box.style.display="none";return;} box.innerHTML=matches.map(m=>`<div data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${m.frequency})</div>`).join(""); box.style.display="block"; box.querySelectorAll("div").forEach(div=>div.addEventListener("click",()=>{const med=medicines.find(m=>m.name===div.dataset.name); if(med) openPopup(med); inp.value=""; box.style.display="none";})); }); document.addEventListener("click",(e)=>{if(!inp.contains(e.target)&&!box.contains(e.target)) box.style.display="none";}); }
   async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=1){let name=vals[0].trim(); let freq=vals[1]?vals[1].trim():"1-1-1"; let dur=vals[2]?vals[2].trim():"5 days"; let how=vals[3]?vals[3].trim():"–"; if(name) newMeds.push({name, frequency:freq, duration:dur, howToTake:how, usageCount:0, pinned:false, lastUsed:new Date().toISOString()});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, frequency:med.frequency, duration:med.duration, howToTake:med.howToTake, usageCount:0, pinned:false, lastUsed:new Date().toISOString() }); } } alert("Imported."); }
-  function showHelp(){ alert("💊 FAST PRESCRIPTION SYSTEM\n\n• Free: 10 prescriptions per 24h\n• Upgrade via QR code & transaction ID\n• Admin approval required (login as narayanbarman3210@gmail.com)\n• Pin favourites, history, analytics\n• Print with margin & professional header"); }
+  
+  // Help modal – replaces old alert
+  function showHelp() {
+    document.getElementById("helpModal").style.display = "block";
+  }
+  
   function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
   function updateAnalysisDashboard() { const from=document.getElementById("analysisFromDate").value, to=document.getElementById("analysisToDate").value; let filtered=[...prescriptions]; if(from){const f=new Date(from); f.setHours(0,0,0,0); filtered=filtered.filter(p=>new Date(p.dateTime)>=f);} if(to){const t=new Date(to); t.setHours(23,59,59,999); filtered=filtered.filter(p=>new Date(p.dateTime)<=t);} const total=filtered.length, today=new Date().toDateString(), todayCount=filtered.filter(p=>new Date(p.dateTime).toDateString()===today).length; const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7); const weekCount=filtered.filter(p=>new Date(p.dateTime)>=weekAgo).length; const monthAgo=new Date(); monthAgo.setMonth(monthAgo.getMonth()-1); const monthCount=filtered.filter(p=>new Date(p.dateTime)>=monthAgo).length; const year=new Date().getFullYear(), yearCount=filtered.filter(p=>new Date(p.dateTime).getFullYear()===year).length; document.getElementById("analysisCards").innerHTML=`<div class="analytics-card"><div class="number">${total}</div><div class="label">Total Prescriptions</div></div><div class="analytics-card"><div class="number">${todayCount}</div><div class="label">Today</div></div><div class="analytics-card"><div class="number">${weekCount}</div><div class="label">Last 7 days</div></div><div class="analytics-card"><div class="number">${monthCount}</div><div class="label">Last 30 days</div></div><div class="analytics-card"><div class="number">${yearCount}</div><div class="label">This year</div></div>`; let monthly={}; filtered.forEach(p=>{const d=new Date(p.dateTime); const key=`${d.getFullYear()}-${d.getMonth()+1}`; monthly[key]=(monthly[key]||0)+1;}); const labels=Object.keys(monthly).sort(); const data=labels.map(l=>monthly[l]); const ctx=document.getElementById('monthlyChart').getContext('2d'); if(window.monthlyChartInstance) window.monthlyChartInstance.destroy(); window.monthlyChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Prescriptions per month',data,backgroundColor:'#0a7e8c',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:true}}); document.getElementById("analysisStats").innerHTML=filtered.length?`<div class="stat-item"><strong>Period total:</strong> ${filtered.length} prescriptions</div>`:""; }
   function resetAnalysisFilters(){ document.getElementById("analysisFromDate").value=""; document.getElementById("analysisToDate").value=""; updateAnalysisDashboard(); }
@@ -929,8 +1143,8 @@
   const bulkAddAdvBtn = document.getElementById('bulkAddAdvicesBtn');
   const closeBulkModal = document.getElementById('closeBulkModal');
   bulkTabs.forEach(tab => { tab.addEventListener('click', () => { bulkTabs.forEach(t=>t.classList.remove('active')); tab.classList.add('active'); if(tab.dataset.bulkTab === 'medicines') { bulkMedPanel.style.display = 'block'; bulkAdvPanel.style.display = 'none'; } else { bulkMedPanel.style.display = 'none'; bulkAdvPanel.style.display = 'block'; } }); });
-  bulkAddMedBtn.addEventListener('click', async () => { const text = bulkMedText.value; if(!text.trim()) { alert("Paste medicine list first"); return; } const lines = text.split(/\r?\n/); const newMeds = []; for(let line of lines) { line=line.trim(); if(!line) continue; let parts = line.split(','); let name = parts[0].trim(); let freq = parts[1]?parts[1].trim():"1-1-1"; let dur = parts[2]?parts[2].trim():"5 days"; let how = parts[3]?parts[3].trim():"–"; if(name) newMeds.push({ name, frequency:freq, duration:dur, howToTake:how, usageCount:0, pinned:false, lastUsed:new Date().toISOString() }); } let added=0; for(let med of newMeds) { if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())) { await addNewMedicine(med); added++; } } alert(`Added ${added} new medicines.`); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); bulkMedText.value=""; bulkModal.style.display = "none"; }); // closes modal
-  bulkAddAdvBtn.addEventListener('click', async () => { const text = bulkAdvText.value; if(!text.trim()) { alert("Paste advice list first"); return; } const lines = text.split(/\r?\n/); const newAdvs = lines.map(l=>l.trim()).filter(l=>l); let added=0; for(let adv of newAdvs) { if(!adviceTags.includes(adv)) { adviceTags.push(adv); added++; } } if(added) await saveAdviceTags(); renderAdviceTags(); alert(`Added ${added} new advice tags.`); bulkAdvText.value=""; bulkModal.style.display = "none"; }); // closes modal
+  bulkAddMedBtn.addEventListener('click', async () => { const text = bulkMedText.value; if(!text.trim()) { alert("Paste medicine list first"); return; } const lines = text.split(/\r?\n/); const newMeds = []; for(let line of lines) { line=line.trim(); if(!line) continue; let parts = line.split(','); let name = parts[0].trim(); let freq = parts[1]?parts[1].trim():"1-1-1"; let dur = parts[2]?parts[2].trim():"5 days"; let how = parts[3]?parts[3].trim():"–"; if(name) newMeds.push({ name, frequency:freq, duration:dur, howToTake:how, usageCount:0, pinned:false, lastUsed:new Date().toISOString() }); } let added=0; for(let med of newMeds) { if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())) { await addNewMedicine(med); added++; } } alert(`Added ${added} new medicines.`); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); bulkMedText.value=""; bulkModal.style.display = "none"; });
+  bulkAddAdvBtn.addEventListener('click', async () => { const text = bulkAdvText.value; if(!text.trim()) { alert("Paste advice list first"); return; } const lines = text.split(/\r?\n/); const newAdvs = lines.map(l=>l.trim()).filter(l=>l); let added=0; for(let adv of newAdvs) { if(!adviceTags.includes(adv)) { adviceTags.push(adv); added++; } } if(added) await saveAdviceTags(); renderAdviceTags(); alert(`Added ${added} new advice tags.`); bulkAdvText.value=""; bulkModal.style.display = "none"; });
   bulkMedFile.addEventListener('change', (e) => { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (ev) => { bulkMedText.value = ev.target.result; }; reader.readAsText(file); bulkMedFile.value = ""; });
   bulkAdvFile.addEventListener('change', (e) => { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (ev) => { bulkAdvText.value = ev.target.result; }; reader.readAsText(file); bulkAdvFile.value = ""; });
   function openBulkModal() { bulkModal.style.display = "block"; }
@@ -1081,6 +1295,8 @@
     document.getElementById("closeAdminModal")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
     document.getElementById("closeAdminBtn")?.addEventListener("click",()=>document.getElementById("adminPanelModal").style.display="none");
     document.getElementById("refreshPendingBtn")?.addEventListener("click",()=>{ if(document.querySelector(".admin-tab.active").dataset.tab === "pending") loadPendingTransactions(); else loadAllUsers(); });
+    // Help modal close
+    document.getElementById("closeHelpModal")?.addEventListener("click", () => document.getElementById("helpModal").style.display = "none");
     window.addEventListener("click",e=>{ if(e.target.classList.contains("modal")) e.target.style.display="none"; });
   }
 </script>
