@@ -51,8 +51,44 @@
     .pin-icon:hover { color: #eab308; transform: scale(1.1); }
     .pin-icon i { color: #94a3b8; }
     .pin-icon.pinned i { color: #f59e0b; }
-    .most-used-preview, .pinned-preview { max-height: 100px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-    .most-used-preview span, .pinned-preview span { background: #eef2ff; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; cursor: pointer; white-space: nowrap; }
+
+    /* Updated preview containers */
+    .most-used-preview, .pinned-preview {
+      max-height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0;
+      padding: 4px 0;
+    }
+    /* Updated preview item style – rectangular card look */
+    .most-used-preview span, .pinned-preview span {
+      background: white;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      transition: 0.15s;
+      border-left: 3px solid #0a7e8c;
+      color: #334155;
+      font-weight: 500;
+    }
+    .most-used-preview span:hover, .pinned-preview span:hover {
+      background: #f0f9ff;
+      border-color: #0a7e8c;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+    }
+    .pinned-preview span i {
+      color: #f59e0b;
+    }
+
     .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
     .btn-sm { background: #ecfdf5; border: none; padding: 5px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
     .btn-primary { background: #0a7e8c; color: white; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
@@ -750,13 +786,13 @@
     }
   }
   
-  // Render pinned preview (scrollable)
+  // Render pinned preview (scrollable) – now shows up to 10 items, updated card design
   function renderPinnedPreview() {
-    const pinned = medicines.filter(m => m.pinned).slice(0, 5);
+    const pinned = medicines.filter(m => m.pinned).slice(0, 10);
     const container = document.getElementById("pinnedPreview");
     if(!container) return;
     if(pinned.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No pinned medicines</div>'; return; }
-    container.innerHTML = pinned.map(med => `<span data-id="${med.id}" class="cursor-pointer hover:bg-cyan-100"><i class="fas fa-star" style="color:#f59e0b;"></i> ${escapeHtml(med.name)}</span>`).join('');
+    container.innerHTML = pinned.map(med => `<span data-id="${med.id}"><i class="fas fa-star" style="color:#f59e0b;"></i> ${escapeHtml(med.name)}</span>`).join('');
     container.querySelectorAll('span').forEach(span => {
       span.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -766,15 +802,15 @@
     });
   }
   
-  // ========== UPDATED: Most Used Preview (only with usage>0, sorted by recent lastUsed) ==========
+  // Render most used preview – up to 10 items, NO 🔥 emoji, updated card design
   function renderMostUsedPreview() {
     const recentMeds = medicines.filter(m => m.usageCount > 0)
                               .sort((a, b) => new Date(b.lastUsed || 0) - new Date(a.lastUsed || 0))
-                              .slice(0, 5);
+                              .slice(0, 10);
     const container = document.getElementById("mostUsedPreview");
     if(!container) return;
     if(recentMeds.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No recent usage data</div>'; return; }
-    container.innerHTML = recentMeds.map(med => `<span data-id="${med.id}" class="cursor-pointer hover:bg-cyan-100">🔥 ${escapeHtml(med.name)}</span>`).join('');
+    container.innerHTML = recentMeds.map(med => `<span data-id="${med.id}">${escapeHtml(med.name)}</span>`).join('');
     container.querySelectorAll('span').forEach(span => {
       span.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -910,7 +946,7 @@
   
   async function addMedicineFromPopup(){ 
     if(pendingMedicine){ 
-      const medId = pendingMedicine.id;  // capture before closing modal
+      const medId = pendingMedicine.id;
       currentMedicines.push({ 
         name:pendingMedicine.name, 
         frequency:document.getElementById("modalFrequency").value.trim(), 
@@ -918,7 +954,7 @@
         howToTake:document.getElementById("modalHowToTake").value.trim() 
       }); 
       renderMedicinesTable(); updatePreview(); closeModal(); 
-      updateMedicineAndRefresh(medicines.find(m => m.id === medId));   // correct update
+      updateMedicineAndRefresh(medicines.find(m => m.id === medId));
     } 
   }
   
@@ -986,7 +1022,7 @@
     currentMedicines.push({name, frequency:freq, duration:dur, howToTake:how}); 
     let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); 
     if(existing){ 
-      updateMedicineAndRefresh(existing);   // instant
+      updateMedicineAndRefresh(existing);
     } else { 
       await addNewMedicine({ name, frequency:freq, duration:dur, howToTake:how, usageCount:1, pinned:false, lastUsed:new Date().toISOString() }); 
     } 
