@@ -52,7 +52,6 @@
       margin-bottom: 20px;
       padding-right: 4px;
     }
-    /* Row for medicine + external star */
     .med-item-row {
       display: flex;
       align-items: center;
@@ -80,7 +79,6 @@
     .med-name { font-weight: 600; color: #0c4e6e; font-size: 0.85rem; }
     .med-detail { font-size: 0.65rem; color: #4b6b87; }
 
-    /* Star outside the medicine box */
     .star-outer {
       flex-shrink: 0;
       cursor: pointer;
@@ -107,34 +105,71 @@
       color: #d97706;
     }
 
-    /* Preview containers */
-    .most-used-preview, .pinned-preview {
-      max-height: 120px;
+    /* ========== PROFESSIONAL PINNED & RECENT SECTION STYLES ========== */
+    .pinned-preview {
+      max-height: 140px;
       overflow-y: auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
       margin: 8px 0;
-      padding: 2px 0;
+      padding: 4px 0;
     }
-    .most-used-preview span, .pinned-preview span {
-      background: #f9fafb;
+    .pinned-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
       padding: 6px 12px;
-      border-radius: 10px;
       font-size: 0.78rem;
-      cursor: pointer;
-      white-space: nowrap;
+      font-weight: 500;
+      color: #1e293b;
       display: inline-flex;
       align-items: center;
-      border: 1px solid #e9ecef;
-      transition: 0.15s;
-      color: #334155;
-      font-weight: 500;
-      border-left: 3px solid #0a7e8c;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
-    .most-used-preview span:hover, .pinned-preview span:hover {
-      background: #f0f9ff;
-      border-color: #0a7e8c;
+    .pinned-chip:hover {
+      border-color: #0284c7;
+      box-shadow: 0 2px 6px rgba(2,132,199,0.08);
+      background: #f8faff;
+    }
+    .pinned-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #0284c7;
+      flex-shrink: 0;
+    }
+
+    .most-used-preview {
+      max-height: 140px;
+      overflow-y: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0;
+      padding: 4px 0;
+    }
+    .recent-badge {
+      background: #f1f5f9;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #475569;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .recent-badge:hover {
+      background: #e2e8f0;
+      color: #1e293b;
     }
 
     .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
@@ -774,13 +809,11 @@
   async function togglePin(medId, starElement) {
     const med = medicines.find(m => m.id === medId);
     if (!med) return;
-    // Instant visual toggle
     med.pinned = !med.pinned;
     if (starElement) {
       starElement.classList.toggle('pinned', med.pinned);
       starElement.innerHTML = med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
     }
-    // Save and refresh lists (background)
     await saveMedicines();
     renderMedicineList(document.getElementById("searchMedicine").value);
     renderPinnedPreview();
@@ -792,34 +825,38 @@
     }
   }
   
-  // Render pinned preview (scrollable) – no star icon, clean card design
+  // Render pinned preview with professional capsule chips
   function renderPinnedPreview() {
     const pinned = medicines.filter(m => m.pinned);
     const container = document.getElementById("pinnedPreview");
     if(!container) return;
-    if(pinned.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No pinned medicines</div>'; return; }
-    container.innerHTML = pinned.map(med => `<span data-id="${med.id}">${escapeHtml(med.name)}</span>`).join('');
-    container.querySelectorAll('span').forEach(span => {
-      span.addEventListener('click', (e) => {
+    if(pinned.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400" style="padding:4px 0;">No pinned medicines</div>'; return; }
+    container.innerHTML = pinned.map(med => 
+      `<span class="pinned-chip" data-id="${med.id}"><span class="pinned-dot"></span>${escapeHtml(med.name)}</span>`
+    ).join('');
+    container.querySelectorAll('.pinned-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
         e.stopPropagation();
-        const med = medicines.find(m => m.id === span.dataset.id);
+        const med = medicines.find(m => m.id === chip.dataset.id);
         if(med) openPopup(med);
       });
     });
   }
   
-  // Render most used preview – all items, clean card design
+  // Render most used preview with subtle flat badges
   function renderMostUsedPreview() {
     const recentMeds = medicines.filter(m => m.usageCount > 0)
                               .sort((a, b) => new Date(b.lastUsed || 0) - new Date(a.lastUsed || 0));
     const container = document.getElementById("mostUsedPreview");
     if(!container) return;
-    if(recentMeds.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No recent usage data</div>'; return; }
-    container.innerHTML = recentMeds.map(med => `<span data-id="${med.id}">${escapeHtml(med.name)}</span>`).join('');
-    container.querySelectorAll('span').forEach(span => {
-      span.addEventListener('click', (e) => {
+    if(recentMeds.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400" style="padding:4px 0;">No recent usage data</div>'; return; }
+    container.innerHTML = recentMeds.map(med => 
+      `<span class="recent-badge" data-id="${med.id}">${escapeHtml(med.name)}</span>`
+    ).join('');
+    container.querySelectorAll('.recent-badge').forEach(badge => {
+      badge.addEventListener('click', (e) => {
         e.stopPropagation();
-        const med = medicines.find(m => m.id === span.dataset.id);
+        const med = medicines.find(m => m.id === badge.dataset.id);
         if(med) openPopup(med);
       });
     });
@@ -831,7 +868,6 @@
     document.getElementById("mostUsedModal").style.display = "block"; 
   }
   
-  // Most Used Full List (all medicines with usage>0)
   function renderMostUsedFullList(search = "") {
     let filtered = medicines.filter(m => m.usageCount > 0);
     if(search) filtered = filtered.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
@@ -859,7 +895,6 @@
         <div class="star-outer pinned" data-id="${med.id}"><i class="fas fa-star"></i></div>
       </div>
     `).join('');
-    // Attach events
     container.querySelectorAll('.med-item').forEach(el => {
       el.addEventListener('click', () => {
         const med = medicines.find(m => m.id === el.dataset.id);
