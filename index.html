@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
-    /* ========== ORIGINAL STYLES (preserved) ========== */
+    /* ========== ORIGINAL STYLES (preserved & enhanced) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #eef2f7; padding: 15px; }
     .dashboard { max-width: 1600px; margin: 0 auto; }
@@ -42,27 +42,39 @@
     .suggestions-dropdown div { padding: 8px 16px; cursor: pointer; font-size: 0.8rem; }
     .suggestions-dropdown div:hover { background: #e6f4f5; }
 
-    /* Updated medicine list item: star outside the box */
+    /* Improved medicine list container */
+    .med-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      padding-right: 4px;
+    }
+    /* Row for medicine + external star */
     .med-item-row {
       display: flex;
       align-items: center;
       gap: 6px;
+      cursor: pointer;
     }
     .med-item {
       flex: 1;
       background: #f8fafc;
-      border-radius: 20px;
-      padding: 8px 12px;
+      border-radius: 16px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      cursor: pointer;
-      border: 1px solid #e2edf2;
-      transition: all 0.15s;
+      border: 1px solid #e2e8f0;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
     .med-item:hover {
-      background: #e6f4f5;
+      background: #f0f9ff;
       border-color: #0a7e8c;
+      box-shadow: 0 4px 10px rgba(10,126,140,0.1);
       transform: translateX(2px);
     }
     .med-name { font-weight: 600; color: #0c4e6e; font-size: 0.85rem; }
@@ -72,14 +84,28 @@
     .star-outer {
       flex-shrink: 0;
       cursor: pointer;
-      font-size: 1rem;
-      width: 28px;
-      text-align: center;
+      font-size: 1.15rem;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
       color: #94a3b8;
-      transition: 0.1s;
+      transition: all 0.2s ease;
+      background: transparent;
     }
-    .star-outer.pinned { color: #f59e0b; }
-    .star-outer:hover { color: #eab308; transform: scale(1.1); }
+    .star-outer:hover {
+      color: #f59e0b;
+      background: rgba(245,158,11,0.1);
+      transform: scale(1.1);
+    }
+    .star-outer.pinned {
+      color: #f59e0b;
+    }
+    .star-outer.pinned:hover {
+      color: #d97706;
+    }
 
     /* Preview containers */
     .most-used-preview, .pinned-preview {
@@ -93,7 +119,7 @@
     }
     .most-used-preview span, .pinned-preview span {
       background: #f9fafb;
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 10px;
       font-size: 0.78rem;
       cursor: pointer;
@@ -685,7 +711,7 @@
   // Core data load (with permanent deletion support and lastUsed field)
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()}));
     if(medSnap.empty && prescriptions.length===0){
-      // Default demo medicines now start with usageCount 0 (no recent usage shown until prescribed)
+      // Default demo medicines start with usageCount 0 (no recent usage shown until prescribed)
       const defaultMeds=[{name:"Paracetamol",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:0,pinned:false,lastUsed:null},{name:"Amoxicillin",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:0,pinned:false,lastUsed:null},{name:"Azithromycin",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:0,pinned:false,lastUsed:null},{name:"Losartan",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:0,pinned:false,lastUsed:null},{name:"Cetirizine",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:0,pinned:false,lastUsed:null}];
       for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m);
     }
@@ -710,16 +736,15 @@
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
   async function saveTags() { if(!currentUser) return; const uid=currentUser.uid; await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); }
   
-  // UPDATED: Central function to update medicine usage and refresh UI immediately
+  // Central function to update medicine usage and refresh UI immediately
   function updateMedicineAndRefresh(med) {
     if (!med) return;
     med.usageCount = (med.usageCount || 0) + 1;
     med.lastUsed = new Date().toISOString();
-    saveMedicines(); // async but we don't wait
+    saveMedicines();
     renderMostUsedPreview();
     renderPinnedPreview();
     renderMedicineList(document.getElementById("searchMedicine").value);
-    // If the most used modal is open, refresh it too
     if (document.getElementById("mostUsedModal").style.display === "block") {
       renderMostUsedFullList(document.getElementById("mostUsedSearch")?.value || "");
     }
@@ -745,21 +770,29 @@
     } 
   }
   
-  // Toggle pin function (reusable, updates UI and saves)
-  async function togglePin(medId, refreshCallback) {
+  // Toggle pin function with immediate UI feedback
+  async function togglePin(medId, starElement) {
     const med = medicines.find(m => m.id === medId);
-    if(med) {
-      med.pinned = !med.pinned;
-      await saveMedicines();
-      renderMedicineList(document.getElementById("searchMedicine").value);
-      renderPinnedPreview();
-      if(document.getElementById("allMedsPickerModal").style.display === "block") renderAllMedsList(document.getElementById("allMedsSearch")?.value || "");
-      if(document.getElementById("pinnedModal").style.display === "block") renderPinnedFullList(document.getElementById("pinnedSearch")?.value || "");
-      if(typeof refreshCallback === 'function') refreshCallback();
+    if (!med) return;
+    // Instant visual toggle
+    med.pinned = !med.pinned;
+    if (starElement) {
+      starElement.classList.toggle('pinned', med.pinned);
+      starElement.innerHTML = med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+    }
+    // Save and refresh lists (background)
+    await saveMedicines();
+    renderMedicineList(document.getElementById("searchMedicine").value);
+    renderPinnedPreview();
+    if (document.getElementById("allMedsPickerModal").style.display === "block") {
+      renderAllMedsList(document.getElementById("allMedsSearch")?.value || "");
+    }
+    if (document.getElementById("pinnedModal").style.display === "block") {
+      renderPinnedFullList(document.getElementById("pinnedSearch")?.value || "");
     }
   }
   
-  // Render pinned preview (scrollable) – no star icon, clean card design, show all pinned items
+  // Render pinned preview (scrollable) – no star icon, clean card design
   function renderPinnedPreview() {
     const pinned = medicines.filter(m => m.pinned);
     const container = document.getElementById("pinnedPreview");
@@ -775,7 +808,7 @@
     });
   }
   
-  // Render most used preview – all items, clean card design, no 🔥 emoji
+  // Render most used preview – all items, clean card design
   function renderMostUsedPreview() {
     const recentMeds = medicines.filter(m => m.usageCount > 0)
                               .sort((a, b) => new Date(b.lastUsed || 0) - new Date(a.lastUsed || 0));
@@ -798,7 +831,7 @@
     document.getElementById("mostUsedModal").style.display = "block"; 
   }
   
-  // ========== UPDATED: Most Used Full List (all medicines with usage>0, sorted by usageCount desc, then recency) ==========
+  // Most Used Full List (all medicines with usage>0)
   function renderMostUsedFullList(search = "") {
     let filtered = medicines.filter(m => m.usageCount > 0);
     if(search) filtered = filtered.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
@@ -819,16 +852,26 @@
     let filtered = medicines.filter(m => m.pinned && m.name.toLowerCase().includes(search.toLowerCase()));
     const container = document.getElementById("pinnedFullList");
     container.innerHTML = filtered.map(med => `
-      <div class="picker-item" data-id="${med.id}" style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="cursor: pointer; flex:1;"><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.frequency} · ${med.duration}</span></div>
-        <div class="star-outer pinned" data-id="${med.id}" style="cursor: pointer; font-size: 1rem; margin-left: 8px;"><i class="fas fa-star"></i></div>
+      <div class="med-item-row" style="margin-bottom:6px;">
+        <div class="med-item" data-id="${med.id}" style="cursor:pointer;">
+          <div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.frequency} · ${med.duration}</span></div>
+        </div>
+        <div class="star-outer pinned" data-id="${med.id}"><i class="fas fa-star"></i></div>
       </div>
     `).join('');
-    container.querySelectorAll('.picker-item').forEach(el => {
-      const star = el.querySelector('.star-outer');
-      const nameDiv = el.querySelector('div:first-child');
-      star.addEventListener('click', async (e) => { e.stopPropagation(); const id = star.dataset.id; await togglePin(id, () => renderPinnedFullList(document.getElementById("pinnedSearch")?.value || "")); });
-      nameDiv.addEventListener('click', () => { const med = medicines.find(m => m.id === el.dataset.id); if(med) openPopup(med); document.getElementById("pinnedModal").style.display = "none"; });
+    // Attach events
+    container.querySelectorAll('.med-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const med = medicines.find(m => m.id === el.dataset.id);
+        if(med) openPopup(med);
+      });
+    });
+    container.querySelectorAll('.star-outer').forEach(star => {
+      star.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = star.dataset.id;
+        await togglePin(id, star);
+      });
     });
   }
   
@@ -846,8 +889,8 @@
     const container=document.getElementById("medicineListContainer"); 
     if(!container) return; 
     container.innerHTML=filtered.map(med=>`
-      <div class="med-item-row" data-med-id="${med.id}">
-        <div class="med-item">
+      <div class="med-item-row">
+        <div class="med-item" data-med-id="${med.id}">
           <div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.frequency} · ${med.duration}</div></div>
         </div>
         <div class="star-outer ${med.pinned?'pinned':''}" data-id="${med.id}">${med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'}</div>
@@ -859,37 +902,45 @@
     document.querySelectorAll("#medicineListContainer .med-item-row").forEach(row => { 
       const medItem = row.querySelector('.med-item');
       const star = row.querySelector('.star-outer');
-      // Medicine click -> open popup
       medItem.addEventListener("click", () => { 
-        const med = medicines.find(m => m.id === row.dataset.medId); 
+        const med = medicines.find(m => m.id === row.querySelector('.med-item').dataset.medId); 
         if(med) openPopup(med); 
       });
-      // Star click -> toggle pin
       star.addEventListener("click", async (e) => { 
         e.stopPropagation(); 
         const id = star.dataset.id; 
-        await togglePin(id);
+        await togglePin(id, star);
       });
     });
   }
   
-  // All Medicines Popup (star outside the box as well)
+  // All Medicines Popup (star outside as well)
   function showAllMedsPicker(){ renderAllMedsList(); document.getElementById("allMedsPickerModal").style.display="block"; }
   function renderAllMedsList(search=""){ 
     const container=document.getElementById("allMedsListContainer"); 
     if(!container) return; 
     let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); 
     container.innerHTML=filtered.map(med=>`
-      <div class="picker-item" data-med-id="${med.id}" style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="cursor: pointer; flex:1;"><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.frequency} · ${med.duration}</span></div>
-        <div class="star-outer ${med.pinned?'pinned':''}" data-id="${med.id}" style="cursor: pointer; font-size: 1rem; margin-left: 8px;">${med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'}</div>
+      <div class="med-item-row" style="margin-bottom:4px;">
+        <div class="med-item" data-med-id="${med.id}">
+          <div><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.frequency} · ${med.duration}</span></div>
+        </div>
+        <div class="star-outer ${med.pinned?'pinned':''}" data-id="${med.id}">${med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'}</div>
       </div>
     `).join(""); 
-    container.querySelectorAll('.picker-item').forEach(el => {
-      const star = el.querySelector('.star-outer');
-      const nameDiv = el.querySelector('div:first-child');
-      star.addEventListener('click', async (e) => { e.stopPropagation(); const id = star.dataset.id; await togglePin(id, () => renderAllMedsList(document.getElementById("allMedsSearch")?.value || "")); });
-      nameDiv.addEventListener('click', () => { const med = medicines.find(m => m.id === el.dataset.medId); if(med) openPopup(med); document.getElementById("allMedsPickerModal").style.display = "none"; });
+    container.querySelectorAll('.med-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const med = medicines.find(m => m.id === el.dataset.medId);
+        if(med) openPopup(med);
+        document.getElementById("allMedsPickerModal").style.display = "none";
+      });
+    });
+    container.querySelectorAll('.star-outer').forEach(star => {
+      star.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = star.dataset.id;
+        await togglePin(id, star);
+      });
     });
   }
   const allMedsSearch = document.getElementById('allMedsSearch'); 
@@ -1072,7 +1123,7 @@
   closeBulkModal.addEventListener('click', () => bulkModal.style.display = "none");
   window.addEventListener('click', (e) => { if(e.target === bulkModal) bulkModal.style.display = "none"; });
 
-  // ========== KEYBOARD SHORTCUTS (updated) ==========
+  // ========== KEYBOARD SHORTCUTS ==========
   function handleKeyboardShortcuts(e) {
     const key = e.key.toLowerCase();
     if(e.ctrlKey && key === 's') { e.preventDefault(); document.getElementById('savePrescriptionBtn')?.click(); }
