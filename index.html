@@ -705,6 +705,7 @@
   async function updateMedicineUsageById(medId) {
     const med = medicines.find(m => m.id === medId);
     if (med) {
+      console.log('Updating usage for:', med.name);
       med.usageCount = (med.usageCount || 0) + 1;
       med.lastUsed = new Date().toISOString();
       await saveMedicines();
@@ -712,6 +713,8 @@
       renderMostUsedPreview();
       renderPinnedPreview();
       renderMedicineList(document.getElementById("searchMedicine").value);
+    } else {
+      console.warn('Medicine not found with ID:', medId);
     }
   }
 
@@ -753,6 +756,7 @@
     const recentMeds = medicines.filter(m => m.usageCount > 0)
                               .sort((a, b) => new Date(b.lastUsed || 0) - new Date(a.lastUsed || 0))
                               .slice(0, 5);
+    console.log('Recent used meds:', recentMeds.map(m=>m.name));
     const container = document.getElementById("mostUsedPreview");
     if(!container) return;
     if(recentMeds.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No recent usage data</div>'; return; }
