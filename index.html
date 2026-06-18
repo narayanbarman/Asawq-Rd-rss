@@ -771,7 +771,6 @@
     const recentMeds = medicines.filter(m => m.usageCount > 0)
                               .sort((a, b) => new Date(b.lastUsed || 0) - new Date(a.lastUsed || 0))
                               .slice(0, 5);
-    console.log('Recent used meds:', recentMeds.map(m=>m.name));
     const container = document.getElementById("mostUsedPreview");
     if(!container) return;
     if(recentMeds.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No recent usage data</div>'; return; }
@@ -911,6 +910,7 @@
   
   async function addMedicineFromPopup(){ 
     if(pendingMedicine){ 
+      const medId = pendingMedicine.id;  // capture before closing modal
       currentMedicines.push({ 
         name:pendingMedicine.name, 
         frequency:document.getElementById("modalFrequency").value.trim(), 
@@ -918,7 +918,7 @@
         howToTake:document.getElementById("modalHowToTake").value.trim() 
       }); 
       renderMedicinesTable(); updatePreview(); closeModal(); 
-      updateMedicineAndRefresh(medicines.find(m => m.id === pendingMedicine.id));   // instant update
+      updateMedicineAndRefresh(medicines.find(m => m.id === medId));   // correct update
     } 
   }
   
