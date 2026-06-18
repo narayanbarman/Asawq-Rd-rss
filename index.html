@@ -52,41 +52,35 @@
     .pin-icon i { color: #94a3b8; }
     .pin-icon.pinned i { color: #f59e0b; }
 
-    /* Updated preview containers */
+    /* Updated preview containers: show max 3 rows, scroll if more */
     .most-used-preview, .pinned-preview {
-      max-height: 220px;
+      max-height: 120px;       /* approx 3 rows */
       overflow-y: auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       margin: 8px 0;
-      padding: 4px 0;
+      padding: 2px 0;
     }
-    /* Updated preview item style – rectangular card look */
+    /* Updated preview item style – clean, professional card */
     .most-used-preview span, .pinned-preview span {
-      background: white;
-      padding: 8px 12px;
-      border-radius: 12px;
-      font-size: 0.8rem;
+      background: #f9fafb;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 0.78rem;
       cursor: pointer;
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      border: 1px solid #e9ecef;
       transition: 0.15s;
-      border-left: 3px solid #0a7e8c;
       color: #334155;
       font-weight: 500;
+      border-left: 3px solid #0a7e8c;
     }
     .most-used-preview span:hover, .pinned-preview span:hover {
       background: #f0f9ff;
       border-color: #0a7e8c;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.06);
-    }
-    .pinned-preview span i {
-      color: #f59e0b;
     }
 
     .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
@@ -786,13 +780,13 @@
     }
   }
   
-  // Render pinned preview (scrollable) – now shows up to 10 items, updated card design
+  // Render pinned preview (scrollable) – no star icon, clean card design, up to 10 items, max 3 rows visible
   function renderPinnedPreview() {
     const pinned = medicines.filter(m => m.pinned).slice(0, 10);
     const container = document.getElementById("pinnedPreview");
     if(!container) return;
     if(pinned.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No pinned medicines</div>'; return; }
-    container.innerHTML = pinned.map(med => `<span data-id="${med.id}"><i class="fas fa-star" style="color:#f59e0b;"></i> ${escapeHtml(med.name)}</span>`).join('');
+    container.innerHTML = pinned.map(med => `<span data-id="${med.id}">${escapeHtml(med.name)}</span>`).join('');
     container.querySelectorAll('span').forEach(span => {
       span.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -802,7 +796,7 @@
     });
   }
   
-  // Render most used preview – up to 10 items, NO 🔥 emoji, updated card design
+  // Render most used preview – up to 10 items, NO 🔥 emoji, clean card design
   function renderMostUsedPreview() {
     const recentMeds = medicines.filter(m => m.usageCount > 0)
                               .sort((a, b) => new Date(b.lastUsed || 0) - new Date(a.lastUsed || 0))
