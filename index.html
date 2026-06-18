@@ -51,8 +51,9 @@
     .pin-icon:hover { color: #eab308; transform: scale(1.1); }
     .pin-icon i { color: #94a3b8; }
     .pin-icon.pinned i { color: #f59e0b; }
+    .star-separator { margin-left: 8px; color: #94a3b8; font-weight: 300; }
 
-    /* Updated preview containers: show max 3 rows, scroll if more */
+    /* Updated preview containers */
     .most-used-preview, .pinned-preview {
       max-height: 120px;       /* approx 3 rows */
       overflow-y: auto;
@@ -62,7 +63,6 @@
       margin: 8px 0;
       padding: 2px 0;
     }
-    /* Updated preview item style – clean, professional card */
     .most-used-preview span, .pinned-preview span {
       background: #f9fafb;
       padding: 6px 10px;
@@ -228,91 +228,34 @@
       .benefits-row { gap: 1rem; font-size: 0.8rem; }
     }
 
-    /* ========== HELP MODAL STYLES (NEW) ========== */
-    .help-modal-content {
-      display: flex;
-      gap: 20px;
-      height: 70vh;
-      max-height: 80vh;
+    /* ========== HELP MODAL STYLES (NEW – SIMPLE) ========== */
+    .help-simple-content {
+      text-align: center;
     }
-    .help-sidebar {
-      width: 250px;
-      min-width: 180px;
-      border-right: 1px solid #e2e8f0;
-      overflow-y: auto;
-      padding-right: 10px;
-    }
-    .help-topic {
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      margin-bottom: 4px;
-      font-size: 0.8rem;
-      transition: 0.15s;
+    .help-simple-content p {
+      margin-bottom: 16px;
       color: #334155;
+      line-height: 1.5;
     }
-    .help-topic:hover, .help-topic.active {
-      background: #e6f4f5;
-      color: #0a7e8c;
-      font-weight: 600;
-    }
-    .help-video-container {
-      flex: 1;
+    .help-simple-content .help-buttons {
       display: flex;
-      flex-direction: column;
-    }
-    .help-video-wrapper {
-      flex: 1;
-      border-radius: 16px;
-      overflow: hidden;
-      background: #000;
-    }
-    .help-video-wrapper iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-    .help-contact {
-      display: flex;
-      align-items: center;
       gap: 12px;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .shortcuts-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
       font-size: 0.8rem;
+      color: #475569;
     }
-    .btn-whatsapp {
-      background: #25D366;
-      color: white;
-      padding: 8px 16px;
+    .shortcut-badge {
+      background: #eef2ff;
       border-radius: 30px;
-      text-decoration: none;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: 0.2s;
-    }
-    .btn-whatsapp:hover { background: #1ebe5b; }
-    @media (max-width: 768px) {
-      .help-modal-content {
-        flex-direction: column;
-        height: auto;
-      }
-      .help-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #e2e8f0;
-        display: flex;
-        overflow-x: auto;
-        padding-bottom: 8px;
-        margin-bottom: 8px;
-      }
-      .help-topic {
-        white-space: nowrap;
-        margin-right: 8px;
-        margin-bottom: 0;
-      }
+      padding: 4px 12px;
+      font-weight: 500;
     }
   </style>
 </head>
@@ -542,24 +485,32 @@
   </div>
 </div>
 
-<!-- ========== HELP MODAL (NEW) ========== -->
+<!-- ========== HELP MODAL (NEW – SIMPLE) ========== -->
 <div id="helpModal" class="modal">
-  <div class="modal-content" style="max-width: 1000px;">
+  <div class="modal-content" style="max-width: 550px;">
     <span class="close-modal" id="closeHelpModal">&times;</span>
-    <h3><i class="fas fa-question-circle"></i> Help & Tutorials</h3>
-    <div class="help-modal-content">
-      <div class="help-sidebar" id="helpSidebar">
-        <!-- Dynamically filled -->
+    <h3><i class="fas fa-question-circle"></i> Help & Support</h3>
+    <div class="help-simple-content">
+      <p style="font-size:0.9rem; margin-top:12px;">
+        FastRx Pro helps you create professional prescriptions in seconds. If you encounter any issue or have a suggestion, please reach out via WhatsApp or Email. We're happy to assist!
+      </p>
+      <div class="help-buttons">
+        <a href="https://wa.me/918101565420?text=Hello%20FastRx%20Pro%20Support" target="_blank" class="btn-whatsapp" style="padding:10px 20px; font-size:0.9rem; background:#25D366; color:white; border-radius:30px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="mailto:narayanbarman3210@gmail.com" class="btn-sm btn-outline" style="padding:10px 20px; font-size:0.9rem; display:inline-flex; align-items:center; gap:6px;">
+          <i class="fas fa-envelope"></i> Email
+        </a>
       </div>
-      <div class="help-video-container">
-        <div class="help-video-wrapper" id="helpVideoWrapper">
-          <iframe id="helpVideoFrame" src="" allowfullscreen></iframe>
-        </div>
-        <div class="help-contact">
-          <span>Need more help?</span>
-          <a href="https://wa.me/918101565420?text=Hello%20FastRx%20Pro%20Support" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-          <a href="mailto:narayanbarman3210@gmail.com" class="btn-sm btn-outline" style="padding:8px 16px;"><i class="fas fa-envelope"></i> Email</a>
-        </div>
+      <h4 style="margin-top:20px; margin-bottom:8px;">Keyboard Shortcuts</h4>
+      <div class="shortcuts-list">
+        <span class="shortcut-badge">Ctrl+S – Save Prescription</span>
+        <span class="shortcut-badge">Ctrl+P – Print</span>
+        <span class="shortcut-badge">Ctrl+N – Clear</span>
+        <span class="shortcut-badge">Alt+A – All Advice</span>
+        <span class="shortcut-badge">Alt+M – All Medicines</span>
+        <span class="shortcut-badge">Alt+R – Recent Used</span>
+        <span class="shortcut-badge">Alt+P – Pinned Favourites</span>
       </div>
     </div>
   </div>
@@ -780,9 +731,9 @@
     }
   }
   
-  // Render pinned preview (scrollable) – no star icon, clean card design, up to 10 items, max 3 rows visible
+  // Render pinned preview (scrollable) – no star icon, clean card design, show all pinned items
   function renderPinnedPreview() {
-    const pinned = medicines.filter(m => m.pinned).slice(0, 10);
+    const pinned = medicines.filter(m => m.pinned);
     const container = document.getElementById("pinnedPreview");
     if(!container) return;
     if(pinned.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No pinned medicines</div>'; return; }
@@ -796,11 +747,10 @@
     });
   }
   
-  // Render most used preview – up to 10 items, NO 🔥 emoji, clean card design
+  // Render most used preview – all items, clean card design, no 🔥 emoji
   function renderMostUsedPreview() {
     const recentMeds = medicines.filter(m => m.usageCount > 0)
-                              .sort((a, b) => new Date(b.lastUsed || 0) - new Date(a.lastUsed || 0))
-                              .slice(0, 10);
+                              .sort((a, b) => new Date(b.lastUsed || 0) - new Date(a.lastUsed || 0));
     const container = document.getElementById("mostUsedPreview");
     if(!container) return;
     if(recentMeds.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400">No recent usage data</div>'; return; }
@@ -861,7 +811,7 @@
   document.getElementById('mostUsedSearch')?.addEventListener('input', (e) => renderMostUsedFullList(e.target.value));
   document.getElementById('pinnedSearch')?.addEventListener('input', (e) => renderPinnedFullList(e.target.value));
   
-  // Main medicine list rendering (with star for pin/unpin) – updated with outline/filled star
+  // Main medicine list rendering (with star for pin/unpin) – updated with dash separator
   function renderMedicineList(search=""){ 
     let filtered=medicines.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())); 
     filtered.sort((a,b)=>b.usageCount-a.usageCount); 
@@ -870,6 +820,7 @@
     container.innerHTML=filtered.map(med=>`
       <div class="med-item" data-med-id="${med.id}">
         <div><span class="med-name">${escapeHtml(med.name)}</span><div class="med-detail">${med.frequency} · ${med.duration}</div></div>
+        <span class="star-separator">–</span>
         <div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}">${med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'}</div>
       </div>
     `).join(""); 
@@ -899,6 +850,7 @@
     container.innerHTML=filtered.map(med=>`
       <div class="picker-item" data-med-id="${med.id}" style="display: flex; justify-content: space-between; align-items: center;">
         <div style="cursor: pointer; flex:1;"><strong>${escapeHtml(med.name)}</strong><br><span class="text-xs text-slate-500">${med.frequency} · ${med.duration}</span></div>
+        <span class="star-separator">–</span>
         <div class="pin-icon ${med.pinned?'pinned':''}" data-id="${med.id}" style="cursor: pointer; font-size: 1rem; margin-left: 8px;">${med.pinned ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'}</div>
       </div>
     `).join(""); 
@@ -1030,37 +982,14 @@
   async function importMedicinesFromFile(file){ const reader=new FileReader(); reader.onload=async(e)=>{ let content=e.target.result; if(file.name.endsWith(".json")){ try{let arr=JSON.parse(content); if(Array.isArray(arr)) await mergeMedicines(arr);}catch(e){alert("Invalid JSON");} } else if(file.name.endsWith(".csv")){ let lines=content.split("\n"); let newMeds=[]; for(let i=1;i<lines.length;i++){let vals=lines[i].split(","); if(vals.length>=1){let name=vals[0].trim(); let freq=vals[1]?vals[1].trim():"1-1-1"; let dur=vals[2]?vals[2].trim():"5 days"; let how=vals[3]?vals[3].trim():"–"; if(name) newMeds.push({name, frequency:freq, duration:dur, howToTake:how, usageCount:0, pinned:false, lastUsed:null});}} await mergeMedicines(newMeds); } }; reader.readAsText(file); }
   async function mergeMedicines(newMeds){ for(const med of newMeds){ if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())){ await addNewMedicine({ name:med.name, frequency:med.frequency, duration:med.duration, howToTake:med.howToTake, usageCount:0, pinned:false, lastUsed:null }); } } alert("Imported."); }
   
-  // ========== HELP MODAL FUNCTIONS (NEW) ==========
-  const helpTutorials = [
-    { title: "How to make prescription", videoId: "lznNs7mm1fs" },
-    { title: "How to add medicine", videoId: "lznNs7mm1fs" },
-    { title: "How to add advice", videoId: "lznNs7mm1fs" },
-    { title: "Analytics & History", videoId: "lznNs7mm1fs" }
-  ];
-
+  // ========== HELP MODAL FUNCTIONS (SIMPLE) ==========
   function openHelpModal() {
-    const sidebar = document.getElementById("helpSidebar");
-    sidebar.innerHTML = helpTutorials.map(t => 
-      `<div class="help-topic" data-video-id="${t.videoId}">${escapeHtml(t.title)}</div>`
-    ).join("");
-    sidebar.querySelectorAll(".help-topic").forEach(el => {
-      el.addEventListener("click", function() {
-        const videoId = this.dataset.videoId;
-        document.getElementById("helpVideoFrame").src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
-        sidebar.querySelectorAll(".help-topic").forEach(e => e.classList.remove("active"));
-        this.classList.add("active");
-      });
-    });
-    if (helpTutorials.length > 0) {
-      document.getElementById("helpVideoFrame").src = `https://www.youtube.com/embed/${helpTutorials[0].videoId}?autoplay=1&mute=1`;
-      sidebar.querySelector(".help-topic")?.classList.add("active");
-    }
+    // No dynamic content needed; already static HTML.
     document.getElementById("helpModal").style.display = "block";
   }
 
   function closeHelpModal() {
     document.getElementById("helpModal").style.display = "none";
-    document.getElementById("helpVideoFrame").src = ""; // stop video
   }
 
   function showAnalysis() { updateAnalysisDashboard(); document.getElementById("analysisModal").style.display="block"; }
@@ -1118,7 +1047,7 @@
   closeBulkModal.addEventListener('click', () => bulkModal.style.display = "none");
   window.addEventListener('click', (e) => { if(e.target === bulkModal) bulkModal.style.display = "none"; });
 
-  // ========== KEYBOARD SHORTCUTS ==========
+  // ========== KEYBOARD SHORTCUTS (updated) ==========
   function handleKeyboardShortcuts(e) {
     const key = e.key.toLowerCase();
     if(e.ctrlKey && key === 's') { e.preventDefault(); document.getElementById('savePrescriptionBtn')?.click(); }
@@ -1126,6 +1055,8 @@
     else if(e.ctrlKey && key === 'n') { e.preventDefault(); document.getElementById('clearCurrentBtn')?.click(); }
     else if(e.altKey && key === 'a') { e.preventDefault(); showAllAdvicePicker(); }
     else if(e.altKey && key === 'm') { e.preventDefault(); showAllMedsPicker(); }
+    else if(e.altKey && key === 'r') { e.preventDefault(); showMostUsedModal(); }   // new: recent
+    else if(e.altKey && key === 'p') { e.preventDefault(); showPinnedModal(); }    // new: pinned
   }
   document.addEventListener('keydown', handleKeyboardShortcuts);
 
