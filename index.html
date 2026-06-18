@@ -676,7 +676,7 @@
   // Core data load (with permanent deletion support and lastUsed field)
   async function loadUserData() { if(!currentUser) return; showLoading(true); try { const uid=currentUser.uid; const medSnap=await db.collection('users').doc(uid).collection('medicines').get(); const prescSnap=await db.collection('users').doc(uid).collection('prescriptions').get(); prescriptions=prescSnap.docs.map(d=>({id:d.id,...d.data()}));
     if(medSnap.empty && prescriptions.length===0){
-      // Default demo medicines start with usageCount 0 (no recent usage shown until prescribed)
+      // Default demo medicines now start with usageCount 0 (no recent usage shown until prescribed)
       const defaultMeds=[{name:"Paracetamol",frequency:"1-1-1",duration:"5 days",howToTake:"After meals",usageCount:0,pinned:false,lastUsed:null},{name:"Amoxicillin",frequency:"BD",duration:"7 days",howToTake:"Empty stomach",usageCount:0,pinned:false,lastUsed:null},{name:"Azithromycin",frequency:"OD",duration:"3 days",howToTake:"Empty stomach",usageCount:0,pinned:false,lastUsed:null},{name:"Losartan",frequency:"OD",duration:"30 days",howToTake:"Morning",usageCount:0,pinned:false,lastUsed:null},{name:"Cetirizine",frequency:"HS",duration:"5 days",howToTake:"Night",usageCount:0,pinned:false,lastUsed:null}];
       for(const m of defaultMeds) await db.collection('users').doc(uid).collection('medicines').add(m);
     }
@@ -700,7 +700,21 @@
   async function saveMedicines() { if(!currentUser) return; const batch=db.batch(); medicines.forEach(m=>{ const ref=db.collection('users').doc(currentUser.uid).collection('medicines').doc(m.id); batch.set(ref,{name:m.name,frequency:m.frequency,duration:m.duration,howToTake:m.howToTake,usageCount:m.usageCount,pinned:m.pinned,lastUsed:m.lastUsed}); }); await batch.commit(); }
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
   async function saveTags() { if(!currentUser) return; const uid=currentUser.uid; await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); }
-  async function updateMedicineUsage(medId) { const med=medicines.find(m=>m.id===medId); if(med){ med.usageCount=(med.usageCount||0)+1; med.lastUsed = new Date().toISOString(); await saveMedicines(); renderMostUsedPreview(); renderPinnedPreview(); renderMedicineList(document.getElementById("searchMedicine").value); } }
+  
+  // UPDATED: Central function to update medicine usage and refresh UI
+  async function updateMedicineUsageById(medId) {
+    const med = medicines.find(m => m.id === medId);
+    if (med) {
+      med.usageCount = (med.usageCount || 0) + 1;
+      med.lastUsed = new Date().toISOString();
+      await saveMedicines();
+      // Refresh all related UI
+      renderMostUsedPreview();
+      renderPinnedPreview();
+      renderMedicineList(document.getElementById("searchMedicine").value);
+    }
+  }
+
   async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false,lastUsed:medObj.lastUsed||null}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); }
   async function deleteMedicineById(medId) { const index = medicines.findIndex(m=>m.id===medId); if(index!==-1){ medicines.splice(index,1); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(medId).delete(); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); } }
   
@@ -882,13 +896,7 @@
         howToTake:document.getElementById("modalHowToTake").value.trim() 
       }); 
       renderMedicinesTable(); updatePreview(); closeModal(); 
-      const med = medicines.find(m=>m.id===pendingMedicine.id); 
-      if(med){ 
-        med.usageCount=(med.usageCount||0)+1; 
-        med.lastUsed = new Date().toISOString(); 
-        await saveMedicines(); 
-        renderMostUsedPreview(); renderPinnedPreview(); renderMedicineList(document.getElementById("searchMedicine").value); 
-      } 
+      await updateMedicineUsageById(pendingMedicine.id);   // ✅ use central updater
     } 
   }
   
@@ -956,10 +964,7 @@
     currentMedicines.push({name, frequency:freq, duration:dur, howToTake:how}); 
     let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); 
     if(existing){ 
-      existing.usageCount=(existing.usageCount||0)+1; 
-      existing.lastUsed = new Date().toISOString(); 
-      await saveMedicines(); 
-      renderMostUsedPreview(); renderPinnedPreview(); 
+      await updateMedicineUsageById(existing.id);   // ✅ central updater
     } else { 
       await addNewMedicine({ name, frequency:freq, duration:dur, howToTake:how, usageCount:1, pinned:false, lastUsed:new Date().toISOString() }); 
     } 
