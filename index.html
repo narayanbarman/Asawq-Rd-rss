@@ -701,25 +701,40 @@
   async function saveAdviceTags() { if(currentUser) await db.collection('users').doc(currentUser.uid).collection('settings').doc('adviceTags').set({tags:adviceTags}); }
   async function saveTags() { if(!currentUser) return; const uid=currentUser.uid; await db.collection('users').doc(uid).collection('settings').doc('freqTags').set({tags:userFreqTags}); await db.collection('users').doc(uid).collection('settings').doc('durTags').set({tags:userDurTags}); await db.collection('users').doc(uid).collection('settings').doc('howTags').set({tags:userHowTags}); }
   
-  // UPDATED: Central function to update medicine usage and refresh UI
-  async function updateMedicineUsageById(medId) {
-    const med = medicines.find(m => m.id === medId);
-    if (med) {
-      console.log('Updating usage for:', med.name);
-      med.usageCount = (med.usageCount || 0) + 1;
-      med.lastUsed = new Date().toISOString();
-      await saveMedicines();
-      // Refresh all related UI
-      renderMostUsedPreview();
-      renderPinnedPreview();
-      renderMedicineList(document.getElementById("searchMedicine").value);
-    } else {
-      console.warn('Medicine not found with ID:', medId);
+  // UPDATED: Central function to update medicine usage and refresh UI immediately
+  function updateMedicineAndRefresh(med) {
+    if (!med) return;
+    med.usageCount = (med.usageCount || 0) + 1;
+    med.lastUsed = new Date().toISOString();
+    saveMedicines(); // async but we don't wait
+    renderMostUsedPreview();
+    renderPinnedPreview();
+    renderMedicineList(document.getElementById("searchMedicine").value);
+    // If the most used modal is open, refresh it too
+    if (document.getElementById("mostUsedModal").style.display === "block") {
+      renderMostUsedFullList(document.getElementById("mostUsedSearch")?.value || "");
     }
   }
 
-  async function addNewMedicine(medObj) { const newId=Date.now().toString(); const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false,lastUsed:medObj.lastUsed||null}; medicines.push(newMed); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); }
-  async function deleteMedicineById(medId) { const index = medicines.findIndex(m=>m.id===medId); if(index!==-1){ medicines.splice(index,1); if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(medId).delete(); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); } }
+  async function addNewMedicine(medObj) { 
+    const newId=Date.now().toString(); 
+    const newMed={id:newId,...medObj,usageCount:medObj.usageCount||0,pinned:medObj.pinned||false,lastUsed:medObj.lastUsed||null}; 
+    medicines.push(newMed); 
+    if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId).set(newMed); 
+    renderMedicineList(); 
+    renderMostUsedPreview(); 
+    renderPinnedPreview(); 
+  }
+  async function deleteMedicineById(medId) { 
+    const index = medicines.findIndex(m=>m.id===medId); 
+    if(index!==-1){ 
+      medicines.splice(index,1); 
+      if(currentUser) await db.collection('users').doc(currentUser.uid).collection('medicines').doc(medId).delete(); 
+      renderMedicineList(); 
+      renderMostUsedPreview(); 
+      renderPinnedPreview(); 
+    } 
+  }
   
   // Toggle pin function (reusable, updates UI and saves)
   async function togglePin(medId, refreshCallback) {
@@ -771,7 +786,10 @@
   }
   
   // Expand modals
-  function showMostUsedModal() { renderMostUsedFullList(); document.getElementById("mostUsedModal").style.display = "block"; }
+  function showMostUsedModal() { 
+    renderMostUsedFullList(); 
+    document.getElementById("mostUsedModal").style.display = "block"; 
+  }
   
   // ========== UPDATED: Most Used Full List (all medicines with usage>0, sorted by usageCount desc, then recency) ==========
   function renderMostUsedFullList(search = "") {
@@ -900,7 +918,7 @@
         howToTake:document.getElementById("modalHowToTake").value.trim() 
       }); 
       renderMedicinesTable(); updatePreview(); closeModal(); 
-      await updateMedicineUsageById(pendingMedicine.id);   // ✅ use central updater
+      updateMedicineAndRefresh(medicines.find(m => m.id === pendingMedicine.id));   // instant update
     } 
   }
   
@@ -968,7 +986,7 @@
     currentMedicines.push({name, frequency:freq, duration:dur, howToTake:how}); 
     let existing=medicines.find(m=>m.name.toLowerCase()===name.toLowerCase()); 
     if(existing){ 
-      await updateMedicineUsageById(existing.id);   // ✅ central updater
+      updateMedicineAndRefresh(existing);   // instant
     } else { 
       await addNewMedicine({ name, frequency:freq, duration:dur, howToTake:how, usageCount:1, pinned:false, lastUsed:new Date().toISOString() }); 
     } 
