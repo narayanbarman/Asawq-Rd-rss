@@ -43,134 +43,27 @@
     .suggestions-dropdown div:hover { background: #e6f4f5; }
 
     /* Improved medicine list container */
-    .med-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 300px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      padding-right: 4px;
-    }
-    .med-item-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-    .med-item {
-      flex: 1;
-      background: #f8fafc;
-      border-radius: 16px;
-      padding: 10px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid #e2e8f0;
-      transition: all 0.15s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    }
-    .med-item:hover {
-      background: #f0f9ff;
-      border-color: #0a7e8c;
-      box-shadow: 0 4px 10px rgba(10,126,140,0.1);
-      transform: translateX(2px);
-    }
+    .med-grid { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; margin-bottom: 20px; padding-right: 4px; }
+    .med-item-row { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .med-item { flex: 1; background: #f8fafc; border-radius: 16px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; transition: all 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .med-item:hover { background: #f0f9ff; border-color: #0a7e8c; box-shadow: 0 4px 10px rgba(10,126,140,0.1); transform: translateX(2px); }
     .med-name { font-weight: 600; color: #0c4e6e; font-size: 0.85rem; }
     .med-detail { font-size: 0.65rem; color: #4b6b87; }
 
-    .star-outer {
-      flex-shrink: 0;
-      cursor: pointer;
-      font-size: 1.15rem;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      color: #94a3b8;
-      transition: all 0.2s ease;
-      background: transparent;
-    }
-    .star-outer:hover {
-      color: #f59e0b;
-      background: rgba(245,158,11,0.1);
-      transform: scale(1.1);
-    }
-    .star-outer.pinned {
-      color: #f59e0b;
-    }
-    .star-outer.pinned:hover {
-      color: #d97706;
-    }
+    .star-outer { flex-shrink: 0; cursor: pointer; font-size: 1.15rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #94a3b8; transition: all 0.2s ease; background: transparent; }
+    .star-outer:hover { color: #f59e0b; background: rgba(245,158,11,0.1); transform: scale(1.1); }
+    .star-outer.pinned { color: #f59e0b; }
+    .star-outer.pinned:hover { color: #d97706; }
 
-    /* ========== PROFESSIONAL PINNED & RECENT SECTION STYLES ========== */
-    .pinned-preview {
-      max-height: 140px;
-      overflow-y: auto;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 8px 0;
-      padding: 4px 0;
-    }
-    .pinned-chip {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: #1e293b;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    }
-    .pinned-chip:hover {
-      border-color: #0284c7;
-      box-shadow: 0 2px 6px rgba(2,132,199,0.08);
-      background: #f8faff;
-    }
-    .pinned-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #0284c7;
-      flex-shrink: 0;
-    }
+    /* Professional pinned & recent styles */
+    .pinned-preview { max-height: 140px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; padding: 4px 0; }
+    .pinned-chip { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 500; color: #1e293b; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .pinned-chip:hover { border-color: #0284c7; box-shadow: 0 2px 6px rgba(2,132,199,0.08); background: #f8faff; }
+    .pinned-dot { width: 6px; height: 6px; border-radius: 50%; background: #0284c7; flex-shrink: 0; }
 
-    .most-used-preview {
-      max-height: 140px;
-      overflow-y: auto;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 8px 0;
-      padding: 4px 0;
-    }
-    .recent-badge {
-      background: #f1f5f9;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: #475569;
-      display: inline-flex;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-    .recent-badge:hover {
-      background: #e2e8f0;
-      color: #1e293b;
-    }
+    .most-used-preview { max-height: 140px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; padding: 4px 0; }
+    .recent-badge { background: #f1f5f9; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 500; color: #475569; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; }
+    .recent-badge:hover { background: #e2e8f0; color: #1e293b; }
 
     .flex-between { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
     .btn-sm { background: #ecfdf5; border: none; padding: 5px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
@@ -318,33 +211,35 @@
     }
 
     /* ========== HELP MODAL STYLES (SIMPLE) ========== */
-    .help-simple-content {
-      text-align: center;
+    .help-simple-content { text-align: center; }
+    .help-simple-content p { margin-bottom: 16px; color: #334155; line-height: 1.5; }
+    .help-simple-content .help-buttons { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+    .shortcuts-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; font-size: 0.8rem; color: #475569; }
+    .shortcut-badge { background: #eef2ff; border-radius: 30px; padding: 4px 12px; font-weight: 500; }
+
+    /* ========== PROGRESS BAR STYLES (NEW) ========== */
+    .bulk-progress {
+      margin: 12px 0;
+      display: none;
     }
-    .help-simple-content p {
-      margin-bottom: 16px;
-      color: #334155;
-      line-height: 1.5;
+    .bulk-progress .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
     }
-    .help-simple-content .help-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-bottom: 20px;
+    .bulk-progress .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #0a7e8c;
+      border-radius: 10px;
+      transition: width 0.2s ease;
     }
-    .shortcuts-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      font-size: 0.8rem;
+    .bulk-progress .progress-text {
+      font-size: 0.7rem;
       color: #475569;
-    }
-    .shortcut-badge {
-      background: #eef2ff;
-      border-radius: 30px;
-      padding: 4px 12px;
-      font-weight: 500;
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -474,7 +369,7 @@
 </div>
 
 <!-- ========== MODALS ========== -->
-<!-- Bulk Upload Modal -->
+<!-- Bulk Upload Modal (with progress bars) -->
 <div id="bulkModal" class="modal">
   <div class="modal-content" style="max-width: 700px;">
     <span class="close-modal" id="closeBulkModal">&times;</span>
@@ -486,6 +381,10 @@
     <div id="bulkMedicinesPanel">
       <p class="text-sm text-slate-600 mb-2">Paste one medicine per line. Format: <code>Medicine Name, Frequency, Duration, How to take</code> (comma separated)</p>
       <textarea id="bulkMedicinesText" class="bulk-textarea" placeholder="Azithromycin, OD, 3 days, Empty stomach&#10;Paracetamol, 1-1-1, 5 days, After meals&#10;Amoxicillin, BD, 7 days, Empty stomach"></textarea>
+      <div class="bulk-progress" id="bulkProgressMed">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFillMed"></div></div>
+        <div class="progress-text" id="progressTextMed">Adding 0 of 0</div>
+      </div>
       <div class="flex-between mt-3">
         <label class="btn-sm cursor-pointer bg-white border"><i class="fas fa-file-alt"></i> Upload File (CSV/TXT) <input type="file" id="bulkMedicinesFile" accept=".csv,.txt" style="display:none"></label>
         <button id="bulkAddMedicinesBtn" class="btn-primary">➕ Add Medicines</button>
@@ -494,6 +393,10 @@
     <div id="bulkAdvicesPanel" style="display:none;">
       <p class="text-sm text-slate-600 mb-2">Paste one advice per line. Each line becomes a quick advice tag.</p>
       <textarea id="bulkAdvicesText" class="bulk-textarea" placeholder="Take plenty of fluids&#10;Avoid driving&#10;Review after 3 days"></textarea>
+      <div class="bulk-progress" id="bulkProgressAdv">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFillAdv"></div></div>
+        <div class="progress-text" id="progressTextAdv">Adding 0 of 0</div>
+      </div>
       <div class="flex-between mt-3">
         <label class="btn-sm cursor-pointer bg-white border"><i class="fas fa-file-alt"></i> Upload File (CSV/TXT) <input type="file" id="bulkAdvicesFile" accept=".csv,.txt" style="display:none"></label>
         <button id="bulkAddAdvicesBtn" class="btn-primary">➕ Add Advices</button>
@@ -1136,7 +1039,100 @@
   function openSettingsModal(){ document.getElementById("settingShowDate").checked=settings.showDate; document.getElementById("settingShowTime").checked=settings.showTime; document.getElementById("settingShowSignature").checked=settings.showSignature; const styleRadio=document.querySelector(`input[name="settingStyle"][value="${settings.style}"]`); if(styleRadio) styleRadio.checked=true; const typeRadio=document.querySelector(`input[name="prescType"][value="${settings.prescType}"]`); if(typeRadio) typeRadio.checked=true; document.getElementById("doctorName").value=practiceInfo.doctorName||""; document.getElementById("doctorRegNo").value=practiceInfo.regNo||""; document.getElementById("doctorDegree").value=practiceInfo.degree||""; document.getElementById("chamberName").value=practiceInfo.chamberName||""; document.getElementById("doctorAddress").value=practiceInfo.address||""; document.getElementById("settingsModal").style.display="block"; }
   function applySettings(){ settings.showDate=document.getElementById("settingShowDate").checked; settings.showTime=document.getElementById("settingShowTime").checked; settings.showSignature=document.getElementById("settingShowSignature").checked; const selectedStyle=document.querySelector('input[name="settingStyle"]:checked'); if(selectedStyle) settings.style=selectedStyle.value; const selectedType=document.querySelector('input[name="prescType"]:checked'); if(selectedType) settings.prescType=selectedType.value; practiceInfo.doctorName=document.getElementById("doctorName").value; practiceInfo.regNo=document.getElementById("doctorRegNo").value; practiceInfo.degree=document.getElementById("doctorDegree").value; practiceInfo.chamberName=document.getElementById("chamberName").value; practiceInfo.address=document.getElementById("doctorAddress").value; const previewStyleRadio=document.querySelector(`input[name="paperStyle"][value="${settings.style}"]`); if(previewStyleRadio) previewStyleRadio.checked=true; saveSettingsToFirestore(); updatePreview(); document.getElementById("settingsModal").style.display="none"; }
 
-  // ========== BULK UPLOAD (modal closes after adding) ==========
+  // ========== BULK UPLOAD WITH PROGRESS BAR ==========
+  async function bulkAddMedicines() {
+    const text = document.getElementById('bulkMedicinesText').value;
+    if (!text.trim()) { alert("Paste medicine list first"); return; }
+    const lines = text.split(/\r?\n/);
+    const newMeds = [];
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+      let parts = line.split(',');
+      let name = parts[0].trim();
+      let freq = parts[1] ? parts[1].trim() : "1-1-1";
+      let dur = parts[2] ? parts[2].trim() : "5 days";
+      let how = parts[3] ? parts[3].trim() : "–";
+      if (name) newMeds.push({ name, frequency: freq, duration: dur, howToTake: how, usageCount: 0, pinned: false, lastUsed: null });
+    }
+    // Filter out duplicates already in medicines
+    const uniqueNew = newMeds.filter(m => !medicines.some(ex => ex.name.toLowerCase() === m.name.toLowerCase()));
+    if (uniqueNew.length === 0) { alert("All medicines already exist."); return; }
+
+    const progressBar = document.getElementById('bulkProgressMed');
+    const progressFill = document.getElementById('progressFillMed');
+    const progressText = document.getElementById('progressTextMed');
+    progressBar.style.display = 'block';
+    const total = uniqueNew.length;
+    let addedCount = 0;
+
+    const BATCH_SIZE = 50;
+    for (let i = 0; i < uniqueNew.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      const chunk = uniqueNew.slice(i, i + BATCH_SIZE);
+      chunk.forEach(med => {
+        const newId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
+        const ref = db.collection('users').doc(currentUser.uid).collection('medicines').doc(newId);
+        batch.set(ref, { ...med, id: newId });
+        medicines.push({ id: newId, ...med });
+        addedCount++;
+      });
+      await batch.commit();
+      // Update progress
+      const percent = Math.round((addedCount / total) * 100);
+      progressFill.style.width = percent + '%';
+      progressText.textContent = `Adding ${addedCount} of ${total}`;
+      // Small delay to allow UI update
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+
+    // Finalize
+    progressBar.style.display = 'none';
+    renderMedicineList();
+    renderMostUsedPreview();
+    renderPinnedPreview();
+    document.getElementById('bulkMedicinesText').value = '';
+    document.getElementById('bulkModal').style.display = 'none';
+    alert(`Added ${addedCount} new medicines.`);
+  }
+
+  async function bulkAddAdvices() {
+    const text = document.getElementById('bulkAdvicesText').value;
+    if (!text.trim()) { alert("Paste advice list first"); return; }
+    const lines = text.split(/\r?\n/);
+    const newAdvs = lines.map(l => l.trim()).filter(l => l);
+    const uniqueNew = newAdvs.filter(adv => !adviceTags.includes(adv));
+    if (uniqueNew.length === 0) { alert("All advices already exist."); return; }
+
+    const progressBar = document.getElementById('bulkProgressAdv');
+    const progressFill = document.getElementById('progressFillAdv');
+    const progressText = document.getElementById('progressTextAdv');
+    progressBar.style.display = 'block';
+    const total = uniqueNew.length;
+    let addedCount = 0;
+
+    for (let i = 0; i < uniqueNew.length; i++) {
+      adviceTags.push(uniqueNew[i]);
+      addedCount++;
+      // Update progress every item (advices are simple)
+      const percent = Math.round((addedCount / total) * 100);
+      progressFill.style.width = percent + '%';
+      progressText.textContent = `Adding ${addedCount} of ${total}`;
+      if (i % 10 === 0 || i === uniqueNew.length - 1) {
+        await saveAdviceTags(); // batch save periodically
+      }
+      await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    await saveAdviceTags();
+
+    progressBar.style.display = 'none';
+    renderAdviceTags();
+    document.getElementById('bulkAdvicesText').value = '';
+    document.getElementById('bulkModal').style.display = 'none';
+    alert(`Added ${addedCount} new advice tags.`);
+  }
+
+  // Re-attach event listeners for the bulk modal (replace old ones)
   const bulkModal = document.getElementById('bulkModal');
   const bulkTabs = document.querySelectorAll('.bulk-tab');
   const bulkMedPanel = document.getElementById('bulkMedicinesPanel');
@@ -1148,15 +1144,19 @@
   const bulkAddMedBtn = document.getElementById('bulkAddMedicinesBtn');
   const bulkAddAdvBtn = document.getElementById('bulkAddAdvicesBtn');
   const closeBulkModal = document.getElementById('closeBulkModal');
+
   bulkTabs.forEach(tab => { tab.addEventListener('click', () => { bulkTabs.forEach(t=>t.classList.remove('active')); tab.classList.add('active'); if(tab.dataset.bulkTab === 'medicines') { bulkMedPanel.style.display = 'block'; bulkAdvPanel.style.display = 'none'; } else { bulkMedPanel.style.display = 'none'; bulkAdvPanel.style.display = 'block'; } }); });
-  bulkAddMedBtn.addEventListener('click', async () => { const text = bulkMedText.value; if(!text.trim()) { alert("Paste medicine list first"); return; } const lines = text.split(/\r?\n/); const newMeds = []; for(let line of lines) { line=line.trim(); if(!line) continue; let parts = line.split(','); let name = parts[0].trim(); let freq = parts[1]?parts[1].trim():"1-1-1"; let dur = parts[2]?parts[2].trim():"5 days"; let how = parts[3]?parts[3].trim():"–"; if(name) newMeds.push({ name, frequency:freq, duration:dur, howToTake:how, usageCount:0, pinned:false, lastUsed:null }); } let added=0; for(let med of newMeds) { if(med.name && !medicines.some(m=>m.name.toLowerCase()===med.name.toLowerCase())) { await addNewMedicine(med); added++; } } alert(`Added ${added} new medicines.`); renderMedicineList(); renderMostUsedPreview(); renderPinnedPreview(); bulkMedText.value=""; bulkModal.style.display = "none"; });
-  bulkAddAdvBtn.addEventListener('click', async () => { const text = bulkAdvText.value; if(!text.trim()) { alert("Paste advice list first"); return; } const lines = text.split(/\r?\n/); const newAdvs = lines.map(l=>l.trim()).filter(l=>l); let added=0; for(let adv of newAdvs) { if(!adviceTags.includes(adv)) { adviceTags.push(adv); added++; } } if(added) await saveAdviceTags(); renderAdviceTags(); alert(`Added ${added} new advice tags.`); bulkAdvText.value=""; bulkModal.style.display = "none"; });
+  bulkAddMedBtn.addEventListener('click', bulkAddMedicines);
+  bulkAddAdvBtn.addEventListener('click', bulkAddAdvices);
+  closeBulkModal.addEventListener('click', () => bulkModal.style.display = "none");
+  window.addEventListener('click', (e) => { if (e.target === bulkModal) bulkModal.style.display = "none"; });
+
+  // File uploads still fill the textareas
   bulkMedFile.addEventListener('change', (e) => { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (ev) => { bulkMedText.value = ev.target.result; }; reader.readAsText(file); bulkMedFile.value = ""; });
   bulkAdvFile.addEventListener('change', (e) => { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (ev) => { bulkAdvText.value = ev.target.result; }; reader.readAsText(file); bulkAdvFile.value = ""; });
+
   function openBulkModal() { bulkModal.style.display = "block"; }
   document.getElementById('bulkTriggerBtn').addEventListener('click', openBulkModal);
-  closeBulkModal.addEventListener('click', () => bulkModal.style.display = "none");
-  window.addEventListener('click', (e) => { if(e.target === bulkModal) bulkModal.style.display = "none"; });
 
   // ========== KEYBOARD SHORTCUTS ==========
   function handleKeyboardShortcuts(e) {
